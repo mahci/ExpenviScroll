@@ -1,5 +1,8 @@
 package tools;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static tools.Consts.DISP.PPI;
@@ -7,8 +10,7 @@ import static tools.Consts.DISP.INCH_MM;
 
 public class Utils {
 
-    private final static String cName = "Utils";
-    private static String mName = cName + "."; // changed inside each method
+    private final static String cName = "Utils.";
     /*-------------------------------------------------------------------------------------*/
 
     /**
@@ -28,7 +30,7 @@ public class Utils {
      * @return equivalant in pixels
      */
     public static int mm2px(double mm) {
-        mName += "mm2px";
+        String mName = cName + "mm2px";
 
         return (int) ((mm / INCH_MM) * PPI);
     }
@@ -39,8 +41,25 @@ public class Utils {
      * @return equivalant in mm
      */
     public static double px2mm(double px) {
-        mName += "px2mm";
+        String mName = cName + "px2mm";
 
         return (int) ((px / PPI) * INCH_MM);
+    }
+
+    /**
+     * Generate a random permutation of {0, 1, ..., len - 1}
+     * @param len - length of the permutation
+     * @return Random permutation
+     */
+    public static List<Integer> randPerm(int len) {
+        String mName = cName + "randPerm";
+
+        List<Integer> indexes = new ArrayList<>();
+        for (int i = 0; i < len; i++) {
+            indexes.add(i);
+        }
+        Collections.shuffle(indexes);
+
+        return indexes;
     }
 }

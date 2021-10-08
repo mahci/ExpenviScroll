@@ -1,5 +1,7 @@
 package gui;
 
+import control.Experimenter;
+
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
@@ -31,8 +33,6 @@ public class MainFrame extends JFrame {
                 ((scrH / 2) - (frH / 2)) + scrBound.y
         );
 
-
-
         try {
             expPanel.start();
         } catch (Exception e) {
@@ -40,6 +40,10 @@ public class MainFrame extends JFrame {
         }
 
         this.setVisible(true);
+
+        // [Test] Experimenter
+        Experimenter.self().testBlocks();
+
 //        showPanel(new ExperimentPanel());
     }
 

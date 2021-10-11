@@ -1,6 +1,7 @@
 package gui;
 
 import control.Controller;
+import experiment.Experiment;
 import tools.Logs;
 import tools.Strs;
 import tools.Utils;
@@ -20,8 +21,7 @@ import tools.Consts.*;
 
 public class ExperimentPanel extends JLayeredPane {
 
-    private final static String cName = "Utils";
-    private static String mName = cName + "."; // changed inside each method
+    private final static String cName = "ExperimentPanel";
     /*-------------------------------------------------------------------------------------*/
 
     //--- Sizes
@@ -41,7 +41,11 @@ public class ExperimentPanel extends JLayeredPane {
             Utils.mm2px(SCROLL_BAR_W_mm),
             Utils.mm2px(SCROLL_PANE_H_mm));
 
-    private final Dimension SCROLL_PANE_THUMB_DIM = new Dimension(5, Utils.mm2px(6));
+    private final int SCROLL_THUMB_W = 5;
+    private final double SCROLL_THUMB_H_mm = 6;
+    private final Dimension SCROLL_PANE_THUMB_DIM = new Dimension(
+            SCROLL_THUMB_W,
+            Utils.mm2px(SCROLL_THUMB_H_mm));
 
     private final double TARGET_INDIC_W_mm = 7;
 
@@ -52,6 +56,10 @@ public class ExperimentPanel extends JLayeredPane {
     private final float BODY_FONT_SIZE = 12.2f;
     private final float LINE_NUM_FONT_SIZE = 12.2f;
 
+    /*-------------------------------------------------------------------------------------*/
+
+    // the experiment to show
+    Experiment experiment;
 
     private JTextPane linesTextPane;
     private JTextArea bodyTextArea;
@@ -70,9 +78,17 @@ public class ExperimentPanel extends JLayeredPane {
         }
     };
 
-    public ExperimentPanel() {
+    /**
+     * Create the panel
+     * @param exp - Experiment to show
+     */
+    public ExperimentPanel(Experiment exp) {
         setLayout(null);
 
+        // set the experiment
+        experiment = exp;
+
+        // map the keys
         getInputMap().put(
                 KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0, true),
                 "SPACE");

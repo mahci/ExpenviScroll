@@ -17,14 +17,18 @@ public class Experimenter {
 
     private static Experimenter instance; // Singleton
 
-    // Vars
+    //-- experiment variables
     private List<Integer> distances = Arrays.asList(50, 100, 200, 300); // in lines
     private List<Integer> frameHeights = Arrays.asList(3, 6); // in lines
-    public static enum Direction {
+    public enum Direction {
         UP,
         DOWN
     }
 
+    //-- participate's info
+    private int pid = -1;
+
+    /*-------------------------------------------------------------------------------------*/
     /**
      * Get the Singleton instance
      * @return Singeleton instance
@@ -35,10 +39,11 @@ public class Experimenter {
     }
 
     /**
-     * Constructor
+     * Start experimenting
+     * @param pid - Id of the participant
      */
-    public Experimenter() {
-
+    public void start(int pid) {
+        this.pid = pid;
     }
 
     /**

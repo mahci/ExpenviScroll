@@ -10,12 +10,17 @@ public class MainFrame extends JFrame {
 
     public MainFrame() {
         // Set the properties of the frame
-        setExtendedState(JFrame.MAXIMIZED_BOTH); // Maximized frame
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Close on exit
+        setExtendedState(JFrame.MAXIMIZED_BOTH); // maximized frame
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // close on exit
 
-        ExperimentPanel expPanel = new ExperimentPanel();
+        // start the Setup panel
+        SetupPanel setupPanel = new SetupPanel();
+        this.add(setupPanel);
 
-        this.add(expPanel);
+
+//        ExperimentPanel expPanel = new ExperimentPanel();
+
+//        this.add(expPanel);
         this.pack();
 
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
@@ -33,11 +38,11 @@ public class MainFrame extends JFrame {
                 ((scrH / 2) - (frH / 2)) + scrBound.y
         );
 
-        try {
-            expPanel.start();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        try {
+//            expPanel.start();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
 
         this.setVisible(true);
 

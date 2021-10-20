@@ -1,9 +1,7 @@
 package gui;
 
-import control.Controller;
 import experiment.Experiment;
 import tools.Logs;
-import tools.Strs;
 import tools.Utils;
 
 import javax.swing.*;
@@ -11,11 +9,8 @@ import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.awt.font.TextAttribute;
 import java.io.*;
-import java.security.Policy;
 import java.util.ArrayList;
-import java.util.Collections;
 
 import tools.Consts.*;
 
@@ -82,11 +77,11 @@ public class ExperimentPanel extends JLayeredPane {
      * Create the panel
      * @param exp - Experiment to show
      */
-    public ExperimentPanel(Experiment exp) {
+    public ExperimentPanel() {
         setLayout(null);
 
         // set the experiment
-        experiment = exp;
+//        experiment = exp;
 
         // map the keys
         getInputMap().put(
@@ -116,7 +111,7 @@ public class ExperimentPanel extends JLayeredPane {
         final String mName = "ExperimentalPanel--start";
 
         // Wrap the file
-        ArrayList<Integer> lineCharCounts = Strs.wrapFile(
+        ArrayList<Integer> lineCharCounts = Utils.wrapFile(
                 "./res/lorem.txt",
                 "./res/lorem_wrapped.txt",
                 WRAP_CHARS_COUNT);
@@ -179,6 +174,7 @@ public class ExperimentPanel extends JLayeredPane {
         scrollPane.setRowHeaderView(linesTextPane);
 
         add(scrollPane, 0);
+
     }
 
     public String getLineNumbers(int nLines) {

@@ -1,6 +1,7 @@
 package gui;
 
 import control.Experimenter;
+import control.Server;
 
 import javax.swing.*;
 import java.awt.*;
@@ -18,9 +19,9 @@ public class MainFrame extends JFrame {
         this.add(setupPanel);
 
 
-//        ExperimentPanel expPanel = new ExperimentPanel();
+        ExperimentPanel expPanel = new ExperimentPanel();
 
-//        this.add(expPanel);
+        this.add(expPanel);
         this.pack();
 
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
@@ -38,11 +39,11 @@ public class MainFrame extends JFrame {
                 ((scrH / 2) - (frH / 2)) + scrBound.y
         );
 
-//        try {
-//            expPanel.start();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        try {
+            expPanel.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         this.setVisible(true);
 

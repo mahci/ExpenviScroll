@@ -52,6 +52,7 @@ public class Consts {
 
     public static class STRINGS {
         public final static String SUCCESS = "SUCCESS";
+        public final static String CONTECTED = "CONTECTED";
         public final static String TIMEOUT = "TIMEOUT";
         public final static String END = "END";
     }

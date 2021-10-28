@@ -4,12 +4,11 @@ import tools.Logs;
 
 import java.awt.*;
 
-/***
+/**
  * Class responsible for getting the data from the Server and perform the actions
  */
 public class Controller {
-    private final String cTag = "Controller -- "; // class tag
-    private String mTag; // method tag
+    private final String cName = "Controller -- "; // class tag
     //----------------------------------------------------------------
 
     public static Controller instance; // Singleton
@@ -29,12 +28,12 @@ public class Controller {
      * Contrsuctor
      */
     private Controller() {
-        mTag = cTag + "Controller";
+        String TAG = cName;
 
         try {
             robot = new Robot();
         } catch (AWTException e) {
-            Logs.error(mTag, "Robot couldn't be initialized!");
+            Logs.error(TAG, "Robot couldn't be initialized!");
             System.exit(1);
         }
     }
@@ -44,11 +43,11 @@ public class Controller {
      * @return Result (0: success, 1: error)
      */
     public int scroll(int scrollAmt) {
-        mTag = cTag + "scroll";
+        String TAG = cName + "scroll";
 
         // problem with the robot
         if (robot == null) {
-            Logs.error(mTag, "Can't load the robot!");
+            Logs.error(TAG, "Can't load the robot!");
             return 1;
         }
 

@@ -1,8 +1,9 @@
 package control;
 
+import tools.Consts.*;
 import tools.Logs;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.*;
 import java.util.concurrent.*;
 
@@ -14,32 +15,90 @@ public class Server {
     private final int PORT = 8000; // always the same
     private final int CONNECTION_TIMEOUT = 60 * 1000; // 1 min
 
-    private ServerSocket socket;
-    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private ServerSocket serverSocket;
+    private Socket socket;
+    private PrintWriter outPW;
+    private BufferedReader inBR;
+
+    private ExecutorService executor;
 
     //----------------------------------------------------------------------------------------
-    private Callable<String> waitForConnectionCallable = new Callable<String>() {
-        String TAG = cName + "waitForConnectionCallable";
+
+    //-- Runnable for waiting for incoming connections
+    private class ConnWaitRunnable implements Runnable {
+        String TAG = cName + "ConnWaitRunnable";
 
         @Override
-        public String call() throws IOException {
-            Logs.info(TAG, "Opening socket...");
-            if (socket == null) socket = new ServerSocket(PORT);
-            socket.setSoTimeout(CONNECTION_TIMEOUT);
-            Logs.info(TAG, "Socket opened, waiting for the Moose...");
-
+        public void run() {
             try {
-                Socket inSocket = socket.accept();
+                Logs.info(TAG, "Waiting for connections...");
+                if (serverSocket == null) serverSocket = new ServerSocket(PORT);
+                socket = serverSocket.accept();
+
                 // When reached here, Moose is connected
                 Logs.info(TAG, "Moose connected!");
-                return "CONNECTED";
-            } catch (SocketTimeoutException ste) {
-                return "TIMEOUT";
+
+                // Create streams
+                inBR = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                outPW = new PrintWriter(new BufferedWriter(
+                        new OutputStreamWriter(socket.getOutputStream())), true);
+
+
+                // Start receiving
+                executor.execute(new InRunnable());
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    //-- Runnable for sending messages to Moose
+    private class OutRunnable implements Runnable {
+        String TAG = cName + "OutRunnable";
+        String message = "";
+
+        public OutRunnable(String mssg) {
+            message = mssg;
+        }
+
+        @Override
+        public void run() {
+            outPW.println(message);
+            outPW.flush();
+            Logs.info(TAG, "Message sent");
+        }
+    }
+
+    //-- Runnable for receiving messages from Moose
+    private class InRunnable implements Runnable {
+        String TAG = cName + "InRunnable";
+
+        @Override
+        public void run() {
+            while (!Thread.currentThread().isInterrupted()){
+                try {
+                    Logs.info(TAG, "Reading messages...");
+                    String message = inBR.readLine();
+                    Logs.info(TAG, "Message: "  + message);
+                    if (message != null) {
+                        Logs.info(TAG, "Message: " + message);
+
+
+                    } else {
+                        Logs.info(TAG, "Moose disconnected.");
+                        start();
+                        return;
+                    }
+                } catch (IOException e) {
+                    System.out.println("Error");
+                    e.printStackTrace();
+                }
             }
 
+            Logs.info(TAG, "Thread intrupted");
         }
-    };
-
+    }
 
     //----------------------------------------------------------------------------------------
 
@@ -58,7 +117,8 @@ public class Server {
     public Server() {
         String TAG = cName;
 
-        Logs.info(TAG, findServerIP());
+        // Init executerService for running threads
+        executor = Executors.newCachedThreadPool();
     }
 
     /**
@@ -67,41 +127,7 @@ public class Server {
     public void start() {
         String TAG = cName + "start";
 
-        try {
-            Future<String> connectionFuture = executorService.submit(waitForConnectionCallable);
-            String connectionResult = connectionFuture.get();
-
-            // Moose connected
-            if (connectionResult == "SUCCESS") {
-
-            }
-
-            // Timeout in accepting connections
-            if (connectionResult == "TIMEOUT") {
-
-            }
-
-        } catch (ExecutionException | InterruptedException e) {
-            Logs.error(TAG, "No connection recieved. Starting again...");
-            start();
-//            e.printStackTrace();
-        }
+        executor.execute(new ConnWaitRunnable());
     }
 
-    /**
-     * Find what is the IP of this computer
-     * @return (String) IP
-     */
-    public String findServerIP(){
-        String mName = cName + "findServerIP";
-
-        try {
-            String address = InetAddress.getLocalHost().toString();
-            return address.split("/")[1];
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
-
-        return "Not found";
-    }
 }

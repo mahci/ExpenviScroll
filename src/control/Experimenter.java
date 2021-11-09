@@ -1,9 +1,9 @@
 package control;
 
-import experiment.Block;
+import experiment.Round;
+import experiment.Experiment;
 import tools.Logs;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -17,33 +17,40 @@ public class Experimenter {
 
     private static Experimenter instance; // Singleton
 
-    //-- experiment variables
-    private List<Integer> distances = Arrays.asList(50, 100, 200, 300); // in lines
-    private List<Integer> frameHeights = Arrays.asList(3, 6); // in lines
-    public enum Direction {
-        UP,
-        DOWN
-    }
+    // The ongoing experiment
+    Experiment experiment;
+    int participantId = -1;
 
-    //-- participate's info
-    private int pid = -1;
+    //-- experiment variables
+    private List<Integer> distances = Arrays.asList(50, 100); // in lines/cols
+    private List<Integer> frameSizes = Arrays.asList(3, 6); // in lines/cols
+    public enum Direction {
+        U_R,
+        D_L
+    }
+    public enum ScrollMode {
+        VERTICAL,
+        HORIZONTAL
+    }
 
     /*-------------------------------------------------------------------------------------*/
     /**
      * Get the Singleton instance
      * @return Singeleton instance
      */
-    public static Experimenter self() {
+    public static Experimenter get() {
         if (instance == null) instance = new Experimenter();
         return instance;
     }
 
     /**
-     * Start experimenting
-     * @param pid - Id of the participant
+     * Get an experiment
      */
-    public void start(int pid) {
-        this.pid = pid;
+    public Experiment getExperiment(int pid) {
+        participantId = pid;
+        experiment = new Experiment(1, distances, frameSizes);
+
+        return experiment;
     }
 
     /**
@@ -52,8 +59,8 @@ public class Experimenter {
     public void testBlocks() {
         String mTag = cName + "testBlocks";
 
-        Block block = new Block(distances, frameHeights);
-        Logs.info(mTag, block.toString());
+        Round round = new Round(ScrollMode.HORIZONTAL, distances, frameSizes);
+        Logs.info(mTag, round.toString());
     }
 
 

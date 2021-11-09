@@ -19,7 +19,7 @@ public class Consts {
     // Colors
     public static class COLORS {
         public final static Color LINE_NUM_BG = new Color(221, 221, 221);
-        public final static Color LINE_HIGHLIGHT = new Color(100, 192, 245);
+        public final static Color LINE_COL_HIGHLIGHT = new Color(100, 192, 245);
         public final static Color SCROLLBAR_HIGHLIGHT = new Color(199, 225, 240);
     }
 
@@ -28,7 +28,10 @@ public class Consts {
         // Fonts
         public static Font SF_REGULAR = Font.getFont("serif");
         public static Font SF_LIGHT = Font.getFont("serif");
-        public static Font ARIAL = new Font("Arial", Font.PLAIN, 13);
+
+        // Sizes
+        private final float TEXT_BODY_FONT_SIZE = 12.2f;
+        private final float LINE_NUM_FONT_SIZE = 12.2f;
 
         // Italic attribute
         public static Map<? extends AttributedCharacterIterator.Attribute, ?>
@@ -51,10 +54,11 @@ public class Consts {
     }
 
     public static class STRINGS {
-        public final static String SUCCESS = "SUCCESS";
-        public final static String CONTECTED = "CONTECTED";
-        public final static String TIMEOUT = "TIMEOUT";
-        public final static String END = "END";
+        public final static String SP = "_";
+        public final static String SCROLL = "SCROLL";
+        public final static String DRAG = "DRAG";
+        public final static String RB = "RABA";
+        public final static String STOP = "STOP";
     }
 
 

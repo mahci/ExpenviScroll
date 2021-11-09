@@ -1,14 +1,17 @@
 package control;
 
-import tools.Consts.*;
+
+import static tools.Consts.STRINGS.*;
+
 import tools.Logs;
+import tools.Memo;
 
 import java.io.*;
 import java.net.*;
 import java.util.concurrent.*;
 
 public class Server {
-    private final static String cName = "Server--";
+    private final static String NAME = "Server--";
     //----------------------------------------------------------------------------------------
     private static Server instance; // Singelton
 
@@ -26,7 +29,7 @@ public class Server {
 
     //-- Runnable for waiting for incoming connections
     private class ConnWaitRunnable implements Runnable {
-        String TAG = cName + "ConnWaitRunnable";
+        String TAG = NAME + "ConnWaitRunnable";
 
         @Override
         public void run() {
@@ -55,7 +58,7 @@ public class Server {
 
     //-- Runnable for sending messages to Moose
     private class OutRunnable implements Runnable {
-        String TAG = cName + "OutRunnable";
+        String TAG = NAME + "OutRunnable";
         String message = "";
 
         public OutRunnable(String mssg) {
@@ -72,7 +75,7 @@ public class Server {
 
     //-- Runnable for receiving messages from Moose
     private class InRunnable implements Runnable {
-        String TAG = cName + "InRunnable";
+        String TAG = NAME + "InRunnable";
 
         @Override
         public void run() {
@@ -82,8 +85,10 @@ public class Server {
                     String message = inBR.readLine();
                     Logs.info(TAG, "Message: "  + message);
                     if (message != null) {
-                        Logs.info(TAG, "Message: " + message);
+                        Memo memo = Memo.valueOf(message);
 
+                        // If it was scrolling, send to Controller to perform
+                        if (memo.getAction().equals(SCROLL)) Controller.get().perform(memo);
 
                     } else {
                         Logs.info(TAG, "Moose disconnected.");
@@ -95,8 +100,6 @@ public class Server {
                     e.printStackTrace();
                 }
             }
-
-            Logs.info(TAG, "Thread intrupted");
         }
     }
 
@@ -115,7 +118,7 @@ public class Server {
      * Constructor
      */
     public Server() {
-        String TAG = cName;
+        String TAG = NAME;
 
         // Init executerService for running threads
         executor = Executors.newCachedThreadPool();
@@ -125,7 +128,7 @@ public class Server {
      * Start the server
      */
     public void start() {
-        String TAG = cName + "start";
+        String TAG = NAME + "start";
 
         executor.execute(new ConnWaitRunnable());
     }

@@ -28,13 +28,15 @@ public class CustomScrollBarUI extends BasicScrollBarUI {
 //        thumbBounds.height = Utils.mm2px(THUMB_H_mm);
         // Set anti-alias
         Graphics2D graphics2D = (Graphics2D) g;
+        graphics2D.setColor(Color.BLACK);
         graphics2D.setRenderingHint(
                 RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON);
-        graphics2D.setColor(Color.BLACK);
+
+
         graphics2D.fillRoundRect(
-                thumbBounds.x + 4, thumbBounds.y,
-                thumbBounds.width - 6, thumbBounds.height,
+                thumbBounds.x, thumbBounds.y + 4,
+                thumbBounds.width - 150, thumbBounds.height - 6,
                 5, 5);
 //        Logs.info(getClass().getName(), thumbBounds.toString());
     }

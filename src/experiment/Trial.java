@@ -1,61 +1,49 @@
 package experiment;
 
-import static control.Experimenter.Direction;
+import static control.Experimenter.*;
 
 /***
  * Class of each trial
  */
 public class Trial {
 
-    private final static String cName = "Trial";
-    private static String mName = cName + "."; // for logging
-    /*-------------------------------------------------------------------------------------*/
+    private final static String NAME = "Trial--";
+    // ------------------------------------------------------------------------------------
+    public int distance; // in lines
+    public int frameSize; // in lines
+    public Direction direction; // UP or DOWN
+    public ScrollMode scrollMode;
 
-    private int distance; // in lines
-    private int frameHeight; // in lines
-    private Direction direction; // UP or DOWN
-
-//    public static class Vars {
-//        private int distance; // in lines
-//        private int frameHeight; // in lines
-//        private Direction direction; // UP or DOWN
-//
-//        /**
-//         * Constructor
-//         * @param dist - distance
-//         * @param fH - frame height
-//         * @param dir - direction
-//         */
-//        public Vars(int dist, int fH, Direction dir) {
-//            distance = dist;
-//            frameHeight = fH;
-//            direction = dir;
-//        }
-//    }
-
-//    private Vars vars;
-    /*-------------------------------------------------------------------------------------*/
+    // ------------------------------------------------------------------------------------
 
     /**
      * Constructor
-     * @param v vars
+     * @param dist Distance
+     * @param fS Fram size (height/width)
+     * @param dir Direction
      */
-//    public Trial(Vars v) {
-//        this.vars = v;
-//    }
+    public Trial(int dist, int fS, Direction dir, ScrollMode scM) {
+        distance = dist;
+        frameSize = fS;
+        direction = dir;
+        scrollMode = scM;
+    }
 
-    public Trial(int dist, int fH, Direction dir) {
-        this.distance = dist;
-        this.frameHeight = fH;
-        this.direction = dir;
+    /**
+     * Default constructor
+     */
+    public Trial() {
+        distance = 0;
+        frameSize = 0;
     }
 
     @Override
     public String toString() {
         return "Trial{" +
                 "distance=" + distance +
-                ", frameHeight=" + frameHeight +
+                ", frameHeight=" + frameSize +
                 ", direction=" + direction +
                 '}';
     }
+
 }

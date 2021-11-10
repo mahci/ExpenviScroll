@@ -17,16 +17,22 @@ public class MainFrame extends JFrame {
         setDisplayConfig();
 
         // start the Setup panel
-        SetupPanel setupPanel = new SetupPanel();
-        this.add(setupPanel);
+//        SetupPanel setupPanel = new SetupPanel();
+//        this.add(setupPanel);
 
         // Create and show an experiment
         int pid = 0;
-        ExperimentPanel expPanel = new ExperimentPanel(Experimenter.get().getExperiment(pid));
-        this.add(expPanel);
-        this.pack();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ExperimentPanel expPanel = new ExperimentPanel(Experimenter.get().getExperiment(pid));
+                add(expPanel);
+                pack();
 
-        this.setVisible(true);
+                setVisible(true);
+            }
+        });
+
     }
 
 

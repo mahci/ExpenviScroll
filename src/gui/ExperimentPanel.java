@@ -20,7 +20,7 @@ import static control.Experimenter.Direction.U_R;
 
 public class ExperimentPanel extends JLayeredPane {
 
-    private final static String NAME = "ExperimentPanel--";
+    private final static String NAME = "ExperimentPanel/";
     // -------------------------------------------------------------------------------------------
 
     // Experiment and trial
@@ -62,6 +62,7 @@ public class ExperimentPanel extends JLayeredPane {
      * @param exp Experiment to show
      */
     public ExperimentPanel(Experiment exp) {
+        String TAG = NAME;
         setLayout(null);
 
         // Set the experiment
@@ -74,44 +75,48 @@ public class ExperimentPanel extends JLayeredPane {
 //        getActionMap().put("SPACE", nextTrial);
 
         // Create the hz scroll pane
-        hScrollPane = new HorizontalScrollPane(experiment.DIM_HZ_PANE_mm)
-                .setScrollBar(experiment.HZ_SCROLL_BAR_H_mm, experiment.HZ_SCROLL_THUMB_W_mm)
-                .setTable(experiment.HZ_N_ROWS, experiment.HZ_N_COLS, experiment.HZ_N_VISIBLE_COLS)
-                .create();
-        add(hScrollPane, 0);
+//        hScrollPane = new HorizontalScrollPane(experiment.DIM_HZ_PANE_mm)
+//                .setScrollBar(experiment.HZ_SCROLL_BAR_H_mm, experiment.HZ_SCROLL_THUMB_W_mm)
+//                .setTable(experiment.HZ_N_ROWS, experiment.HZ_N_COLS, experiment.HZ_N_VISIBLE_COLS)
+//                .create();
+//        add(hScrollPane, 0);
 
         // Start with the trials
-//        blockNum = 1;
-//        trialNum = 1;
-//        showTrial();
+        blockNum = 1;
+        trialNum = 1;
+        showTrial();
 
-//        addKeyListener(new KeyListener() {
-//            @Override
-//            public void keyTyped(KeyEvent e) {
-//            }
-//
-//            @Override
-//            public void keyPressed(KeyEvent e) {
-//                if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
-//                    hScrollPane.setWheelScrollingEnabled(true);
-//                }
-//
-//                if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-//                    Controller.get().scroll(5);
-//                }
-//
-//                if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-//                    Controller.get().scroll(-5);
-//                }
-//            }
-//
-//            @Override
-//            public void keyReleased(KeyEvent e) {
-//                if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
-//                    hScrollPane.setWheelScrollingEnabled(false);
-//                }
-//            }
-//        });
+        addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
+                    hScrollPane.setWheelScrollingEnabled(true);
+                }
+
+                if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+                    Logs.infoAll(TAG, "Value= " + hScrollPane.getHorizontalScrollBar().getValue());
+                    Logs.infoAll(TAG, "Rect= " + hScrollPane.getVisibleRect());
+                }
+                if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+
+                }
+
+                if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
+                    hScrollPane.setWheelScrollingEnabled(false);
+                }
+            }
+        });
 
 
     }
@@ -137,6 +142,9 @@ public class ExperimentPanel extends JLayeredPane {
                         .setScrollBar(experiment.HZ_SCROLL_BAR_H_mm, experiment.HZ_SCROLL_THUMB_W_mm)
                         .setTable(experiment.HZ_N_ROWS, experiment.HZ_N_COLS, experiment.HZ_N_VISIBLE_COLS)
                         .create();
+                Dimension d = hScrollPane.getPreferredSize();
+                hScrollPane.setBounds(x, y, d.width, d.height);
+
                 add(hScrollPane, 0);
 
                 // Choose a random column and set the highlight column accordingly (based on dir/distance)
@@ -149,12 +157,17 @@ public class ExperimentPanel extends JLayeredPane {
                     hlColNum = randColNum - trial.distance;
                 }
 
-                // Scroll to the random column
-                int randScrollPosition = randColNum * hScrollPane.getColWidth();
-                hScrollPane.getHorizontalScrollBar().setValue(randScrollPosition);
-
                 // Highlight
                 hScrollPane.higlight(hlColNum);
+
+                // Scroll to the random column
+                int scrollPosition = randColNum * hScrollPane.getColWidth();
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        hScrollPane.getHorizontalScrollBar().setValue(scrollPosition);
+                    }
+                });
 
             }
             }
@@ -163,32 +176,32 @@ public class ExperimentPanel extends JLayeredPane {
 //        repaint();
     }
 
-    @Override
-    public void paint(Graphics g) {
-        super.paint(g);
-
-//        if (vScrollPane != null) {
-//            Dimension d = vScrollPane.getPreferredSize();
-//            vScrollPane.setBounds(x, y, d.width, d.height);
-//        }
-
-//        if (hScrollPane != null) {
-//            Dimension d = hScrollPane.getPreferredSize();
-//            hScrollPane.setBounds(x, y, d.width, d.height);
-//        }
-
-//        if (testSP != null) {
-//            Dimension d = testSP.getPreferredSize();
-//            testSP.setBounds(x, y, d.width, d.height);
-//        }
-
-        // Draw the target indicator
-//        g.setColor(COLORS.LINE_HIGHLIGHT);
-//        g.fillRect(x + 100, y + 513,
-//                100, 20);
-//        g.fillRect(x - Utils.mm2px(TARGET_INDIC_W_mm), y,
-//                Utils.mm2px(TARGET_INDIC_W_mm), 20);
-    }
+//    @Override
+//    public void paint(Graphics g) {
+//        super.paint(g);
+//
+////        if (vScrollPane != null) {
+////            Dimension d = vScrollPane.getPreferredSize();
+////            vScrollPane.setBounds(x, y, d.width, d.height);
+////        }
+//
+////        if (hScrollPane != null) {
+////            Dimension d = hScrollPane.getPreferredSize();
+////            hScrollPane.setBounds(x, y, d.width, d.height);
+////        }
+//
+////        if (testSP != null) {
+////            Dimension d = testSP.getPreferredSize();
+////            testSP.setBounds(x, y, d.width, d.height);
+////        }
+//
+//        // Draw the target indicator
+////        g.setColor(COLORS.LINE_HIGHLIGHT);
+////        g.fillRect(x + 100, y + 513,
+////                100, 20);
+////        g.fillRect(x - Utils.mm2px(TARGET_INDIC_W_mm), y,
+////                Utils.mm2px(TARGET_INDIC_W_mm), 20);
+//    }
 
 
     public void start() throws IOException, BadLocationException {

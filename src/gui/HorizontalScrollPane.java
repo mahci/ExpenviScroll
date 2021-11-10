@@ -65,6 +65,7 @@ public class HorizontalScrollPane extends JScrollPane {
         bodyTable.setTableHeader(null);
         bodyTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         bodyTable.setGridColor(Color.GRAY);
+        bodyTable.setEnabled(false);
 
         // Set the size of columns and rows
         colWidth = getPreferredSize().width / nFrameCols;

@@ -28,7 +28,7 @@ public class Experiment {
     public final double HZ_SCROLL_THUMB_W_mm = 6.0;
     public final int HZ_N_ROWS = 20;
     public final int HZ_N_COLS = 200;
-    public final int HZ_N_VISIBLE_COLS = 20;
+    public final int HZ_N_VISIBLE_COLS = 12;
 
     // -------------------------------------------------------------------------------------------------------
 

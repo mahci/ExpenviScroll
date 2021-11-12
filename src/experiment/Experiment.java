@@ -16,19 +16,26 @@ public class Experiment {
 
     //-- Properties
     // Vertical
-    public final DoubleDimension DIM_VT_PANE_mm = new DoubleDimension(130.0, 140.0);
+    public final DoubleDimension DIM_VT_PANE_mm = new DoubleDimension(130.0, 145.0);
     public final double VT_LINENUMS_W_mm = 10;
     public final double VT_SCROLL_BAR_W_mm = 5;
     public final double VT_SCROLL_THUMB_H_mm = 6;
+    public final double VT_FRAME_W_mm = 7;
     public final int VT_WRAP_CHARS_COUNT = 82;
+    public final int VT_N_VISIBLE_LINES = 41; // By eyes!
 
     // Horizontal
-    public final DoubleDimension DIM_HZ_PANE_mm = new DoubleDimension(160.0, 120.0);
+    public final DoubleDimension DIM_HZ_PANE_mm = new DoubleDimension(140.0, 110.0);
     public final double HZ_SCROLL_BAR_H_mm = 5.0;
     public final double HZ_SCROLL_THUMB_W_mm = 6.0;
-    public final int HZ_N_ROWS = 20;
+    public final double HZ_FRAME_H_mm = 7;
+    public final int HZ_N_ROWS = 25;
     public final int HZ_N_COLS = 200;
-    public final int HZ_N_VISIBLE_COLS = 12;
+    public final int HZ_N_VISIBLE_COLS = 15;
+
+    public final double SCROLL_GAIN = 5.0;
+
+    private Experimenter.ScrollMode mode = Experimenter.ScrollMode.HORIZONTAL;
 
     // -------------------------------------------------------------------------------------------------------
 
@@ -48,7 +55,7 @@ public class Experiment {
     public Experiment(int nRounds, List<Integer> distances, List<Integer> frameSizes) {
         // Generate rounds
         for(int b = 0; b < nRounds; b++) {
-            rounds.add(new Round(Experimenter.ScrollMode.HORIZONTAL, distances, frameSizes));
+            rounds.add(new Round(mode, distances, frameSizes));
         }
     }
 

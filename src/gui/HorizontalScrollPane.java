@@ -24,6 +24,8 @@ public class HorizontalScrollPane extends JScrollPane {
     private Dimension scThumbDim; // (px)
     private int colWidth; // Width of columns (equal)
 
+    protected int targetMinScVal, targetMaxScVal;
+
 
     //-------------------------------------------------------------------------------------------------
 
@@ -65,6 +67,8 @@ public class HorizontalScrollPane extends JScrollPane {
         bodyTable.setTableHeader(null);
         bodyTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         bodyTable.setGridColor(Color.GRAY);
+        bodyTable.setFont(new Font("Sans", Font.PLAIN, 10));
+        bodyTable.setForeground(Color.DARK_GRAY);
         bodyTable.setEnabled(false);
 
         // Set the size of columns and rows
@@ -86,7 +90,6 @@ public class HorizontalScrollPane extends JScrollPane {
     /**
      * Set the horizontal scroll bar
      * @param scrollBarH Scroll bar height (mm)
-     * @param thumbH Thumb height (px)
      * @param thumbW Thumb width (mm)
      * @return Instance
      */
@@ -105,19 +108,10 @@ public class HorizontalScrollPane extends JScrollPane {
 
         // Scroll thumb
         UIManager.put("ScrollBar.thumbSize", scThumbDim);
-//        UIManager.put("ScrollBar.minimumThumbSize", scThumbDim);
-//        UIManager.put("ScrollBar.maximumThumbSize", scThumbDim);
 
+        // Policies
         setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-
-//        scrollBar = getHorizontalScrollBar();
-//        scrollBar.addAdjustmentListener(new AdjustmentListener() {
-//            @Override
-//            public void adjustmentValueChanged(AdjustmentEvent e) {
-//
-//            }
-//        });
 
         return this;
     }
@@ -136,11 +130,27 @@ public class HorizontalScrollPane extends JScrollPane {
      * Highlight a column
      * @param colInd Column indexnumber
      */
-    public void higlight(int colInd) {
+    public void higlight(int colInd, int tgMinScVl, int tgMaxScVl) {
         DefaultTableCellRenderer highlightRenderer = new DefaultTableCellRenderer();
         highlightRenderer.setBackground(Consts.COLORS.LINE_COL_HIGHLIGHT);
 
+        bodyTable.revalidate();
         bodyTable.getColumnModel().getColumn(colInd).setCellRenderer(highlightRenderer);
+
+        // Set the target range (for scrollbar rect)
+        targetMinScVal = tgMinScVl;
+        targetMaxScVal = tgMaxScVl;
+
+        getHorizontalScrollBar().revalidate();
+    }
+
+    /**
+     * Add MouseWheelListener to every component
+     * @param mwl MouseWheelListener
+     */
+    public void addWheelListener(MouseWheelListener mwl) {
+        getHorizontalScrollBar().addMouseWheelListener(mwl);
+        bodyTable.addMouseWheelListener(mwl);
     }
 
     /**
@@ -165,7 +175,7 @@ public class HorizontalScrollPane extends JScrollPane {
 //    }
 
     //-------------------------------------------------------------------------------------------------
-    private static class CustomHScrollBarUI extends BasicScrollBarUI {
+    private class CustomHScrollBarUI extends BasicScrollBarUI {
 
         private int thumbHOffset;
 
@@ -179,13 +189,22 @@ public class HorizontalScrollPane extends JScrollPane {
 
         @Override
         protected void paintTrack(Graphics g, JComponent c, Rectangle trackBounds) {
+            String TAG = NAME + "paintTrack";
+
             g.setColor(new Color(244, 244, 244));
             g.fillRect(trackBounds.x, trackBounds.y, trackBounds.width, trackBounds.height);
             g.setColor(Color.BLACK);
             g.drawRect(trackBounds.x, trackBounds.y, trackBounds.width, trackBounds.height);
 
-//            g.setColor(Consts.COLORS.SCROLLBAR_HIGHLIGHT);
-//            g.fillRect(trackBounds.x, trackBounds.y + 80, trackBounds.width, getThumbBounds().height);
+            // Highlight scroll bar rect
+            double ratio = trackBounds.width / (getHorizontalScrollBar().getMaximum() * 1.0);
+            int hlX = (int) (targetMinScVal * ratio);
+            int hlW = (int) ((targetMaxScVal - targetMinScVal) * ratio) + getThumbBounds().width;
+            Logs.infoAll(TAG, ratio);
+            Logs.infoAll(TAG, targetMinScVal, targetMaxScVal);
+            Logs.infoAll(TAG, hlX, hlW);
+            g.setColor(Consts.COLORS.SCROLLBAR_HIGHLIGHT);
+            g.fillRect(hlX, trackBounds.y, hlW, trackBounds.height);
         }
 
         @Override

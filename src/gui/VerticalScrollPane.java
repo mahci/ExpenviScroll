@@ -7,13 +7,18 @@ import tools.Utils;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicScrollBarUI;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.text.*;
 import java.awt.*;
+import java.awt.event.MouseWheelListener;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+
+import javax.swing.text.Highlighter.HighlightPainter;
+import javax.swing.text.DefaultHighlighter.DefaultHighlightPainter;
+
+import static tools.Consts.COLORS;
 
 public class VerticalScrollPane extends JScrollPane {
     private final static String cName = "VerticalScrollPane";
@@ -26,6 +31,9 @@ public class VerticalScrollPane extends JScrollPane {
 
     private JTextPane linesTextPane;
     private JTextPane bodyTextPane;
+
+    protected int targetMinScVal, targetMaxScVal;
+    private int nLines;
     //-------------------------------------------------------------------------------------------------
 
     /**
@@ -86,6 +94,7 @@ public class VerticalScrollPane extends JScrollPane {
         documentStyle.setParagraphAttributes(0, documentStyle.getLength(), attributeSet, false);
 
         linesTextPane.setText(getLineNumbers(lineCharCounts.size()));
+        nLines = lineCharCounts.size();
 
         return this;
     }
@@ -93,24 +102,23 @@ public class VerticalScrollPane extends JScrollPane {
     /**
      * Set the scroll bar
      * @param scrollBarW Scroll bar width (mm)
-     * @param thumbW Scroll thumb width (px) // TODO: change to mm
      * @param thumbH Scroll thumb height (mm)
      * @return Current instance
      */
-    public VerticalScrollPane setScrollBar(double scrollBarW, int thumbW, double thumbH) {
+    public VerticalScrollPane setScrollBar(double scrollBarW, double thumbH) {
 
         // Set dimentions
         Dimension scBarDim = new Dimension(Utils.mm2px(scrollBarW), dim.height);
-        Dimension scThumbDim = new Dimension(thumbW, Utils.mm2px(thumbH));
+        Dimension scThumbDim = new Dimension(scBarDim.width, Utils.mm2px(thumbH));
 
         // Verticall scroll bar
         getVerticalScrollBar().setUI(new CustomVScrollBarUI());
         getVerticalScrollBar().setPreferredSize(scBarDim);
 
         // Scroll thumb
-        UIManager.put("ScrollBar.minimumThumbSize", scThumbDim);
-        UIManager.put("ScrollBar.maximumThumbSize", scThumbDim);
+        UIManager.put("ScrollBar.thumbSize", scThumbDim);
 
+        // Policies
         setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
@@ -129,6 +137,41 @@ public class VerticalScrollPane extends JScrollPane {
     }
 
     /**
+     * Highlight a line
+     * @param lineInd Column index number (from 1)
+     */
+    public void higlight(int lineInd, int tgMinScVl, int tgMaxScVl) throws BadLocationException {
+        DefaultTableCellRenderer highlightRenderer = new DefaultTableCellRenderer();
+        highlightRenderer.setBackground(Consts.COLORS.LINE_COL_HIGHLIGHT);
+
+        int stIndex = 0;
+        for (int li = 0; li < lineInd - 1; li++) {
+            stIndex += lineCharCounts.get(li) + 1; // prev. lines + \n
+        }
+        int endIndex = stIndex + lineCharCounts.get(lineInd - 1);
+
+        DefaultHighlightPainter highlighter = new DefaultHighlightPainter(COLORS.LINE_COL_HIGHLIGHT);
+        bodyTextPane.getHighlighter().removeAllHighlights();
+        bodyTextPane.getHighlighter().addHighlight(stIndex, endIndex, highlighter);
+
+        // Set min/max
+        targetMinScVal = tgMinScVl;
+        targetMaxScVal = tgMaxScVl;
+
+        getVerticalScrollBar().revalidate();
+    }
+
+    /**
+     * Add MouseWheelListener to every component
+     * @param mwl MouseWheelListener
+     */
+    public void addWheelListener(MouseWheelListener mwl) {
+        getVerticalScrollBar().addMouseWheelListener(mwl);
+        bodyTextPane.addMouseWheelListener(mwl);
+        linesTextPane.addMouseWheelListener(mwl);
+    }
+
+    /**
      * Get the line numbers to show
      * @param nLines Number of lines
      * @return String of line numbers
@@ -141,9 +184,14 @@ public class VerticalScrollPane extends JScrollPane {
         }
         return text.toString();
     }
+
+    public int getNLines() {
+        return nLines;
+    }
+
     //-------------------------------------------------------------------------------------------------
 
-    private static class CustomVScrollBarUI extends BasicScrollBarUI {
+    private class CustomVScrollBarUI extends BasicScrollBarUI {
 
         @Override
         protected void paintTrack(Graphics g, JComponent c, Rectangle trackBounds) {
@@ -152,14 +200,17 @@ public class VerticalScrollPane extends JScrollPane {
             g.setColor(Color.BLACK);
             g.drawRect(trackBounds.x, trackBounds.y, trackBounds.width, trackBounds.height);
 
+            // Highlight scroll bar rect
+            double ratio = trackBounds.height / (getVerticalScrollBar().getMaximum() * 1.0);
+            int hlY = (int) (targetMinScVal * ratio);
+            int hlH = (int) ((targetMaxScVal - targetMinScVal) * ratio) + getThumbBounds().height;
             g.setColor(Consts.COLORS.SCROLLBAR_HIGHLIGHT);
-            g.fillRect(trackBounds.x, trackBounds.y + 80, trackBounds.width, getThumbBounds().height);
+            g.fillRect(trackBounds.x, hlY, trackBounds.width, hlH);
         }
 
         @Override
         protected void paintThumb(Graphics g, JComponent c, Rectangle thumbBounds) {
-//        thumbBounds.width -= 2;
-//        thumbBounds.height = Utils.mm2px(THUMB_H_mm);
+
             // Set anti-alias
             Graphics2D graphics2D = (Graphics2D) g;
             graphics2D.setColor(Color.BLACK);
@@ -172,7 +223,6 @@ public class VerticalScrollPane extends JScrollPane {
                     thumbBounds.x + 4, thumbBounds.y,
                     thumbBounds.width - 6, thumbBounds.height,
                     5, 5);
-//        Logs.info(getClass().getName(), thumbBounds.toString());
         }
 
         @Override

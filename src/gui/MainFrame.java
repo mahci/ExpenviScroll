@@ -10,6 +10,8 @@ import java.io.IOException;
 
 public class MainFrame extends JFrame {
 
+    private static ExperimentPanel experimentPanel;
+
     /**
      * Constructor
      */
@@ -22,17 +24,18 @@ public class MainFrame extends JFrame {
 
         // Create and show an experiment
         int pid = 0;
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                ExperimentPanel expPanel = new ExperimentPanel(Experimenter.get().getExperiment(pid));
-                add(expPanel);
-                pack();
+        experimentPanel = new ExperimentPanel(Experimenter.get().getExperiment(pid));
+        add(experimentPanel);
+        pack();
 
-                setVisible(true);
-            }
-        });
+//        SwingUtilities.invokeLater(new Runnable() {
+//            @Override
+//            public void run() {
+//
+//            }
+//        });
 
+        setVisible(true);
     }
 
 
@@ -57,6 +60,10 @@ public class MainFrame extends JFrame {
                 ((scrW / 2) - (frW / 2)) + scrBound.x,
                 ((scrH / 2) - (frH / 2)) + scrBound.y
         );
+    }
+
+    public static void scroll(int delta) {
+        experimentPanel.scroll(delta);
     }
 
 }

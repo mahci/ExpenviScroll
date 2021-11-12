@@ -1,5 +1,6 @@
 package tools;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,8 +37,24 @@ public class Logs {
         System.out.println(tag + " >> " + mssg);
     }
 
+    public static void infoAll(String tag, String s1, String s2) {
+        System.out.println(tag + " >> " + s1 + " | " + s2);
+    }
+
+    public static void infoAll(String tag, Dimension dim) {
+        System.out.println(tag + " >> " + dim);
+    }
+
+    public static void infoAll(String tag, double d) {
+        System.out.println(tag + " >> " + d);
+    }
+
     public static void infoAll(String tag, int mssg) {
         System.out.println(tag + " >> " + mssg);
+    }
+
+    public static void infoAll(String tag, int i1, int i2) {
+        System.out.println(tag + " >> " + i1 + " | " + i2);
     }
 
     public static void info(String tag, int mssg) {

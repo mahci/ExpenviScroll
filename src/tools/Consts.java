@@ -30,8 +30,8 @@ public class Consts {
         public static Font SF_LIGHT = Font.getFont("serif");
 
         // Sizes
-        private final float TEXT_BODY_FONT_SIZE = 12.2f;
-        private final float LINE_NUM_FONT_SIZE = 12.2f;
+        public static final float TEXT_BODY_FONT_SIZE = 12.2f;
+        public static final float LINE_NUM_FONT_SIZE = 12.2f;
 
         // Italic attribute
         public static Map<? extends AttributedCharacterIterator.Attribute, ?>

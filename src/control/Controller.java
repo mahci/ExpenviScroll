@@ -1,5 +1,6 @@
 package control;
 
+import gui.MainFrame;
 import tools.Consts;
 import tools.Logs;
 import tools.Memo;
@@ -39,9 +40,10 @@ public class Controller {
         public void run() {
             String TAG = NAME + "ConstantScrollRunnable";
             try {
-                while (!Thread.currentThread().isInterrupted()) {
-                    Logs.infoAll(TAG, "Scrolling with " + delta);
-                    robot.mouseWheel(delta);
+                while (!scrollThread.isInterrupted()) {
+//                    Logs.infoAll(TAG, "Scrolling with " + delta);
+//                    robot.mouseWheel(delta);
+                    MainFrame.scroll(delta / 10);
                     Thread.sleep(1); // 1 min = 60*1000, 1 sec = 1000
                 }
             } catch (InterruptedException e) {
@@ -86,7 +88,8 @@ public class Controller {
         String TAG = NAME + "scroll";
         Logs.infoAll(TAG, memo.toString());
 
-        if (memo.getValue().equals(STOP)) { // STOP is received
+        if (memo.getValue().equals(STOP) & scrollThread != null) { // STOP is received
+            Logs.infoAll(TAG, "Stopped!");
             scrollThread.interrupt();
         } else { // Scroll
             switch (memo.getMode()) {
@@ -99,10 +102,10 @@ public class Controller {
 
     /**
      * Drag
-     * @param scrollAmt Amount to scroll
+     * @param delta Amount to scroll
      * @return Result (0: success, 1: error)
      */
-    private int scrollDrag(int scrollAmt) {
+    private int scrollDrag(int delta) {
         String TAG = NAME + "scroll";
 
         // problem with the robot
@@ -111,8 +114,9 @@ public class Controller {
             return 1;
         }
 
-        Logs.infoAll(TAG, "Scrolling: " + scrollAmt);
-        robot.mouseWheel(scrollAmt);
+        Logs.infoAll(TAG, "Scrolling: " + delta);
+//        robot.mouseWheel(delta);
+        MainFrame.scroll(delta);
 
         return 0;
     }

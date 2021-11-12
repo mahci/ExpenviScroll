@@ -83,7 +83,7 @@ public class Server {
                 try {
                     Logs.info(TAG, "Reading messages...");
                     String message = inBR.readLine();
-                    Logs.info(TAG, "Message: "  + message);
+                    Logs.infoAll(TAG, "Message: "  + message);
                     if (message != null) {
                         Memo memo = Memo.valueOf(message);
 

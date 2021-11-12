@@ -22,8 +22,8 @@ public class Experimenter {
     int participantId = -1;
 
     //-- experiment variables
-    private List<Integer> distances = Arrays.asList(50, 100); // in lines/cols
-    private List<Integer> frameSizes = Arrays.asList(3, 6); // in lines/cols
+    private List<Integer> distances = Arrays.asList(10, 30, 50, 100); // in lines/cols
+    private List<Integer> frameSizes = Arrays.asList(3, 5); // in lines/cols
     public enum Direction {
         U_R,
         D_L
@@ -52,16 +52,5 @@ public class Experimenter {
 
         return experiment;
     }
-
-    /**
-     * For testing
-     */
-    public void testBlocks() {
-        String mTag = cName + "testBlocks";
-
-        Round round = new Round(ScrollMode.HORIZONTAL, distances, frameSizes);
-        Logs.info(mTag, round.toString());
-    }
-
 
 }

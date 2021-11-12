@@ -81,6 +81,10 @@ public class Round {
 
     }
 
+    public int getNTrials() {
+        return blocks[0].trials.size() * 2;
+    }
+
     /**
      * Get a trial (from the total trials in both blocks)
      * @param trNum Trial number

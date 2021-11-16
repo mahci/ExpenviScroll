@@ -35,7 +35,7 @@ public class Experiment {
 
     public final double SCROLL_GAIN = 5.0;
 
-    private Experimenter.ScrollMode mode = Experimenter.ScrollMode.HORIZONTAL;
+    private Experimenter.ScrollMode mode = Experimenter.ScrollMode.VERTICAL;
 
     // -------------------------------------------------------------------------------------------------------
 

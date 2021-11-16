@@ -233,7 +233,7 @@ public class ExperimentPanel extends JLayeredPane {
                     randColNum = Utils.randInt(trial.distance + 1, experiment.HZ_N_COLS);
                     targetColNum = randColNum - trial.distance;
                 }
-
+                Logs.infoAll(TAG, hzScrollPane.getHorizontalScrollBar().getUnitIncrement());
                 // Highlight
                 hzScrollPane.higlight(
                         targetColNum,

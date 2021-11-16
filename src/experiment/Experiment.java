@@ -1,7 +1,7 @@
 package experiment;
 
 import control.Experimenter;
-import tools.DoubleDimension;
+import tools.DimensionD;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +16,7 @@ public class Experiment {
 
     //-- Properties
     // Vertical
-    public final DoubleDimension DIM_VT_PANE_mm = new DoubleDimension(130.0, 145.0);
+    public final DimensionD DIM_VT_PANE_mm = new DimensionD(130.0, 145.0);
     public final double VT_LINENUMS_W_mm = 10;
     public final double VT_SCROLL_BAR_W_mm = 5;
     public final double VT_SCROLL_THUMB_H_mm = 6;
@@ -25,7 +25,7 @@ public class Experiment {
     public final int VT_N_VISIBLE_LINES = 41; // By eyes!
 
     // Horizontal
-    public final DoubleDimension DIM_HZ_PANE_mm = new DoubleDimension(140.0, 110.0);
+    public final DimensionD DIM_HZ_PANE_mm = new DimensionD(140.0, 110.0);
     public final double HZ_SCROLL_BAR_H_mm = 5.0;
     public final double HZ_SCROLL_THUMB_W_mm = 6.0;
     public final double HZ_FRAME_H_mm = 7;

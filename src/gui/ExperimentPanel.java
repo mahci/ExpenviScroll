@@ -52,10 +52,26 @@ public class ExperimentPanel extends JLayeredPane {
             if (trialNum < nTrials) {
                 trialNum++;
                 trial = experiment.getRound(blockNum).getTrial(trialNum);
-            } else {
+
+//                TDScrollPane tdScrollPane = new TDScrollPane(experiment.DIM_VT_PANE_mm)
+//                    .setScrollBars(experiment.VT_SCROLL_BAR_W_mm, experiment.VT_SCROLL_THUMB_H_mm)
+//                    .setTable(300, experiment.HZ_N_COLS, experiment.HZ_N_ROWS, experiment.HZ_N_VISIBLE_COLS)
+//                    .create();
+//
+//
+//                add(tdScrollPane, 1);
                 removeAll();
-                label = new JLabel("Thank you for your participation!");
-                add(label, 0);
+                vtScrollPane = new VerticalScrollPane(experiment.DIM_VT_PANE_mm)
+                            .setText("./res/lorem.txt", experiment.VT_WRAP_CHARS_COUNT, FONTS.TEXT_BODY_FONT_SIZE)
+                            .setLineNums(experiment.VT_LINENUMS_W_mm, FONTS.LINE_NUM_FONT_SIZE)
+                            .setScrollBar(experiment.VT_SCROLL_BAR_W_mm, experiment.HZ_SCROLL_THUMB_W_mm)
+                            .create();
+
+                add(vtScrollPane, 0);
+            } else {
+//                removeAll();
+//                label = new JLabel("Thank you for your participation!");
+//                add(label, 0);
             }
 
             repaint();
@@ -140,133 +156,6 @@ public class ExperimentPanel extends JLayeredPane {
 
     }
 
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        String TAG = NAME + "paintComponent";
-
-        super.paintComponent(g);
-
-        Graphics2D g2d = (Graphics2D) g;
-
-        if (trial != null) {
-            removeAll();
-
-            switch (trial.scrollMode) {
-            case VERTICAL -> {
-                try {
-                    vtScrollPane = new VerticalScrollPane(experiment.DIM_VT_PANE_mm)
-                            .setText("./res/lorem.txt", experiment.VT_WRAP_CHARS_COUNT, FONTS.TEXT_BODY_FONT_SIZE)
-                            .setLineNums(experiment.VT_LINENUMS_W_mm, FONTS.LINE_NUM_FONT_SIZE)
-                            .setScrollBar(experiment.VT_SCROLL_BAR_W_mm, experiment.HZ_SCROLL_THUMB_W_mm)
-                            .create();
-
-                    add(vtScrollPane, 0);
-
-                    Dimension paneDim = vtScrollPane.getPreferredSize();
-                    panePosition = getRandPosition(paneDim);
-                    vtScrollPane.setBounds(panePosition.x, panePosition.y, paneDim.width, paneDim.height);
-
-                    // Choose a random line and highlight the target accordingly (based on dir/distance)
-                    if (trial.direction.equals(U_R)) { // Scrolling up
-                        Logs.infoAll(TAG, vtScrollPane.getNLines());
-                        randLineNum = Utils.randInt(1, vtScrollPane.getNLines() - trial.distance);
-                        targetLineNum = randLineNum + trial.distance;
-                        Logs.infoAll(TAG, "UP -> " + randLineNum + " | " + targetLineNum);
-                    } else { // Scrolling down
-                        randLineNum = Utils.randInt(trial.distance + 1, vtScrollPane.getNLines());
-                        targetLineNum = randLineNum - trial.distance;
-                        Logs.infoAll(TAG, "DOWN -> " + randLineNum + " | " + targetLineNum);
-                    }
-
-
-                    // Highlight
-                    vtScrollPane.higlight(
-                            targetLineNum,
-                            getTargetRange(targetLineNum).x,
-                            getTargetRange(targetLineNum).y);
-
-                    // Scroll the the random line
-                    int scrollPosition = randLineNum * vtLineH;
-                    vtScrollPane.getVerticalScrollBar().setValue(scrollPosition);
-
-                    // Show frame
-                    Rectangle frameRect = new Rectangle();
-                    frameRect.width = Utils.mm2px(experiment.VT_FRAME_W_mm);
-                    frameRect.height = trial.frameSize * vtLineH;
-                    frameRect.x = panePosition.x - frameRect.width;
-                    frameRect.y = panePosition.y + ((paneDim.height - frameRect.height) / 2);
-
-                    g2d.setColor(COLORS.LINE_COL_HIGHLIGHT);
-                    g2d.fillRect(frameRect.x, frameRect.y, frameRect.width, frameRect.height);
-
-                    // Add scrolling
-                    vtScrollPane.addWheelListener(e -> {
-                        int delta = (int) (e.getWheelRotation() * experiment.SCROLL_GAIN);
-                        int currentValue = vtScrollPane.getVerticalScrollBar().getValue();
-                        vtScrollPane.getVerticalScrollBar().setValue(currentValue + delta);
-                    });
-
-                } catch (IOException | BadLocationException e) {
-                    Logs.infoAll(TAG, "Problem with the VERTICAL scroll pane");
-                    e.printStackTrace();
-                }
-
-            }
-            case HORIZONTAL -> {
-
-                hzScrollPane = new HorizontalScrollPane(experiment.DIM_HZ_PANE_mm)
-                        .setScrollBar(experiment.HZ_SCROLL_BAR_H_mm, experiment.HZ_SCROLL_THUMB_W_mm)
-                        .setTable(experiment.HZ_N_ROWS, experiment.HZ_N_COLS, experiment.HZ_N_VISIBLE_COLS)
-                        .create();
-                add(hzScrollPane, 0);
-
-                Dimension paneDim = hzScrollPane.getPreferredSize();
-                panePosition = getRandPosition(paneDim);
-                hzScrollPane.setBounds(panePosition.x, panePosition.y, paneDim.width, paneDim.height);
-
-                // Choose the random column and set the highlight column accordingly (based on dir/distance)
-                if (trial.direction.equals(U_R)) { // Scrolling right
-                    randColNum = Utils.randInt(1, experiment.HZ_N_COLS - trial.distance);
-                    targetColNum = randColNum + trial.distance;
-                } else { // Scrolling left
-                    randColNum = Utils.randInt(trial.distance + 1, experiment.HZ_N_COLS);
-                    targetColNum = randColNum - trial.distance;
-                }
-                Logs.infoAll(TAG, hzScrollPane.getHorizontalScrollBar().getUnitIncrement());
-                // Highlight
-                hzScrollPane.higlight(
-                        targetColNum,
-                        getTargetRange(targetColNum).x,
-                        getTargetRange(targetColNum).y);
-
-                // Scroll to the random column
-                int scrollPosition = randColNum * hzScrollPane.getColWidth();
-                hzScrollPane.getHorizontalScrollBar().setValue(scrollPosition);
-
-                // Show frame
-                Rectangle frameRect = new Rectangle();
-                frameRect.width = trial.frameSize * hzScrollPane.getColWidth();
-                frameRect.height = Utils.mm2px(experiment.HZ_FRAME_H_mm);
-                frameRect.x = panePosition.x + ((paneDim.width - frameRect.width) / 2);
-                frameRect.y = panePosition.y - frameRect.height;
-
-                g2d.setColor(COLORS.LINE_COL_HIGHLIGHT);
-                g2d.fillRect(frameRect.x, frameRect.y, frameRect.width, frameRect.height);
-
-                // Add scroll capability
-                hzScrollPane.addWheelListener(e -> {
-                    if (isScrollingEnabled) {
-                        int delta = (int) (e.getWheelRotation() * experiment.SCROLL_GAIN);
-                        int currentValue = hzScrollPane.getHorizontalScrollBar().getValue();
-                        hzScrollPane.getHorizontalScrollBar().setValue(currentValue + delta);
-                    }
-                });
-            }
-        }
-
-        }
-    }
 
     /**
      * Generate a random position for a pane

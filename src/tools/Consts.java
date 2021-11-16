@@ -21,11 +21,17 @@ public class Consts {
         public final static Color LINE_NUM_BG = new Color(221, 221, 221);
         public final static Color LINE_COL_HIGHLIGHT = new Color(100, 192, 245);
         public final static Color SCROLLBAR_HIGHLIGHT = new Color(199, 225, 240);
+        public final static Color TABLE_GRID = Color.GRAY;
+        public final static Color TABLE_TEXT = Color.DARK_GRAY;
+        public final static Color SCROLLBAR_TRACK = new Color(240, 240, 240);
     }
 
     // Fonts and character attributes
     public static class FONTS {
         // Fonts
+        public static Font TABLE_FONT = new Font("Sans", Font.PLAIN, 10);
+
+        // Font types
         public static Font SF_REGULAR = Font.getFont("serif");
         public static Font SF_LIGHT = Font.getFont("serif");
 

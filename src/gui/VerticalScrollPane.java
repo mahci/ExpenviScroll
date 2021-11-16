@@ -1,7 +1,7 @@
 package gui;
 
 import tools.Consts;
-import tools.DoubleDimension;
+import tools.DimensionD;
 import tools.Logs;
 import tools.Utils;
 
@@ -15,13 +15,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import javax.swing.text.Highlighter.HighlightPainter;
 import javax.swing.text.DefaultHighlighter.DefaultHighlightPainter;
 
 import static tools.Consts.COLORS;
 
 public class VerticalScrollPane extends JScrollPane {
-    private final static String cName = "VerticalScrollPane";
+    private final static String NAME = "VerticalScrollPane";
     //-------------------------------------------------------------------------------------------------
 
     private final String WRAPPED_FILE_NAME = "./res/wrapped.txt";
@@ -40,7 +39,7 @@ public class VerticalScrollPane extends JScrollPane {
      * Constructor
      * @param ddMM Dimention of scroll pane (W/H in mm)
      */
-    public VerticalScrollPane(DoubleDimension ddMM) {
+    public VerticalScrollPane(DimensionD ddMM) {
         dim = new Dimension(Utils.mm2px(ddMM.getWidth()), Utils.mm2px(ddMM.getHeight()));
         setPreferredSize(dim);
     }
@@ -50,19 +49,25 @@ public class VerticalScrollPane extends JScrollPane {
      * @param fileName Name of the file
      * @return Instance
      */
-    public VerticalScrollPane setText(String fileName, int wrapCharCount, float bodyFontSize) throws IOException {
+    public VerticalScrollPane setText(String fileName, int wrapCharCount, float bodyFontSize) {
+        String TAG = NAME + "setText";
 
         // Wrap the file and get the char num of each line
-        lineCharCounts = Utils.wrapFile(fileName, WRAPPED_FILE_NAME, wrapCharCount);
+        try {
+            lineCharCounts = Utils.wrapFile(fileName, WRAPPED_FILE_NAME, wrapCharCount);
 
-        // Body of text
-        bodyTextPane = new CustomTextPane(false);
-        bodyTextPane.setEditable(false);
-        bodyTextPane.setFont(Consts.FONTS.SF_LIGHT.deriveFont(bodyFontSize));
-        bodyTextPane.setSelectionColor(Color.WHITE);
+            // Body of text
+            bodyTextPane = new CustomTextPane(false);
+            bodyTextPane.setEditable(false);
+            bodyTextPane.setFont(Consts.FONTS.SF_LIGHT.deriveFont(bodyFontSize));
+            bodyTextPane.setSelectionColor(Color.WHITE);
 
-        bodyTextPane.read(new FileReader(WRAPPED_FILE_NAME), "wrapped");
+            bodyTextPane.read(new FileReader(WRAPPED_FILE_NAME), "wrapped");
 
+        } catch (IOException e) {
+            Logs.error(TAG, "Problem createing VerticalScrollPane -> setText");
+            e.printStackTrace();
+        }
 
         return this;
     }

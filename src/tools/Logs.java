@@ -29,8 +29,9 @@ public class Logs {
     }
 
     public static void info(String tag, String mssg) {
-        String cName = tag.split("/")[0];
-        if (toLogList.contains(cName)) System.out.println(tag + " >> " + mssg);
+//        String cName = tag.split("/")[0];
+//        if (toLogList.contains(cName)) System.out.println(tag + " >> " + mssg);
+        System.out.println(tag + " >> " + mssg);
     }
 
     public static void infoAll(String tag, String mssg) {

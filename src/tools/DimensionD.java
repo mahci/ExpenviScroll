@@ -2,11 +2,11 @@ package tools;
 
 import java.awt.geom.Dimension2D;
 
-public class DoubleDimension extends Dimension2D {
+public class DimensionD extends Dimension2D {
     public double width;
     public double height;
 
-    public DoubleDimension(double width, double height) {
+    public DimensionD(double width, double height) {
         setSize(width, height);
     }
 

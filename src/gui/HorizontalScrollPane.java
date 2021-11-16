@@ -1,7 +1,7 @@
 package gui;
 
 import tools.Consts;
-import tools.DoubleDimension;
+import tools.DimensionD;
 import tools.Logs;
 import tools.Utils;
 
@@ -17,7 +17,6 @@ public class HorizontalScrollPane extends JScrollPane {
     //-------------------------------------------------------------------------------------------------
 
     private JTable bodyTable;
-    private JScrollBar scrollBar;
 
     private Dimension dim; // (px)
     private Dimension scBarDim; // (px) needed for the height of rows
@@ -33,8 +32,7 @@ public class HorizontalScrollPane extends JScrollPane {
      * Constructor
      * @param ddMM Dimention of scroll pane (W/H in mm)
      */
-    public HorizontalScrollPane(DoubleDimension ddMM) {
-        Logs.addTag(getClass().getSimpleName());
+    public HorizontalScrollPane(DimensionD ddMM) {
         dim = new Dimension(Utils.mm2px(ddMM.getWidth()), Utils.mm2px(ddMM.getHeight()));
         setPreferredSize(dim);
 

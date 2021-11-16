@@ -49,7 +49,7 @@ public class MainFrame extends JFrame {
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice[] gd = ge.getScreenDevices();
 
-        Rectangle scrBound = gd[0].getDefaultConfiguration().getBounds();
+        Rectangle scrBound = gd[1].getDefaultConfiguration().getBounds();
         int scrW = scrBound.width;
         int scrH = scrBound.height;
 

@@ -96,24 +96,36 @@ public class TDScrollPane extends JScrollPane {
         int sbW = Utils.mm2px(scrollBarWMM);
         int thumbLen = Utils.mm2px(thumbLenWW);
 
-        // Set scrollbars
-        CustomScrollBarUI csbUI = new CustomScrollBarUI(Color.BLACK, COLORS.SCROLLBAR_TRACK, Color.BLACK, 6);
-
+        //-- Set scrollbars
+        // Vertical
         vSBDim = new Dimension(sbW, paneDim.height);
-        getVerticalScrollBar().setUI(csbUI);
-        getVerticalScrollBar().setPreferredSize(vSBDim);
-
-        hSBDim = new Dimension(paneDim.width, sbW);
-        getHorizontalScrollBar().setUI(csbUI);
-        getHorizontalScrollBar().setPreferredSize(hSBDim);
-
-        // Set thumbs
         Dimension vSBThumbDim = new Dimension(vSBDim.width, thumbLen);
-        Dimension hSBThumbDim = new Dimension(thumbLen, hSBDim.height);
         UIManager.put("ScrollBar.minimumThumbSize", vSBThumbDim);
         UIManager.put("ScrollBar.maximumThumbSize", vSBThumbDim);
 
-        // Policies
+        CustomScrollBarUI vCustomSBUI = new CustomScrollBarUI(
+                Color.BLACK,
+                COLORS.SCROLLBAR_TRACK,
+                Color.BLACK,
+                6);
+        getVerticalScrollBar().setUI(vCustomSBUI);
+        getVerticalScrollBar().setPreferredSize(vSBDim);
+
+        // Horizontal
+        hSBDim = new Dimension(paneDim.width, sbW);
+        Dimension hSBThumbDim = new Dimension(thumbLen, hSBDim.height);
+        UIManager.put("ScrollBar.minimumThumbSize", hSBThumbDim);
+        UIManager.put("ScrollBar.maximumThumbSize", hSBThumbDim);
+
+        CustomScrollBarUI hCustomSBUI= new CustomScrollBarUI(
+                Color.BLACK,
+                COLORS.SCROLLBAR_TRACK,
+                Color.BLACK,
+                6); // IMPORTANT to create a new CSBUI
+        getHorizontalScrollBar().setUI(hCustomSBUI);
+        getHorizontalScrollBar().setPreferredSize(hSBDim);
+
+        // Set policies
         setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 

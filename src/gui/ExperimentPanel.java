@@ -2,19 +2,12 @@ package gui;
 
 import experiment.Experiment;
 import experiment.Trial;
-import tools.Consts;
 import tools.Logs;
 import tools.Utils;
 
 import javax.swing.*;
-import javax.swing.text.BadLocationException;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.IOException;
-
-import static control.Experimenter.Direction.*;
-import static tools.Consts.COLORS;
-import static tools.Consts.FONTS;
 
 public class ExperimentPanel extends JLayeredPane {
 
@@ -99,12 +92,18 @@ public class ExperimentPanel extends JLayeredPane {
 //        label.setBounds(850, 500, 1000, 400);
 //        add(label, 0);
 
-        TDScrollPane tdScrollPane = new TDScrollPane(experiment.DIM_VT_PANE_mm)
-                    .setScrollBars(experiment.VT_SCROLL_BAR_W_mm, experiment.VT_SCROLL_THUMB_H_mm)
-                    .setTable(300, experiment.HZ_N_COLS, experiment.HZ_N_ROWS, experiment.HZ_N_VISIBLE_COLS);
+        TDScrollPane tdScrollPane = new TDScrollPane(experiment.TD_PANE_DIM_mm)
+                    .setScrollBars(
+                            experiment.TD_SCROLL_BAR_W_mm,
+                            experiment.TD_SCROLL_THUMB_L_mm)
+                    .setTable(
+                            experiment.TD_N_ROWS,
+                            experiment.TD_N_COLS,
+                            experiment.TD_N_VISIBLE_ROWS,
+                            experiment.TD_N_VISIBLE_COLS);
 
         Dimension d = tdScrollPane  .getPreferredSize();
-        tdScrollPane.setBounds(100, 200, d.width, d.height);
+        tdScrollPane.setBounds(500, 300, d.width, d.height);
         add(tdScrollPane, 1);
 
 

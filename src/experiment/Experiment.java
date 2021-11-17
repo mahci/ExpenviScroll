@@ -16,11 +16,10 @@ public class Experiment {
 
     //-- Properties
     // Vertical
-    public final DimensionD DIM_VT_PANE_mm = new DimensionD(130.0, 145.0);
+    public final DimensionD VT_PANE_DIM_mm = new DimensionD(130.0, 145.0);
     public final double VT_LINENUMS_W_mm = 10;
     public final double VT_SCROLL_BAR_W_mm = 5;
     public final double VT_SCROLL_THUMB_H_mm = 6;
-    public final double VT_FRAME_W_mm = 7;
     public final int VT_WRAP_CHARS_COUNT = 82;
     public final int VT_N_VISIBLE_LINES = 41; // By eyes!
 
@@ -28,11 +27,21 @@ public class Experiment {
     public final DimensionD DIM_HZ_PANE_mm = new DimensionD(140.0, 110.0);
     public final double HZ_SCROLL_BAR_H_mm = 5.0;
     public final double HZ_SCROLL_THUMB_W_mm = 6.0;
-    public final double HZ_FRAME_H_mm = 7;
     public final int HZ_N_ROWS = 25;
     public final int HZ_N_COLS = 200;
     public final int HZ_N_VISIBLE_COLS = 15;
 
+    // 2D
+    public final DimensionD TD_PANE_DIM_mm = new DimensionD(140.0, 140.0);
+    public final int TD_N_ROWS = 200;
+    public final int TD_N_COLS = 200;
+    public final int TD_N_VISIBLE_ROWS = 25;
+    public final int TD_N_VISIBLE_COLS = 15;
+    public final double TD_SCROLL_BAR_W_mm = 5.0; // Length = side of the pane
+    public final double TD_SCROLL_THUMB_L_mm = 6.0; // Width = width of the scrollbar
+
+
+    // Scrolling in general
     public final double SCROLL_GAIN = 5.0;
 
     private Experimenter.ScrollMode mode = Experimenter.ScrollMode.VERTICAL;

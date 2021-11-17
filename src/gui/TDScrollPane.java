@@ -79,6 +79,8 @@ public class TDScrollPane extends JScrollPane {
             bodyTable.setRowHeight(rowH);
         }
         Logs.info(TAG, "Dim: " + getPreferredSize());
+
+        getViewport().add(bodyTable);
         return this;
     }
 
@@ -98,11 +100,11 @@ public class TDScrollPane extends JScrollPane {
         CustomScrollBarUI csbUI = new CustomScrollBarUI(Color.BLACK, COLORS.SCROLLBAR_TRACK, Color.BLACK, 6);
 
         vSBDim = new Dimension(sbW, paneDim.height);
-//        getVerticalScrollBar().setUI(csbUI);
+        getVerticalScrollBar().setUI(csbUI);
         getVerticalScrollBar().setPreferredSize(vSBDim);
 
         hSBDim = new Dimension(paneDim.width, sbW);
-//        getHorizontalScrollBar().setUI(csbUI);
+        getHorizontalScrollBar().setUI(csbUI);
         getHorizontalScrollBar().setPreferredSize(hSBDim);
 
         // Set thumbs
@@ -120,77 +122,8 @@ public class TDScrollPane extends JScrollPane {
     }
 
     public TDScrollPane create() {
-        getViewport().add(bodyTable);
+
         return this;
-    }
-
-
-    private class CustomHScrollBarUI extends BasicScrollBarUI {
-
-        private int thumbHOffset;
-
-        /**
-         * Constructor
-         * @param thumbHOffset Offset on top and button of the thumb
-         */
-        protected CustomHScrollBarUI(int thumbHOffset) {
-            this.thumbHOffset = thumbHOffset;
-        }
-
-        @Override
-        protected void paintTrack(Graphics g, JComponent c, Rectangle trackBounds) {
-            String TAG = NAME + "paintTrack";
-
-            g.setColor(new Color(244, 244, 244));
-            g.fillRect(trackBounds.x, trackBounds.y, trackBounds.width, trackBounds.height);
-            g.setColor(Color.BLACK);
-            g.drawRect(trackBounds.x, trackBounds.y, trackBounds.width, trackBounds.height);
-
-            // Highlight scroll bar rect
-            double ratio = trackBounds.width / (getHorizontalScrollBar().getMaximum() * 1.0);
-
-            g.setColor(Consts.COLORS.SCROLLBAR_HIGHLIGHT);
-            g.fillRect(trackBounds.x, trackBounds.y, trackBounds.width, trackBounds.height);
-        }
-
-        @Override
-        protected void paintThumb(Graphics g, JComponent c, Rectangle thumbBounds) {
-//        thumbBounds.width -= 2;
-//        thumbBounds.height = Utils.mm2px(THUMB_H_mm);
-            // Set anti-alias
-            Graphics2D graphics2D = (Graphics2D) g;
-            graphics2D.setColor(Color.BLACK);
-            graphics2D.setRenderingHint(
-                    RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON);
-
-
-            graphics2D.fillRoundRect(
-                    thumbBounds.x,
-                    thumbBounds.y + (thumbHOffset / 2),
-                    thumbBounds.width, thumbBounds.height - thumbHOffset,
-                    5, 5);
-//        Logs.info(getClass().getName(), thumbBounds.toString());
-        }
-
-        @Override
-        protected JButton createIncreaseButton(int orientation) {
-            return createZeroButton();
-        }
-
-        @Override
-        protected JButton createDecreaseButton(int orientation) {
-            return createZeroButton();
-        }
-
-        protected JButton createZeroButton() {
-            JButton button = new JButton("zero button");
-            Dimension zeroDim = new Dimension(0,0);
-            button.setPreferredSize(zeroDim);
-            button.setMinimumSize(zeroDim);
-            button.setMaximumSize(zeroDim);
-            return button;
-        }
     }
 
 }

@@ -6,7 +6,7 @@ import tools.Logs;
 import tools.Utils;
 
 import javax.swing.*;
-import javax.swing.plaf.basic.BasicScrollBarUI;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
@@ -58,7 +58,7 @@ public class TDScrollPane extends JScrollPane {
         }
         DefaultTableModel model = new DefaultTableModel(tableData, colNames);
         bodyTable = new JTable(model);
-        Logs.info(TAG, "bodyTable data generated");
+
         // Table properties
         bodyTable.setTableHeader(null);
         bodyTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -67,7 +67,6 @@ public class TDScrollPane extends JScrollPane {
         bodyTable.setFont(FONTS.TABLE_FONT);
         bodyTable.setEnabled(false);
 
-        Logs.info(TAG, "bodyTable props set");
         // Set the size of columns and rows
         colW = (getPreferredSize().width - getVerticalScrollBar().getWidth()) / nVisCols;
         for (int c = 0; c < nCols; c++) {
@@ -78,7 +77,6 @@ public class TDScrollPane extends JScrollPane {
         for (int i = 0; i < nRows; i++) {
             bodyTable.setRowHeight(rowH);
         }
-        Logs.info(TAG, "Dim: " + getPreferredSize());
 
         getViewport().add(bodyTable);
         return this;
@@ -122,6 +120,7 @@ public class TDScrollPane extends JScrollPane {
                 COLORS.SCROLLBAR_TRACK,
                 Color.BLACK,
                 6); // IMPORTANT to create a new CSBUI
+//        hCustomSBUI.setHighlight(COLORS.LINE_COL_HIGHLIGHT, 100, 200);
         getHorizontalScrollBar().setUI(hCustomSBUI);
         getHorizontalScrollBar().setPreferredSize(hSBDim);
 
@@ -129,13 +128,53 @@ public class TDScrollPane extends JScrollPane {
         setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
-        Logs.info(TAG, "Scrollbars set");
         return this;
     }
 
-    public TDScrollPane create() {
+    /**
+     * Highlight one cell
+     * @param rInd Row index
+     * @param cInd Column index
+     */
+    public void highlight(int rInd, int cInd) {
+        CellRenderer cellHighlighter = new CellRenderer(rInd, cInd);
 
-        return this;
+//        bodyTable.revalidate();
+        bodyTable.getColumnModel().getColumn(cInd).setCellRenderer(cellHighlighter);
+
+        // Set highlight in the scrollbars
+        CustomScrollBarUI vCSBUI = (CustomScrollBarUI) getVerticalScrollBar().getUI();
+        vCSBUI.setHighlight(COLORS.SCROLLBAR_HIGHLIGHT, 100, 200);
+
+        CustomScrollBarUI hCSBUI = (CustomScrollBarUI) getHorizontalScrollBar().getUI();
+        hCSBUI.setHighlight(COLORS.SCROLLBAR_HIGHLIGHT, 100, 200);
+
     }
 
+    //-------------------------------------------------------------------------------------------------
+
+    /**
+     * Renderer class for highlighting a single cell
+     */
+    private class CellRenderer extends DefaultTableCellRenderer {
+
+        int rowInd, colInd;
+
+        public CellRenderer(int rInd, int cInd) {
+            rowInd = rInd;
+            colInd = cInd;
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(
+                JTable table, Object obj, boolean isSelected, boolean hasFocus, int row, int column) {
+            super.getTableCellRendererComponent(table, obj, isSelected, hasFocus, row, column);
+
+            if (row == rowInd && column == colInd) setBackground(COLORS.LINE_COL_HIGHLIGHT);
+            else setBackground(table.getBackground());
+
+            return this;
+
+        }
+    }
 }

@@ -102,8 +102,9 @@ public class ExperimentPanel extends JLayeredPane {
                             experiment.TD_N_VISIBLE_ROWS,
                             experiment.TD_N_VISIBLE_COLS);
 
-        Dimension d = tdScrollPane  .getPreferredSize();
+        Dimension d = tdScrollPane.getPreferredSize();
         tdScrollPane.setBounds(500, 300, d.width, d.height);
+        tdScrollPane.highlight(5, 4);
         add(tdScrollPane, 1);
 
 
@@ -126,13 +127,9 @@ public class ExperimentPanel extends JLayeredPane {
                 }
 
                 if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-//                    int currentValue = hzScrollPane.getHorizontalScrollBar().getValue();
-//                    hzScrollPane.getHorizontalScrollBar().setValue(currentValue + hzScrollPane.getColWidth());
                 }
 
                 if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-//                    int currentValue = hzScrollPane.getHorizontalScrollBar().getValue();
-//                    hzScrollPane.getHorizontalScrollBar().setValue(getTargetRange(targetColNum).x);
                 }
             }
 

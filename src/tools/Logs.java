@@ -42,6 +42,10 @@ public class Logs {
         System.out.println(tag + " >> " + s1 + " | " + s2);
     }
 
+    public static void infoMulti(String tag, int s1, int s2) {
+        System.out.println(tag + " >> " + s1 + " | " + s2);
+    }
+
     public static void infoAll(String tag, Dimension dim) {
         System.out.println(tag + " >> " + dim);
     }
@@ -65,4 +69,6 @@ public class Logs {
     public static void info(String tag, double mssg) {
         System.out.println(tag + " >> " + mssg);
     }
+
+
 }

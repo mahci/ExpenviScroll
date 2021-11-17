@@ -23,15 +23,8 @@ public class CustomScrollBarUI extends BasicScrollBarUI {
         offset = offs;
     }
 
-    public CustomScrollBarUI(Color bdColor, Color trColor, Color thColor, Color hlColor,
-                             int offs,
-                             int hlMin, int hlMax) {
-        borderColor = bdColor;
-        trackColor = trColor;
-        thumbColor = thColor;
+    public void setHighlight(Color hlColor, int hlMin, int hlMax) {
         highlightColor = hlColor;
-        offset = offs;
-
         highlightMin = hlMin;
         highlightMax = hlMax;
     }
@@ -52,17 +45,17 @@ public class CustomScrollBarUI extends BasicScrollBarUI {
                 double ratio = trackBounds.width / (scrollbar.getMaximum() * 1.0);
                 int hlX = (int) (highlightMin * ratio);
                 int hlW = (int) ((highlightMax - highlightMin) * ratio) + getThumbBounds().width;
-
+                Logs.infoMulti("paintTrack HZ", hlX, hlW);
                 g.setColor(highlightColor);
-                g.fillRect(hlX, trackBounds.height, hlW, trackBounds.height);
-
+                g.fillRect(hlX, trackBounds.y + 1, hlW, trackBounds.height);
+//                g.fillRect(7, trackBounds.y, 32, trackBounds.height);
             } else { // VERTICAL
                 double ratio = trackBounds.height / (scrollbar.getMaximum() * 1.0);
                 int hlY = (int) (highlightMin * ratio);
                 int hlH = (int) ((highlightMax - highlightMin) * ratio) + getThumbBounds().height;
-
+                Logs.infoMulti("paintTrack VT", hlY, hlH);
                 g.setColor(highlightColor);
-                g.fillRect(trackBounds.x, hlY, trackBounds.width, hlH);
+                g.fillRect(trackBounds.x + 1, hlY, trackBounds.width, hlH);
             }
 
         }

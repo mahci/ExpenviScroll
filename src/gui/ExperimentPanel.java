@@ -111,10 +111,8 @@ public class ExperimentPanel extends JLayeredPane {
 
         Dimension d = tdScrollPane.getPreferredSize();
         tdScrollPane.setBounds(pos.x, pos.y, d.width, d.height);
-        tdScrollPane.highlight(5, 4);
+        tdScrollPane.highlight(17, 10);
         add(tdScrollPane, 1);
-
-
 
 
         // [FOR TEST]
@@ -331,6 +329,24 @@ public class ExperimentPanel extends JLayeredPane {
         String TAG = NAME + "paintComponent";
         super.paintComponent(g);
 
-        g.setColor(Consts.COLORS.LINE_COL_HIGHLIGHT);
+        Graphics2D g2d = (Graphics2D) g;
+
+        Rectangle vFrameRect = new Rectangle();
+        vFrameRect.width = 30;
+        vFrameRect.height = 5 * tdScrollPane.getRowH();
+        vFrameRect.x = pos.x - vFrameRect.width;
+        vFrameRect.y = pos.y + ((tdScrollPane.getHeight() - vFrameRect.height) / 2);
+
+        g2d.setColor(Consts.COLORS.LINE_COL_HIGHLIGHT);
+        g2d.fillRect(vFrameRect.x, vFrameRect.y, vFrameRect.width, vFrameRect.height);
+
+        Rectangle hFrameRect = new Rectangle();
+        hFrameRect.width = 5 * tdScrollPane.getColW();
+        hFrameRect.height = 30;
+        hFrameRect.x = pos.x + ((tdScrollPane.getWidth() - hFrameRect.width) / 2);
+        hFrameRect.y = pos.y - hFrameRect.height;
+
+        g2d.setColor(Consts.COLORS.LINE_COL_HIGHLIGHT);
+        g2d.fillRect(hFrameRect.x, hFrameRect.y, hFrameRect.width, hFrameRect.height);
     }
 }

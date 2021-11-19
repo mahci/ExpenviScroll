@@ -45,7 +45,7 @@ public class CustomScrollBarUI extends BasicScrollBarUI {
                 double ratio = trackBounds.width / (scrollbar.getMaximum() * 1.0);
                 int hlX = (int) (highlightMin * ratio);
                 int hlW = (int) ((highlightMax - highlightMin) * ratio) + getThumbBounds().width;
-                Logs.infoMulti("paintTrack HZ", hlX, hlW);
+
                 g.setColor(highlightColor);
                 g.fillRect(hlX, trackBounds.y + 1, hlW, trackBounds.height);
 //                g.fillRect(7, trackBounds.y, 32, trackBounds.height);
@@ -53,7 +53,7 @@ public class CustomScrollBarUI extends BasicScrollBarUI {
                 double ratio = trackBounds.height / (scrollbar.getMaximum() * 1.0);
                 int hlY = (int) (highlightMin * ratio);
                 int hlH = (int) ((highlightMax - highlightMin) * ratio) + getThumbBounds().height;
-                Logs.infoMulti("paintTrack VT", hlY, hlH);
+
                 g.setColor(highlightColor);
                 g.fillRect(trackBounds.x + 1, hlY, trackBounds.width, hlH);
             }

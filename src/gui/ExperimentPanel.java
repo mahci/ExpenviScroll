@@ -2,7 +2,10 @@ package gui;
 
 import experiment.Experiment;
 import experiment.Trial;
+import lombok.extern.java.Log;
+import tools.Consts;
 import tools.Logs;
+import tools.Pair;
 import tools.Utils;
 
 import javax.swing.*;
@@ -25,6 +28,7 @@ public class ExperimentPanel extends JLayeredPane {
     // Elements
     private VerticalScrollPane vtScrollPane;
     private HorizontalScrollPane hzScrollPane;
+    private TDScrollPane tdScrollPane;
     private JLabel label;
 
     // Experiment
@@ -36,6 +40,9 @@ public class ExperimentPanel extends JLayeredPane {
     private int targetLineNum, randLineNum;
     private int vtLineH;
     private boolean isScrollingEnabled = false;
+
+    // TEMP
+    Point pos = new Point(500, 300);
 
     // -------------------------------------------------------------------------------------------
     private final Action nextTrial = new AbstractAction() {
@@ -92,7 +99,7 @@ public class ExperimentPanel extends JLayeredPane {
 //        label.setBounds(850, 500, 1000, 400);
 //        add(label, 0);
 
-        TDScrollPane tdScrollPane = new TDScrollPane(experiment.TD_PANE_DIM_mm)
+        tdScrollPane = new TDScrollPane(experiment.TD_PANE_DIM_mm)
                     .setScrollBars(
                             experiment.TD_SCROLL_BAR_W_mm,
                             experiment.TD_SCROLL_THUMB_L_mm)
@@ -103,9 +110,11 @@ public class ExperimentPanel extends JLayeredPane {
                             experiment.TD_N_VISIBLE_COLS);
 
         Dimension d = tdScrollPane.getPreferredSize();
-        tdScrollPane.setBounds(500, 300, d.width, d.height);
+        tdScrollPane.setBounds(pos.x, pos.y, d.width, d.height);
         tdScrollPane.highlight(5, 4);
         add(tdScrollPane, 1);
+
+
 
 
         // [FOR TEST]
@@ -126,10 +135,22 @@ public class ExperimentPanel extends JLayeredPane {
                     Logs.infoAll(TAG, hzScrollPane.getHorizontalScrollBar().getValue());
                 }
 
-                if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+                if (e.getKeyCode() == KeyEvent.VK_UP) {
+                    int cVal = tdScrollPane.getVerticalScrollBar().getValue();
+                    int ext = tdScrollPane.getVerticalScrollBar().getModel().getExtent();
+                    tdScrollPane.getVerticalScrollBar().setValue(cVal - 100);
+                    Logs.info(TAG, tdScrollPane.getVerticalScrollBar().getValue() - ext);
+                    Logs.info(TAG, "max = " + tdScrollPane.getVerticalScrollBar().getMaximum());
                 }
 
-                if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+                if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+                    int cVal = tdScrollPane.getVerticalScrollBar().getValue();
+                    int ext = tdScrollPane.getVerticalScrollBar().getModel().getExtent();
+                    tdScrollPane.getVerticalScrollBar().setValue(
+                            tdScrollPane.getVerticalScrollBar().getMaximum()
+                    );
+                    Logs.info(TAG, "ext = " + ext);
+                    Logs.info(TAG, "max = " + tdScrollPane.getVerticalScrollBar().getMaximum());
                 }
             }
 
@@ -143,6 +164,13 @@ public class ExperimentPanel extends JLayeredPane {
 
         addMouseWheelListener(e -> {
             // Do nothing!
+        });
+
+        // Testing target values
+        Logs.info(TAG, "max = " + tdScrollPane.getVerticalScrollBar().getMaximum());
+        SwingUtilities.invokeLater(() -> {
+            Pair<Integer, Integer> vtTgMinMax = getVtTargetRange(5, 130);
+            Logs.info(TAG, vtTgMinMax);
         });
 
     }
@@ -216,6 +244,72 @@ public class ExperimentPanel extends JLayeredPane {
         return result;
     }
 
+    /**
+     * Get the vertical scroll bar values corresponding to a target cell
+     * @param frLen Length of the frame (always centered)
+     * @param tgRow Target row {fRMin <= tgRow <= (TNR - VNR) + fRMax)}
+     * @return Pair (min, max)
+     */
+    private Pair<Integer, Integer> getVtTargetRange(int frLen, int tgRow) {
+        String TAG = NAME + "getVtTargetRange";
+
+        Pair<Integer, Integer> result = Pair.of(0,0);
+
+        int nRows = experiment.TD_N_ROWS;
+        int nVisibleRows = experiment.TD_N_VISIBLE_ROWS;
+        Pair<Integer, Integer> vtSBMinMax = Pair.of(
+                tdScrollPane.getVerticalScrollBar().getMinimum(),
+                tdScrollPane.getVerticalScrollBar().getMaximum());
+        Logs.info(TAG, vtSBMinMax);
+        // ATTENTION: minimum = 0
+        int rowScrollValue = vtSBMinMax.getSecond() / (nRows - nVisibleRows); // How much value for a row scroll?
+        Logs.info(TAG, rowScrollValue);
+        // Min/max of frame (rows)
+        Pair<Integer, Integer> frMinMax = Pair.of(
+                (nVisibleRows / 2) - (frLen / 2),
+                (nVisibleRows / 2) + (frLen / 2));
+        Logs.info(TAG, frMinMax);
+        // Vertical target values
+        result.setFirst(tgRow - frMinMax.getSecond() * rowScrollValue);
+        result.setSecond(tgRow + frMinMax.getFirst() * rowScrollValue);
+
+        return result;
+
+    }
+
+    /**
+     * Get the vertical scroll bar values corresponding to a target cell
+     * @param frLen Length of the frame (always centered)
+     * @param tgCol Target column {fCMin <= tgCol <= (TNC - VNC) + fCMax}
+     * @return Pair (min, max)
+     */
+    private Pair<Integer, Integer> getHzTargetRange(int frLen, int tgCol) {
+        String TAG = NAME + "getHzTargetRange";
+
+        Pair<Integer, Integer> result = Pair.of(0,0);
+
+        int nCols = experiment.TD_N_COLS;
+        int nVisibleCols = experiment.TD_N_VISIBLE_COLS;
+        Pair<Integer, Integer> hzSBMinMax = Pair.of(
+                tdScrollPane.getHorizontalScrollBar().getMinimum(),
+                tdScrollPane.getHorizontalScrollBar().getMaximum());
+
+        // ATTENTION: minimum = 0
+        int colScrollValue = hzSBMinMax.getSecond() / (nCols - nVisibleCols); // How much value for a row scroll?
+
+        // Min/max of frame (rows)
+        Pair<Integer, Integer> frMinMax = Pair.of(
+                (nVisibleCols / 2) - (frLen / 2),
+                (nVisibleCols / 2) + (frLen / 2));
+
+        // Vertical target values
+        result.setFirst(tgCol - frMinMax.getSecond() * colScrollValue);
+        result.setSecond(tgCol + frMinMax.getFirst() * colScrollValue);
+
+        return result;
+
+    }
+
     public void scroll(int delta) {
 
         if (trial != null) {
@@ -237,8 +331,6 @@ public class ExperimentPanel extends JLayeredPane {
         String TAG = NAME + "paintComponent";
         super.paintComponent(g);
 
-        if (trial != null) {
-
-        }
+        g.setColor(Consts.COLORS.LINE_COL_HIGHLIGHT);
     }
 }

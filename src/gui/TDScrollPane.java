@@ -151,6 +151,14 @@ public class TDScrollPane extends JScrollPane {
 
     }
 
+    public int getColW() {
+        return colW;
+    }
+
+    public int getRowH() {
+        return rowH;
+    }
+
     //-------------------------------------------------------------------------------------------------
 
     /**

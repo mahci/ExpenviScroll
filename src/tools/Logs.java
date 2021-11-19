@@ -34,6 +34,10 @@ public class Logs {
         System.out.println(tag + " >> " + mssg);
     }
 
+    public static void info(String tag, Pair mssg) {
+        System.out.println(tag + " >> " + mssg);
+    }
+
     public static void infoAll(String tag, String mssg) {
         System.out.println(tag + " >> " + mssg);
     }

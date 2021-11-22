@@ -3,6 +3,7 @@ package gui;
 import control.Experimenter;
 import control.Server;
 import experiment.Experiment;
+import tools.Pair;
 
 import javax.swing.*;
 import java.awt.*;
@@ -62,8 +63,8 @@ public class MainFrame extends JFrame {
         );
     }
 
-    public static void scroll(int delta) {
-        experimentPanel.scroll(delta);
+    public static void scroll(Pair<Integer, Integer> deltaPair) {
+        experimentPanel.scroll(deltaPair);
     }
 
 }

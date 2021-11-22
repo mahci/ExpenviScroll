@@ -7,7 +7,7 @@ import static control.Experimenter.*;
  */
 public class Trial {
 
-    private final static String NAME = "Trial--";
+    private final static String NAME = "Trial/";
     // ------------------------------------------------------------------------------------
     public int distance; // in lines
     public int frameSize; // in lines

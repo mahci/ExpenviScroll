@@ -4,6 +4,7 @@ import gui.MainFrame;
 import tools.Consts;
 import tools.Logs;
 import tools.Memo;
+import tools.Pair;
 
 import java.awt.*;
 import java.util.concurrent.ExecutorService;
@@ -15,7 +16,7 @@ import static tools.Consts.STRINGS.*;
  * Class responsible for getting the data from the Server and perform the actions
  */
 public class Controller {
-    private final String NAME = "Controller -- "; // class tag
+    private final String NAME = "Controller/"; // class tag
     //----------------------------------------------------------------
 
     public static Controller instance; // Singleton
@@ -43,7 +44,7 @@ public class Controller {
                 while (!scrollThread.isInterrupted()) {
 //                    Logs.infoAll(TAG, "Scrolling with " + delta);
 //                    robot.mouseWheel(delta);
-                    MainFrame.scroll(delta / 10);
+//                    MainFrame.scroll(delta / 10);
                     Thread.sleep(1); // 1 min = 60*1000, 1 sec = 1000
                 }
             } catch (InterruptedException e) {
@@ -88,13 +89,20 @@ public class Controller {
         String TAG = NAME + "scroll";
         Logs.infoAll(TAG, memo.toString());
 
-        if (memo.getValue().equals(STOP) & scrollThread != null) { // STOP is received
+        if (memo.getValueXInt() == 0 & scrollThread != null) { // STOP is received
             Logs.infoAll(TAG, "Stopped!");
             scrollThread.interrupt();
         } else { // Scroll
+            Pair<Integer, Integer> scrollDelta = Pair.of(memo.getValueXInt(), memo.getValueYInt());
+
+
             switch (memo.getMode()) {
-            case DRAG -> scrollDrag(memo.getValueInt());
-            case RB -> scrollRateBased(memo.getValueInt());
+            case DRAG -> {
+                MainFrame.scroll(scrollDelta);
+            }
+            case RB -> {
+
+            }
             }
         }
 
@@ -116,7 +124,7 @@ public class Controller {
 
         Logs.infoAll(TAG, "Scrolling: " + delta);
 //        robot.mouseWheel(delta);
-        MainFrame.scroll(delta);
+//        MainFrame.scroll(delta);;
 
         return 0;
     }

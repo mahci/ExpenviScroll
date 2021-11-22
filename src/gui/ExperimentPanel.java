@@ -308,7 +308,8 @@ public class ExperimentPanel extends JLayeredPane {
 
     }
 
-    public void scroll(int delta) {
+    public void scroll(Pair<Integer, Integer> deltaPair) {
+        String TAG = NAME + "scroll";
 
 //        if (trial != null) {
 //            switch (trial.scrollMode) {
@@ -323,15 +324,25 @@ public class ExperimentPanel extends JLayeredPane {
 //            }
 //        }
 
-        int currentValue = tdScrollPane.getVerticalScrollBar().getValue();
-        tdScrollPane.getVerticalScrollBar().setValue(currentValue + delta);
+        int vtCurrentVal = tdScrollPane.getVerticalScrollBar().getValue();
+        int hzCurrentVal = tdScrollPane.getHorizontalScrollBar().getValue();
+
+        Logs.info(TAG, deltaPair);
+
+        Logs.info(TAG, "VT Before = " + vtCurrentVal);
+        tdScrollPane.getVerticalScrollBar().setValue(vtCurrentVal + deltaPair.getSecond());
+        Logs.info(TAG, "VT After = " + tdScrollPane.getVerticalScrollBar().getValue());
+
+        Logs.info(TAG, "HZ Before = " + hzCurrentVal);
+        tdScrollPane.getHorizontalScrollBar().setValue(hzCurrentVal + deltaPair.getFirst());
+        Logs.info(TAG, "HZ After = " + tdScrollPane.getHorizontalScrollBar().getValue());
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         String TAG = NAME + "paintComponent";
         super.paintComponent(g);
-
+        Logs.info(TAG, "Painting...");
         Graphics2D g2d = (Graphics2D) g;
 
         Rectangle vFrameRect = new Rectangle();

@@ -10,8 +10,10 @@ public class Logs {
 
     private static List<String> toLogList = new ArrayList<>();
 
-    public Logs() {
-        toLogList.add("Server");
+    static {
+//        toLogList.add("Server");
+        toLogList.add("ExperimentPanel");
+        toLogList.add("Controller");
     }
 
     public static void addTag(String tag) {
@@ -29,9 +31,9 @@ public class Logs {
     }
 
     public static void info(String tag, String mssg) {
-//        String cName = tag.split("/")[0];
-//        if (toLogList.contains(cName)) System.out.println(tag + " >> " + mssg);
-        System.out.println(tag + " >> " + mssg);
+        String cName = tag.split("/")[0];
+        if (toLogList.contains(cName)) System.out.println(tag + " >> " + mssg);
+//        System.out.println(tag + " >> " + mssg);
     }
 
     public static void info(String tag, Pair mssg) {

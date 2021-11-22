@@ -11,7 +11,7 @@ import java.net.*;
 import java.util.concurrent.*;
 
 public class Server {
-    private final static String NAME = "Server--";
+    private final static String NAME = "Server/";
     //----------------------------------------------------------------------------------------
     private static Server instance; // Singelton
 
@@ -83,7 +83,7 @@ public class Server {
                 try {
                     Logs.info(TAG, "Reading messages...");
                     String message = inBR.readLine();
-                    Logs.infoAll(TAG, "Message: "  + message);
+                    Logs.info(TAG, "Message: "  + message);
                     if (message != null) {
                         Memo memo = Memo.valueOf(message);
 

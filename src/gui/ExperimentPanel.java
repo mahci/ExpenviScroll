@@ -310,18 +310,21 @@ public class ExperimentPanel extends JLayeredPane {
 
     public void scroll(int delta) {
 
-        if (trial != null) {
-            switch (trial.scrollMode) {
-            case VERTICAL -> {
-                int currentValue = vtScrollPane.getVerticalScrollBar().getValue();
-                vtScrollPane.getVerticalScrollBar().setValue(currentValue + delta);
-            }
-            case HORIZONTAL -> {
-                int currentValue = hzScrollPane.getHorizontalScrollBar().getValue();
-                hzScrollPane.getHorizontalScrollBar().setValue(currentValue + delta);
-            }
-            }
-        }
+//        if (trial != null) {
+//            switch (trial.scrollMode) {
+//            case VERTICAL -> {
+//                int currentValue = vtScrollPane.getVerticalScrollBar().getValue();
+//                vtScrollPane.getVerticalScrollBar().setValue(currentValue + delta);
+//            }
+//            case HORIZONTAL -> {
+//                int currentValue = hzScrollPane.getHorizontalScrollBar().getValue();
+//                hzScrollPane.getHorizontalScrollBar().setValue(currentValue + delta);
+//            }
+//            }
+//        }
+
+        int currentValue = tdScrollPane.getVerticalScrollBar().getValue();
+        tdScrollPane.getVerticalScrollBar().setValue(currentValue + delta);
     }
 
     @Override

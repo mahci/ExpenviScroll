@@ -99,21 +99,22 @@ public class ExperimentPanel extends JLayeredPane {
 //        label.setBounds(850, 500, 1000, 400);
 //        add(label, 0);
 
-        tdScrollPane = new TDScrollPane(experiment.TD_PANE_DIM_mm)
-                    .setScrollBars(
+        tdScrollPane = new TDScrollPane(
+                experiment.TD_N_VIS_ROWS,
+                experiment.TD_CELL_SIZE_mm,
+                experiment.TD_SCROLL_BAR_W_mm)
+                .setTable(experiment.TD_N_ROWS)
+                .setScrollBars(
                             experiment.TD_SCROLL_BAR_W_mm,
-                            experiment.TD_SCROLL_THUMB_L_mm)
-                    .setTable(
-                            experiment.TD_N_ROWS,
-                            experiment.TD_N_COLS,
-                            experiment.TD_N_VISIBLE_ROWS,
-                            experiment.TD_N_VISIBLE_COLS);
+                            experiment.TD_SCROLL_THUMB_L_mm);
 
         Dimension d = tdScrollPane.getPreferredSize();
         tdScrollPane.setBounds(pos.x, pos.y, d.width, d.height);
-        tdScrollPane.highlight(17, 10);
+        tdScrollPane.highlight(75, 100);
+//        DefaultBoundedRangeModel dbm = new DefaultBoundedRangeModel();
+//        dbm.setRangeProperties(0, 10, 0, 100, true);
+//        tdScrollPane.getVerticalScrollBar().setModel(dbm);
         add(tdScrollPane, 1);
-
 
         // [FOR TEST]
         addKeyListener(new KeyListener() {
@@ -128,28 +129,50 @@ public class ExperimentPanel extends JLayeredPane {
                 }
 
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    hzScrollPane.getHorizontalScrollBar().setValue(getTargetRange(targetColNum).x);
-                    Logs.infoAll(TAG, targetColNum, trial.frameSize);
-                    Logs.infoAll(TAG, hzScrollPane.getHorizontalScrollBar().getValue());
+                    JTable table = (JTable) tdScrollPane.getViewport().getView();
+//                    ((JTable) tdScrollPane.getViewport().getView()).scrollRectToVisible(
+//                            table.getCellRect(180, 100, true)
+//                    );
+
+                    Rectangle rect = table.getCellRect(75, 100, true);
+                    Logs.info(TAG, "CellRect= " + rect);
+                    Rectangle viewRect = tdScrollPane.getViewport().getViewRect();
+
+//                    rect.setLocation(rect.x - viewRect.x, rect.y - viewRect.y);
+
+                    int centerX = (viewRect.width - rect.width) / 2;
+                    int centerY = (viewRect.height - rect.height) / 2;
+                    if (rect.x < centerX) {
+                        centerX = -centerX;
+                    }
+                    if (rect.y < centerY) {
+                        centerY = -centerY;
+                    }
+
+//                    rect.translate(centerX, centerY);
+//                    tdScrollPane.getViewport().scrollRectToVisible(rect);
+                    tdScrollPane.getVerticalScrollBar().setValue(1800);
+                    tdScrollPane.getHorizontalScrollBar().setValue(4000 - 9*40);
+                    Logs.info(TAG, "VtValue= " + tdScrollPane.getVerticalScrollBar().getValue());
+                    Logs.info(TAG, "HzValue= " + tdScrollPane.getHorizontalScrollBar().getValue());
                 }
 
                 if (e.getKeyCode() == KeyEvent.VK_UP) {
-                    int cVal = tdScrollPane.getVerticalScrollBar().getValue();
-                    int ext = tdScrollPane.getVerticalScrollBar().getModel().getExtent();
-                    tdScrollPane.getVerticalScrollBar().setValue(cVal - 100);
-                    Logs.info(TAG, tdScrollPane.getVerticalScrollBar().getValue() - ext);
-                    Logs.info(TAG, "max = " + tdScrollPane.getVerticalScrollBar().getMaximum());
+                    scroll(Pair.of(0, Utils.mm2px(-10)));
                 }
 
                 if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-                    int cVal = tdScrollPane.getVerticalScrollBar().getValue();
-                    int ext = tdScrollPane.getVerticalScrollBar().getModel().getExtent();
-                    tdScrollPane.getVerticalScrollBar().setValue(
-                            tdScrollPane.getVerticalScrollBar().getMaximum()
-                    );
-                    Logs.info(TAG, "ext = " + ext);
-                    Logs.info(TAG, "max = " + tdScrollPane.getVerticalScrollBar().getMaximum());
+                    scroll(Pair.of(0, Utils.mm2px(10)));
                 }
+
+                if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+                    scroll(Pair.of(Utils.mm2px(10), 0));
+                }
+
+                if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+                    scroll(Pair.of(Utils.mm2px(-10), 0));
+                }
+
             }
 
             @Override
@@ -170,6 +193,8 @@ public class ExperimentPanel extends JLayeredPane {
             Pair<Integer, Integer> vtTgMinMax = getVtTargetRange(5, 130);
             Logs.info(TAG, vtTgMinMax);
         });
+
+
 
     }
 
@@ -254,7 +279,7 @@ public class ExperimentPanel extends JLayeredPane {
         Pair<Integer, Integer> result = Pair.of(0,0);
 
         int nRows = experiment.TD_N_ROWS;
-        int nVisibleRows = experiment.TD_N_VISIBLE_ROWS;
+        int nVisibleRows = experiment.TD_N_VIS_ROWS;
         Pair<Integer, Integer> vtSBMinMax = Pair.of(
                 tdScrollPane.getVerticalScrollBar().getMinimum(),
                 tdScrollPane.getVerticalScrollBar().getMaximum());
@@ -286,8 +311,8 @@ public class ExperimentPanel extends JLayeredPane {
 
         Pair<Integer, Integer> result = Pair.of(0,0);
 
-        int nCols = experiment.TD_N_COLS;
-        int nVisibleCols = experiment.TD_N_VISIBLE_COLS;
+        int nCols = experiment.TD_N_ROWS;
+        int nVisibleCols = experiment.TD_N_VIS_ROWS;
         Pair<Integer, Integer> hzSBMinMax = Pair.of(
                 tdScrollPane.getHorizontalScrollBar().getMinimum(),
                 tdScrollPane.getHorizontalScrollBar().getMaximum());
@@ -308,7 +333,11 @@ public class ExperimentPanel extends JLayeredPane {
 
     }
 
-    public void scroll(Pair<Integer, Integer> deltaPair) {
+    /**
+     * Scroll the 2D scrollPane
+     * @param scrollAmt2D Amount of scrolling (dX, dY)
+     */
+    public void scroll(Pair<Integer, Integer> scrollAmt2D) {
         String TAG = NAME + "scroll";
 
 //        if (trial != null) {
@@ -324,18 +353,30 @@ public class ExperimentPanel extends JLayeredPane {
 //            }
 //        }
 
-        int vtCurrentVal = tdScrollPane.getVerticalScrollBar().getValue();
-        int hzCurrentVal = tdScrollPane.getHorizontalScrollBar().getValue();
+        Logs.info(TAG, "Scrolling: " + scrollAmt2D);
 
-        Logs.info(TAG, deltaPair);
+        Point vpPos = tdScrollPane.getViewport().getViewPosition();
+        Dimension vpDim = tdScrollPane.getViewport().getView().getSize(); // Can be also Preferred
+        int vtSBExtent = tdScrollPane.getVerticalScrollBar().getModel().getExtent();
+        int hzSBExtent = tdScrollPane.getHorizontalScrollBar().getModel().getExtent();
 
-        Logs.info(TAG, "VT Before = " + vtCurrentVal);
-        tdScrollPane.getVerticalScrollBar().setValue(vtCurrentVal + deltaPair.getSecond());
-        Logs.info(TAG, "VT After = " + tdScrollPane.getVerticalScrollBar().getValue());
+        Logs.info(TAG, "vpPos= " + vpPos);
+        Logs.info(TAG, "vpDim= " + vpDim);
+        Logs.info(TAG, "Extent= " + hzSBExtent);
+        // Scroll only if inside the limits
+        int newX = vpPos.x + scrollAmt2D.getFirst();
+        int newY = vpPos.y + scrollAmt2D.getSecond();
+        if (newX != vpPos.x && newX >= 0 && newX <= (vpDim.width - hzSBExtent)) {
+            Logs.info(TAG, "NewX= " + newX);
+            tdScrollPane.getViewport().setViewPosition(new Point(newX, vpPos.y));
+        }
+        if (newY != vpPos.y && newY >= 0 && newY <= (vpDim.height - vtSBExtent)) {
+            tdScrollPane.getViewport().setViewPosition(new Point(vpPos.x, newY));
+        }
 
-        Logs.info(TAG, "HZ Before = " + hzCurrentVal);
-        tdScrollPane.getHorizontalScrollBar().setValue(hzCurrentVal + deltaPair.getFirst());
-        Logs.info(TAG, "HZ After = " + tdScrollPane.getHorizontalScrollBar().getValue());
+
+        tdScrollPane.invalidate();
+
     }
 
     @Override

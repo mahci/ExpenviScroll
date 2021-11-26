@@ -18,10 +18,13 @@ public class TDScrollPane extends JScrollPane {
     private JTable bodyTable;                   // Inside table
 
     private Dimension paneDim;                  // (px) Total dimennsion of the pane
+    private int paneSize;                       // Size of the pane (px)
     private Dimension vSBDim, hSBDim;           // (px) Dimensions of the scroll bars (prob. equal)
      // (px) Dimensions of the scroll thumbs (prob. equal)
 
     private int colW, rowH;                     // (px) Column width, row height
+    private int cellSize;                       // Size of each cell (px)
+    private int sbW;                            // Width of scrollbars (px)
     private int nVisCols, nVisRows;             // Number of visible columns, rows
 
     //-------------------------------------------------------------------------------------------------
@@ -32,7 +35,25 @@ public class TDScrollPane extends JScrollPane {
      */
     public TDScrollPane(DimensionD dimMM) {
         // Set the size
-        paneDim = new Dimension(Utils.mm2px(dimMM.getWidth()), Utils.mm2px(dimMM.getHeight()));
+        paneDim = new Dimension(
+                Utils.mm2px(dimMM.getWidth()),
+                Utils.mm2px(dimMM.getHeight()));
+        setPreferredSize(paneDim);
+    }
+
+    /**
+     * Constructor
+     * @param nVisRows Number of visible rows = cols
+     * @param cellSizeMM Size of each cell (mm)
+     * @param sbWMM Width of scrollbar (mm)
+     */
+    public TDScrollPane(int nVisRows, double cellSizeMM, double sbWMM) {
+        cellSize = Utils.mm2px(cellSizeMM); // Size of cells in pixels
+        sbW = Utils.mm2px(sbWMM);
+
+        int paneSize = nVisRows * cellSize + sbW; // Total size (W=H) of pane
+        paneDim = new Dimension(paneSize, paneSize);
+
         setPreferredSize(paneDim);
     }
 
@@ -79,6 +100,55 @@ public class TDScrollPane extends JScrollPane {
         }
 
         getViewport().add(bodyTable);
+
+        Logs.infoAll(TAG, "Table PS= " + bodyTable.getPreferredSize());
+        return this;
+    }
+
+    /**
+     * Set the body table
+     * (!) Call after {@link #setScrollBars(double, double)}}
+     * @param nRows Number of Rows = num of cols
+     * @return Instance
+     */
+    public TDScrollPane setTable(int nRows) {
+        String TAG = NAME + "setTable";
+
+        // Set random data (numbers) for the table
+        String[] colNames = new String[nRows];
+        Object[][] tableData = new Object[nRows][nRows];
+        for (int i = 0; i < nRows; i++) {
+            for (int j = 0; j < nRows; j++) {
+                tableData[i][j] = Utils.randInt(1, nRows * nRows + 1);
+            }
+        }
+        DefaultTableModel model = new DefaultTableModel(tableData, colNames);
+        bodyTable = new JTable(model);
+
+        // Table properties
+        bodyTable.setTableHeader(null);
+        bodyTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        bodyTable.setGridColor(COLORS.TABLE_GRID);
+        bodyTable.setForeground(COLORS.TABLE_TEXT);
+        bodyTable.setFont(FONTS.TABLE_FONT);
+        bodyTable.setEnabled(false);
+
+        // Set the size of columns and rows
+//        colW = (getPreferredSize().width - getVerticalScrollBar().getWidth()) / nVisRows;
+        for (int r = 0; r < nRows; r++) {
+            bodyTable.getColumnModel().getColumn(r).setMaxWidth(cellSize);
+            bodyTable.setRowHeight(cellSize);
+        }
+//
+//        rowH = (getPreferredSize().height - getHorizontalScrollBar().getHeight()) / nVisRows;
+//        for (int i = 0; i < nRows; i++) {
+//            bodyTable.setRowHeight(rowH);
+//        }
+
+        getViewport().add(bodyTable);
+
+        paneSize = bodyTable.getPreferredSize().width - sbW;
+        Logs.infoAll(TAG, "Table PS= " + paneSize);
         return this;
     }
 
@@ -96,7 +166,7 @@ public class TDScrollPane extends JScrollPane {
 
         //-- Set scrollbars
         // Vertical
-        vSBDim = new Dimension(sbW, paneDim.height);
+        vSBDim = new Dimension(sbW, paneSize);
         Dimension vSBThumbDim = new Dimension(vSBDim.width, thumbLen);
         UIManager.put("ScrollBar.minimumThumbSize", vSBThumbDim);
         UIManager.put("ScrollBar.maximumThumbSize", vSBThumbDim);
@@ -110,7 +180,7 @@ public class TDScrollPane extends JScrollPane {
         getVerticalScrollBar().setPreferredSize(vSBDim);
 
         // Horizontal
-        hSBDim = new Dimension(paneDim.width, sbW);
+        hSBDim = new Dimension(paneSize, sbW);
         Dimension hSBThumbDim = new Dimension(thumbLen, hSBDim.height);
         UIManager.put("ScrollBar.minimumThumbSize", hSBThumbDim);
         UIManager.put("ScrollBar.maximumThumbSize", hSBThumbDim);

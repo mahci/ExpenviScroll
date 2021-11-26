@@ -3,6 +3,8 @@ package gui;
 import control.Experimenter;
 import control.Server;
 import experiment.Experiment;
+import tools.Consts;
+import tools.Logs;
 import tools.Pair;
 
 import javax.swing.*;
@@ -61,10 +63,14 @@ public class MainFrame extends JFrame {
                 ((scrW / 2) - (frW / 2)) + scrBound.x,
                 ((scrH / 2) - (frH / 2)) + scrBound.y
         );
+
+        // Set mm size in pixels
+//        Logs.info("TAG", Toolkit.getDefaultToolkit().getScreenResolution());
+
     }
 
-    public static void scroll(Pair<Integer, Integer> deltaPair) {
-        experimentPanel.scroll(deltaPair);
+    public static void scroll(Pair<Integer, Integer> scrollAmt2D) {
+        experimentPanel.scroll(scrollAmt2D);
     }
 
 }

@@ -1,10 +1,7 @@
 package control;
 
 import gui.MainFrame;
-import tools.Consts;
-import tools.Logs;
-import tools.Memo;
-import tools.Pair;
+import tools.*;
 
 import java.awt.*;
 import java.util.concurrent.ExecutorService;
@@ -93,12 +90,14 @@ public class Controller {
             Logs.infoAll(TAG, "Stopped!");
             scrollThread.interrupt();
         } else { // Scroll
-            Pair<Integer, Integer> scrollDelta = Pair.of(memo.getValueXInt(), memo.getValueYInt());
-
+            // Convert scroll amount to px (in both directions)
+            Pair<Integer, Integer> scrollAmt2D = Pair.of(
+                    Utils.mm2px(memo.getValueXInt()),
+                    Utils.mm2px(memo.getValueYInt()));
 
             switch (memo.getMode()) {
             case DRAG -> {
-                MainFrame.scroll(scrollDelta);
+                MainFrame.scroll(scrollAmt2D);
             }
             case RB -> {
 

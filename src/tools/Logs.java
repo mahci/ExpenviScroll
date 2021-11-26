@@ -14,6 +14,7 @@ public class Logs {
 //        toLogList.add("Server");
         toLogList.add("ExperimentPanel");
         toLogList.add("Controller");
+        toLogList.add("TDScrollPane");
     }
 
     public static void addTag(String tag) {

@@ -12,7 +12,8 @@ public class Consts {
 
     // Display
     public static class DISP {
-        public final static int PPI = 109;
+//        public final static int PPI = 109;
+        public final static int PPI = 89;
         public final static double INCH_MM = 25.4;
     }
 
@@ -29,7 +30,7 @@ public class Consts {
     // Fonts and character attributes
     public static class FONTS {
         // Fonts
-        public static Font TABLE_FONT = new Font("Sans", Font.PLAIN, 10);
+        public static Font TABLE_FONT = new Font("Sans", Font.PLAIN, 9);
 
         // Font types
         public static Font SF_REGULAR = Font.getFont("serif");

@@ -32,14 +32,12 @@ public class Experiment {
     public final int HZ_N_VISIBLE_COLS = 15;
 
     // 2D
-    public final DimensionD TD_PANE_DIM_mm = new DimensionD(140.0, 140.0);
-    public final int TD_N_ROWS = 200;
-    public final int TD_N_COLS = 200;
-    public final int TD_N_VISIBLE_ROWS = 25;
-    public final int TD_N_VISIBLE_COLS = 15;
+//    public final DimensionD TD_PANE_DIM_mm = new DimensionD(140.0, 140.0);
+    public final int TD_N_ROWS = 200; // = num of columns
+    public final int TD_N_VIS_ROWS = 15; // = num of visible cols
+    public final double TD_CELL_SIZE_mm = 10.0; // Side of cells in mm
     public final double TD_SCROLL_BAR_W_mm = 5.0; // Length = side of the pane
     public final double TD_SCROLL_THUMB_L_mm = 6.0; // Width = width of the scrollbar
-
 
     // Scrolling in general
     public final double SCROLL_GAIN = 5.0;

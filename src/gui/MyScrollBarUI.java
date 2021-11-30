@@ -6,7 +6,8 @@ import javax.swing.*;
 import javax.swing.plaf.basic.BasicScrollBarUI;
 import java.awt.*;
 
-public class CustomScrollBarUI extends BasicScrollBarUI {
+public class MyScrollBarUI extends BasicScrollBarUI {
+    private String NAME = "MyScrollBarUI/";
 
     private Color borderColor;
     private Color trackColor;
@@ -16,7 +17,7 @@ public class CustomScrollBarUI extends BasicScrollBarUI {
 
     private int highlightMin, highlightMax; // Min/max value of hightlight area
 
-    public CustomScrollBarUI(Color bdColor, Color trColor, Color thColor, int offs) {
+    public MyScrollBarUI(Color bdColor, Color trColor, Color thColor, int offs) {
         borderColor = bdColor;
         trackColor = trColor;
         thumbColor = thColor;
@@ -31,6 +32,8 @@ public class CustomScrollBarUI extends BasicScrollBarUI {
 
     @Override
     protected void paintTrack(Graphics g, JComponent c, Rectangle trackBounds) {
+        String TAG = NAME + "paintTrack";
+
         // Track
         g.setColor(trackColor);
         g.fillRect(trackBounds.x, trackBounds.y, trackBounds.width, trackBounds.height);
@@ -40,22 +43,24 @@ public class CustomScrollBarUI extends BasicScrollBarUI {
 
         // Highlight the rectangle on the track (if there's highlight)
         if (highlightColor != null) {
-
             if (scrollbar.getOrientation() == HORIZONTAL) {
                 double ratio = trackBounds.width / (scrollbar.getMaximum() * 1.0);
                 int hlX = (int) (highlightMin * ratio);
-                int hlW = (int) ((highlightMax - highlightMin) * ratio) + getThumbBounds().width;
-
+                int hlXMax = (int) (highlightMax * ratio);
+                int hlW = hlXMax - hlX + thumbRect.width;
                 g.setColor(highlightColor);
                 g.fillRect(hlX, trackBounds.y + 1, hlW, trackBounds.height);
-//                g.fillRect(7, trackBounds.y, 32, trackBounds.height);
             } else { // VERTICAL
                 double ratio = trackBounds.height / (scrollbar.getMaximum() * 1.0);
-                int hlY = (int) (highlightMin * ratio);
-                int hlH = (int) ((highlightMax - highlightMin) * ratio) + getThumbBounds().height;
-
+                int hlYMin = (int) (highlightMin * ratio);
+                int hlYMax = (int) (highlightMax * ratio);
+                int hlH = hlYMax - hlYMin + thumbRect.height;
+                Logs.d(TAG, "TrackboundsH", trackBounds.height);
+                Logs.d(TAG, "Max", scrollbar.getMaximum());
+                Logs.d(TAG, "Highlights", highlightMin, highlightMax);
+                Logs.d(TAG, "Values", hlYMin, hlYMax);
                 g.setColor(highlightColor);
-                g.fillRect(trackBounds.x + 1, hlY, trackBounds.width, hlH);
+                g.fillRect(trackBounds.x + 1, hlYMin, trackBounds.width, hlH);
             }
 
         }

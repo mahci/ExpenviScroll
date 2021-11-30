@@ -86,18 +86,17 @@ public class Controller {
         String TAG = NAME + "scroll";
         Logs.infoAll(TAG, memo.toString());
 
-        if (memo.getValueXInt() == 0 & scrollThread != null) { // STOP is received
+        if (memo.getValue1Int() == 0 & scrollThread != null) { // STOP is received
             Logs.infoAll(TAG, "Stopped!");
             scrollThread.interrupt();
         } else { // Scroll
-            // Convert scroll amount to px (in both directions)
-            Pair<Integer, Integer> scrollAmt2D = Pair.of(
-                    Utils.mm2px(memo.getValueXInt()),
-                    Utils.mm2px(memo.getValueYInt()));
+
+            double vtScrollMM = memo.getValue1Double();
+            double hzScrollMM = memo.getValue2Double();
 
             switch (memo.getMode()) {
             case DRAG -> {
-                MainFrame.scroll(scrollAmt2D);
+                MainFrame.scroll(vtScrollMM, hzScrollMM);
             }
             case RB -> {
 

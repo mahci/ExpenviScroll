@@ -75,8 +75,8 @@ public class HorizontalScrollPane extends JScrollPane {
             bodyTable.getColumnModel().getColumn(j).setMaxWidth(colWidth);
         }
 
-        Logs.info(TAG, getPreferredSize().height);
-        Logs.info(TAG, scBarDim.height);
+        Logs.d(TAG, getPreferredSize().height);
+        Logs.d(TAG, scBarDim.height);
         int rowH = (getPreferredSize().height - scBarDim.height) / nRows;
         for (int i = 0; i < nRows; i++) {
             bodyTable.setRowHeight(rowH);

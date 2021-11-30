@@ -1,9 +1,6 @@
 package gui;
 
-import tools.Consts;
-import tools.DimensionD;
-import tools.Logs;
-import tools.Utils;
+import tools.*;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -13,7 +10,7 @@ import java.awt.*;
 import static tools.Consts.*;
 
 public class TDScrollPane extends JScrollPane {
-    private final static String NAME = "TDScrollPane";
+    private final static String NAME = "TDScrollPane/";
 
     private JTable bodyTable;                   // Inside table
 
@@ -25,7 +22,11 @@ public class TDScrollPane extends JScrollPane {
     private int colW, rowH;                     // (px) Column width, row height
     private int cellSize;                       // Size of each cell (px)
     private int sbW;                            // Width of scrollbars (px)
-    private int nVisCols, nVisRows;             // Number of visible columns, rows
+    private int thumbLen;
+    private int nVisRows;                       // Number of visible rows/cols
+
+    private MyScrollBarUI vtScrollBarUIl;
+    private MyScrollBarUI hzScrollBarUIl;
 
     //-------------------------------------------------------------------------------------------------
 
@@ -48,8 +49,9 @@ public class TDScrollPane extends JScrollPane {
      * @param sbWMM Width of scrollbar (mm)
      */
     public TDScrollPane(int nVisRows, double cellSizeMM, double sbWMM) {
-        cellSize = Utils.mm2px(cellSizeMM); // Size of cells in pixels
-        sbW = Utils.mm2px(sbWMM);
+        this.cellSize = Utils.mm2px(cellSizeMM); // Size of cells in pixels
+        this.sbW = Utils.mm2px(sbWMM);
+        this.nVisRows = nVisRows;
 
         int paneSize = nVisRows * cellSize + sbW; // Total size (W=H) of pane
         paneDim = new Dimension(paneSize, paneSize);
@@ -139,6 +141,11 @@ public class TDScrollPane extends JScrollPane {
             bodyTable.getColumnModel().getColumn(r).setMaxWidth(cellSize);
             bodyTable.setRowHeight(cellSize);
         }
+
+        // Center-align cells
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+        bodyTable.setDefaultRenderer(Object.class, centerRenderer);
 //
 //        rowH = (getPreferredSize().height - getHorizontalScrollBar().getHeight()) / nVisRows;
 //        for (int i = 0; i < nRows; i++) {
@@ -147,8 +154,8 @@ public class TDScrollPane extends JScrollPane {
 
         getViewport().add(bodyTable);
 
-        paneSize = bodyTable.getPreferredSize().width - sbW;
-        Logs.infoAll(TAG, "Table PS= " + paneSize);
+        paneSize = bodyTable.getPreferredSize().width - sbW; // Set total paneSize
+
         return this;
     }
 
@@ -161,37 +168,36 @@ public class TDScrollPane extends JScrollPane {
     public TDScrollPane setScrollBars(double scrollBarWMM, double thumbLenWW) {
         String TAG = NAME + "setScrollBars";
 
-        int sbW = Utils.mm2px(scrollBarWMM);
-        int thumbLen = Utils.mm2px(thumbLenWW);
+        sbW = Utils.mm2px(scrollBarWMM);
+        thumbLen = Utils.mm2px(thumbLenWW);
 
         //-- Set scrollbars
         // Vertical
         vSBDim = new Dimension(sbW, paneSize);
-        Dimension vSBThumbDim = new Dimension(vSBDim.width, thumbLen);
-        UIManager.put("ScrollBar.minimumThumbSize", vSBThumbDim);
-        UIManager.put("ScrollBar.maximumThumbSize", vSBThumbDim);
+//        Dimension vSBThumbDim = new Dimension(vSBDim.width, thumbLen);
+//        UIManager.put("ScrollBar.minimumThumbSize", vSBThumbDim);
+//        UIManager.put("ScrollBar.maximumThumbSize", vSBThumbDim);
 
-        CustomScrollBarUI vCustomSBUI = new CustomScrollBarUI(
+        vtScrollBarUIl = new MyScrollBarUI(
                 Color.BLACK,
                 COLORS.SCROLLBAR_TRACK,
                 Color.BLACK,
                 6);
-        getVerticalScrollBar().setUI(vCustomSBUI);
+        getVerticalScrollBar().setUI(vtScrollBarUIl);
         getVerticalScrollBar().setPreferredSize(vSBDim);
 
         // Horizontal
         hSBDim = new Dimension(paneSize, sbW);
-        Dimension hSBThumbDim = new Dimension(thumbLen, hSBDim.height);
-        UIManager.put("ScrollBar.minimumThumbSize", hSBThumbDim);
-        UIManager.put("ScrollBar.maximumThumbSize", hSBThumbDim);
+//        Dimension hSBThumbDim = new Dimension(thumbLen, hSBDim.height);
+//        UIManager.put("ScrollBar.minimumThumbSize", hSBThumbDim);
+//        UIManager.put("ScrollBar.maximumThumbSize", hSBThumbDim);
 
-        CustomScrollBarUI hCustomSBUI= new CustomScrollBarUI(
+        hzScrollBarUIl= new MyScrollBarUI(
                 Color.BLACK,
                 COLORS.SCROLLBAR_TRACK,
                 Color.BLACK,
                 6); // IMPORTANT to create a new CSBUI
-//        hCustomSBUI.setHighlight(COLORS.LINE_COL_HIGHLIGHT, 100, 200);
-        getHorizontalScrollBar().setUI(hCustomSBUI);
+        getHorizontalScrollBar().setUI(hzScrollBarUIl);
         getHorizontalScrollBar().setPreferredSize(hSBDim);
 
         // Set policies
@@ -205,28 +211,38 @@ public class TDScrollPane extends JScrollPane {
      * Highlight one cell
      * @param rInd Row index
      * @param cInd Column index
+     * @param frameSizeCells Size of fram in cells
      */
-    public void highlight(int rInd, int cInd) {
-        CellRenderer cellHighlighter = new CellRenderer(rInd, cInd);
+    public TDScrollPane highlight(int rInd, int cInd, int frameSizeCells) {
+        String TAG = NAME + "highlight";
 
-//        bodyTable.revalidate();
+        // Highlight the cell
+        HighlightRenderer cellHighlighter = new HighlightRenderer(rInd, cInd);
+        cellHighlighter.setHorizontalAlignment(SwingConstants.CENTER);
         bodyTable.getColumnModel().getColumn(cInd).setCellRenderer(cellHighlighter);
 
-        // Set highlight in the scrollbars
-        CustomScrollBarUI vCSBUI = (CustomScrollBarUI) getVerticalScrollBar().getUI();
-        vCSBUI.setHighlight(COLORS.SCROLLBAR_HIGHLIGHT, 100, 200);
+        //-- Show indicators in the scrollbars
+        int frOffset = (nVisRows - frameSizeCells) / 2;
+        // Vertical
+        int vtMinThreshold = (rInd - (frameSizeCells - 1) - frOffset) * cellSize;
+        int vtMaxThreshold = (rInd - frOffset) * cellSize;
+        vtScrollBarUIl.setHighlight(
+                COLORS.SCROLLBAR_HIGHLIGHT,
+                vtMinThreshold,
+                vtMaxThreshold);
+        getVerticalScrollBar().setUI(vtScrollBarUIl);
 
-        CustomScrollBarUI hCSBUI = (CustomScrollBarUI) getHorizontalScrollBar().getUI();
-        hCSBUI.setHighlight(COLORS.SCROLLBAR_HIGHLIGHT, 100, 200);
+        // Horizontal
+        int hzMinThreshold = (cInd - (frameSizeCells - 1) - frOffset) * cellSize;
+        int hzMaxThreshold = (cInd - frOffset) * cellSize;
+        hzScrollBarUIl.setHighlight(
+                COLORS.SCROLLBAR_HIGHLIGHT,
+                hzMinThreshold,
+                hzMaxThreshold);
+        getHorizontalScrollBar().setUI(hzScrollBarUIl);
 
-    }
+        return this;
 
-    public int getColW() {
-        return colW;
-    }
-
-    public int getRowH() {
-        return rowH;
     }
 
     //-------------------------------------------------------------------------------------------------
@@ -234,11 +250,11 @@ public class TDScrollPane extends JScrollPane {
     /**
      * Renderer class for highlighting a single cell
      */
-    private class CellRenderer extends DefaultTableCellRenderer {
+    private static class HighlightRenderer extends DefaultTableCellRenderer {
 
         int rowInd, colInd;
 
-        public CellRenderer(int rInd, int cInd) {
+        public HighlightRenderer(int rInd, int cInd) {
             rowInd = rInd;
             colInd = cInd;
         }
@@ -255,4 +271,5 @@ public class TDScrollPane extends JScrollPane {
 
         }
     }
+
 }

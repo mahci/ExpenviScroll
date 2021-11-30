@@ -14,7 +14,8 @@ public class Logs {
 //        toLogList.add("Server");
         toLogList.add("ExperimentPanel");
         toLogList.add("Controller");
-        toLogList.add("TDScrollPane");
+//        toLogList.add("TDScrollPane");
+//        toLogList.add("MyScrollBarUI");
     }
 
     public static void addTag(String tag) {
@@ -37,7 +38,49 @@ public class Logs {
 //        System.out.println(tag + " >> " + mssg);
     }
 
-    public static void info(String tag, Pair mssg) {
+    public static void d(String tag, String... params) {
+        if(params.length > 0 && showTag(tag)) {
+            StringBuilder sb = new StringBuilder();
+            for(String p : params) {
+                sb.append(p).append(" | ");
+            }
+            System.out.println(tag + " >> " + sb);
+        }
+    }
+
+    public static void d(String tag, int... params) {
+        if(params.length > 0 && showTag(tag)) {
+            StringBuilder sb = new StringBuilder();
+            for(int p : params) {
+                sb.append(p).append(" | ");
+            }
+            System.out.println(tag + " >> " + sb);
+        }
+    }
+
+    public static void d(String tag, String name, int... params) {
+        if(params.length > 0 && showTag(tag)) {
+            StringBuilder sb = new StringBuilder(tag)
+                    .append(">>").append(name).append(": ");
+            for(int p : params) {
+                sb.append(p).append(" | ");
+            }
+            System.out.println(sb);
+        }
+    }
+
+    public static void d(String tag, String name, double... params) {
+        if(params.length > 0 && showTag(tag)) {
+            StringBuilder sb = new StringBuilder(tag)
+                    .append(">>").append(name).append(": ");
+            for(double p : params) {
+                sb.append(p).append(" | ");
+            }
+            System.out.println(sb);
+        }
+    }
+
+    public static void d(String tag, Pair mssg) {
         System.out.println(tag + " >> " + mssg);
     }
 
@@ -69,13 +112,16 @@ public class Logs {
         System.out.println(tag + " >> " + i1 + " | " + i2);
     }
 
-    public static void info(String tag, int mssg) {
+    public static void d(String tag, int mssg) {
         System.out.println(tag + " >> " + mssg);
     }
 
-    public static void info(String tag, double mssg) {
+    public static void d(String tag, double mssg) {
         System.out.println(tag + " >> " + mssg);
     }
 
+    private static boolean showTag(String tag) {
+        return toLogList.contains(tag.split("/")[0]);
+    }
 
 }

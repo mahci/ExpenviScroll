@@ -38,6 +38,7 @@ public class Experiment {
     public final double TD_CELL_SIZE_mm = 10.0; // Side of cells in mm
     public final double TD_SCROLL_BAR_W_mm = 5.0; // Length = side of the pane
     public final double TD_SCROLL_THUMB_L_mm = 6.0; // Width = width of the scrollbar
+    public final double TD_FRAME_H_mm = 7.0; // Height of frame
 
     // Scrolling in general
     public final double SCROLL_GAIN = 5.0;

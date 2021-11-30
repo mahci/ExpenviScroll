@@ -52,7 +52,7 @@ public class Utils {
     public static double px2mm(double px) {
         String mName = cName + "px2mm";
 
-        return (int) ((px / PPI) * INCH_MM);
+        return (px / PPI) * INCH_MM;
     }
 
     /**

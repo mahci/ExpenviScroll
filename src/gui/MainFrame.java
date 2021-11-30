@@ -69,8 +69,8 @@ public class MainFrame extends JFrame {
 
     }
 
-    public static void scroll(Pair<Integer, Integer> scrollAmt2D) {
-        experimentPanel.scroll(scrollAmt2D);
+    public static void scroll(double vtScrollMM, double hzScrollMM) {
+        experimentPanel.scroll(vtScrollMM, hzScrollMM);
     }
 
 }

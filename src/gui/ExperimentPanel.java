@@ -397,7 +397,7 @@ public class ExperimentPanel extends JLayeredPane {
                 vtFrameRect.width = frameH;
                 vtFrameRect.height = trial.frame() * lineH;
                 vtFrameRect.x = panePos.x - vtFrameRect.width;
-                vtFrameRect.y = panePos.y + ((experiment.TD_N_VIS_ROWS - trial.frame()) / 2) * lineH;
+                vtFrameRect.y = panePos.y + ((vtScrollPane.getNVisibleLines() - trial.frame()) / 2) * lineH;
 
                 g2d.setColor(Consts.COLORS.CELL_HIGHLIGHT);
                 g2d.fillRect(vtFrameRect.x, vtFrameRect.y, vtFrameRect.width, vtFrameRect.height);

@@ -1,49 +1,38 @@
 package experiment;
 
-import static control.Experimenter.*;
+import static experiment.Experiment.*;
 
 /***
  * Class of each trial
  */
-public class Trial {
+public record Trial (SCROLL_MODE scrollMode, AREA area, int distance, int frame) {
 
-    private final static String NAME = "Trial/";
-    // ------------------------------------------------------------------------------------
-    public int distance; // in lines
-    public int frameSize; // in lines
-    public Direction direction; // UP or DOWN
-    public ScrollMode scrollMode;
-
-    // ------------------------------------------------------------------------------------
-
-    /**
-     * Constructor
-     * @param dist Distance
-     * @param fS Fram size (height/width)
-     * @param dir Direction
-     */
-    public Trial(int dist, int fS, Direction dir, ScrollMode scM) {
-        distance = dist;
-        frameSize = fS;
-        direction = dir;
-        scrollMode = scM;
-    }
-
-    /**
-     * Default constructor
-     */
     public Trial() {
-        distance = 0;
-        frameSize = 0;
+        this(SCROLL_MODE.VERTICAL, AREA.N, 0, 0);
     }
 
-    @Override
-    public String toString() {
-        return "Trial{" +
-                "distance=" + distance +
-                ", frameHeight=" + frameSize +
-                ", direction=" + direction +
-                '}';
-    }
+
+    // ------------------------------------------------------------------------------------
+
+//    public Trial(SCROLL_MODE scMode, AREA ar, int dist, int fr) {
+//        scrollMode = scMode;
+//        area = ar;
+//        distance = dist;
+//        frame = fr;
+//    }
+//
+//    public Trial() {
+//
+//    }
+//
+//    @Override
+//    public String toString() {
+//        return "Trial{" +
+//                "scrollMode=" + scrollMode +
+//                "| area=" + area +
+//                "| distance=" + distance +
+//                "| frame=" + frame +
+//                '}';
+//    }
 
 }

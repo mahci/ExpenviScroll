@@ -16,6 +16,7 @@ public class Logs {
         toLogList.add("Controller");
 //        toLogList.add("TDScrollPane");
 //        toLogList.add("MyScrollBarUI");
+        toLogList.add("VTScrollPane");
     }
 
     public static void addTag(String tag) {

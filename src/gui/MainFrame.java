@@ -1,15 +1,9 @@
 package gui;
 
-import control.Experimenter;
-import control.Server;
 import experiment.Experiment;
-import tools.Consts;
-import tools.Logs;
-import tools.Pair;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.IOException;
 
 public class MainFrame extends JFrame {
 
@@ -27,7 +21,7 @@ public class MainFrame extends JFrame {
 
         // Create and show an experiment
         int pid = 0;
-        experimentPanel = new ExperimentPanel(Experimenter.get().getExperiment(pid));
+        experimentPanel = new ExperimentPanel(new Experiment(pid));
         add(experimentPanel);
         pack();
 
@@ -66,11 +60,14 @@ public class MainFrame extends JFrame {
 
         // Set mm size in pixels
 //        Logs.info("TAG", Toolkit.getDefaultToolkit().getScreenResolution());
-
     }
 
     public static void scroll(double vtScrollMM, double hzScrollMM) {
         experimentPanel.scroll(vtScrollMM, hzScrollMM);
+    }
+
+    public static void stopScroll() {
+        experimentPanel.validate();
     }
 
 }

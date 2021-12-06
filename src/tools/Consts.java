@@ -20,7 +20,7 @@ public class Consts {
     // Colors
     public static class COLORS {
         public final static Color LINE_NUM_BG = new Color(221, 221, 221);
-        public final static Color LINE_COL_HIGHLIGHT = new Color(100, 192, 245);
+        public final static Color CELL_HIGHLIGHT = new Color(100, 192, 245);
         public final static Color SCROLLBAR_HIGHLIGHT = new Color(199, 225, 240);
         public final static Color TABLE_GRID = Color.GRAY;
         public final static Color TABLE_TEXT = Color.DARK_GRAY;

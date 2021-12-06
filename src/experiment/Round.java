@@ -1,11 +1,7 @@
 package experiment;
 
-import control.Experimenter;
 import tools.Utils;
-
 import java.util.*;
-
-import static control.Experimenter.*;
 
 /**
  * Class for each round of the experiment
@@ -56,14 +52,15 @@ public class Round {
      * @param distances list of distances (in lines/cols)
      * @param frameSizes list of frame heights/widths (in lines/cols)
      */
-    public Round(ScrollMode scMode, List<Integer> distances, List<Integer> frameSizes) {
+    public Round(Experiment.SCROLL_MODE scMode, int[] distances, int[] frames, Experiment.AREA[] areas) {
 
         // Create all the combination of dists/fHs/dirs
         ArrayList<Trial> allTrialsList = new ArrayList<>();
         for (int d : distances) {
-            for (int fH : frameSizes) {
-                allTrialsList.add(new Trial(d, fH, Direction.U_R, scMode));
-                allTrialsList.add(new Trial(d, fH, Direction.D_L, scMode));
+            for (int f : frames) {
+                for (Experiment.AREA a : areas) {
+                    allTrialsList.add(new Trial(scMode, a, d, f));
+                }
             }
         }
 

@@ -16,7 +16,7 @@ import static tools.Consts.DISP.INCH_MM;
 
 public class Utils {
 
-    private final static String cName = "Utils.";
+    private final static String NAME = "Utils/";
     /*-------------------------------------------------------------------------------------*/
 
     private static ArrayList<Integer> lineCharCountList = new ArrayList<>();
@@ -34,12 +34,21 @@ public class Utils {
     }
 
     /**
+     * Get a random element from any int array
+     * @param inArray input int[] array
+     * @return int element
+     */
+    public static int randElement(int[] inArray) {
+        return inArray[randInt(0, inArray.length)];
+    }
+
+    /**
      * mm to pixel
      * @param mm - millimeters
      * @return equivalant in pixels
      */
     public static int mm2px(double mm) {
-        String mName = cName + "mm2px";
+        String TAG = NAME + "mm2px";
 
         return (int) ((mm / INCH_MM) * PPI);
     }
@@ -50,7 +59,7 @@ public class Utils {
      * @return equivalant in mm
      */
     public static double px2mm(double px) {
-        String mName = cName + "px2mm";
+        String TAG = NAME + "px2mm";
 
         return (px / PPI) * INCH_MM;
     }
@@ -61,7 +70,7 @@ public class Utils {
      * @return Random permutation
      */
     public static List<Integer> randPerm(int len) {
-        String mName = cName + "randPerm";
+        String TAG = NAME + "randPerm";
 
         List<Integer> indexes = new ArrayList<>();
         for (int i = 0; i < len; i++) {
@@ -74,16 +83,18 @@ public class Utils {
 
     /**
      * Manually wrap the text (add \n) and write to outFileName
-     * @param txtFileName - name of the text file
+     * @param resTxtFileName - name of the text file
      * @param outFileName - name of the output file
      * @param wrapWidth - max width to wrap
      * @return ArrayList<Integer></> - number of chraacters in each line
      */
-    public static ArrayList<Integer> wrapFile(String txtFileName, String outFileName, int wrapWidth) throws IOException {
-        String mName = "wrapFile";
+    public static ArrayList<Integer> wrapFile(String resTxtFileName, String outFileName, int wrapWidth)
+            throws IOException {
+        String TAG = "wrapFile";
 
         // Read and get the paragraphs
-        String content = Files.readString(Path.of(txtFileName));
+        String filePath = System.getProperty("user.dir") + "/res/" + resTxtFileName;
+        String content = Files.readString(Path.of(filePath));
         String[] paragraphs = content.split("\n");
 
         // Wrap each paragraph and write to file
@@ -105,7 +116,7 @@ public class Utils {
      * @return wrapped paraagraph
      */
     public static String wrapParagraph(String paragraph, int wrapWidth) {
-        String mName = "wrapText";
+        String TAG = "wrapText";
 
         // Special cases
         if (paragraph == null) return "";

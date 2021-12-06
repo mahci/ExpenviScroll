@@ -130,7 +130,7 @@ public class HorizontalScrollPane extends JScrollPane {
      */
     public void higlight(int colInd, int tgMinScVl, int tgMaxScVl) {
         DefaultTableCellRenderer highlightRenderer = new DefaultTableCellRenderer();
-        highlightRenderer.setBackground(Consts.COLORS.LINE_COL_HIGHLIGHT);
+        highlightRenderer.setBackground(Consts.COLORS.CELL_HIGHLIGHT);
 
         bodyTable.revalidate();
         bodyTable.getColumnModel().getColumn(colInd).setCellRenderer(highlightRenderer);

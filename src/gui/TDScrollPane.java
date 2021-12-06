@@ -25,8 +25,8 @@ public class TDScrollPane extends JScrollPane {
     private int thumbLen;
     private int nVisRows;                       // Number of visible rows/cols
 
-    private MyScrollBarUI vtScrollBarUIl;
-    private MyScrollBarUI hzScrollBarUIl;
+    private MyScrollBarUI vtScrollBarUI;
+    private MyScrollBarUI hzScrollBarUI;
 
     //-------------------------------------------------------------------------------------------------
 
@@ -178,12 +178,12 @@ public class TDScrollPane extends JScrollPane {
 //        UIManager.put("ScrollBar.minimumThumbSize", vSBThumbDim);
 //        UIManager.put("ScrollBar.maximumThumbSize", vSBThumbDim);
 
-        vtScrollBarUIl = new MyScrollBarUI(
+        vtScrollBarUI = new MyScrollBarUI(
                 Color.BLACK,
                 COLORS.SCROLLBAR_TRACK,
                 Color.BLACK,
                 6);
-        getVerticalScrollBar().setUI(vtScrollBarUIl);
+        getVerticalScrollBar().setUI(vtScrollBarUI);
         getVerticalScrollBar().setPreferredSize(vSBDim);
 
         // Horizontal
@@ -192,12 +192,12 @@ public class TDScrollPane extends JScrollPane {
 //        UIManager.put("ScrollBar.minimumThumbSize", hSBThumbDim);
 //        UIManager.put("ScrollBar.maximumThumbSize", hSBThumbDim);
 
-        hzScrollBarUIl= new MyScrollBarUI(
+        hzScrollBarUI = new MyScrollBarUI(
                 Color.BLACK,
                 COLORS.SCROLLBAR_TRACK,
                 Color.BLACK,
                 6); // IMPORTANT to create a new CSBUI
-        getHorizontalScrollBar().setUI(hzScrollBarUIl);
+        getHorizontalScrollBar().setUI(hzScrollBarUI);
         getHorizontalScrollBar().setPreferredSize(hSBDim);
 
         // Set policies
@@ -226,20 +226,20 @@ public class TDScrollPane extends JScrollPane {
         // Vertical
         int vtMinThreshold = (rInd - (frameSizeCells - 1) - frOffset) * cellSize;
         int vtMaxThreshold = (rInd - frOffset) * cellSize;
-        vtScrollBarUIl.setHighlight(
+        vtScrollBarUI.setHighlight(
                 COLORS.SCROLLBAR_HIGHLIGHT,
                 vtMinThreshold,
                 vtMaxThreshold);
-        getVerticalScrollBar().setUI(vtScrollBarUIl);
+        getVerticalScrollBar().setUI(vtScrollBarUI);
 
         // Horizontal
         int hzMinThreshold = (cInd - (frameSizeCells - 1) - frOffset) * cellSize;
         int hzMaxThreshold = (cInd - frOffset) * cellSize;
-        hzScrollBarUIl.setHighlight(
+        hzScrollBarUI.setHighlight(
                 COLORS.SCROLLBAR_HIGHLIGHT,
                 hzMinThreshold,
                 hzMaxThreshold);
-        getHorizontalScrollBar().setUI(hzScrollBarUIl);
+        getHorizontalScrollBar().setUI(hzScrollBarUI);
 
         return this;
 
@@ -264,7 +264,7 @@ public class TDScrollPane extends JScrollPane {
                 JTable table, Object obj, boolean isSelected, boolean hasFocus, int row, int column) {
             super.getTableCellRendererComponent(table, obj, isSelected, hasFocus, row, column);
 
-            if (row == rowInd && column == colInd) setBackground(COLORS.LINE_COL_HIGHLIGHT);
+            if (row == rowInd && column == colInd) setBackground(COLORS.CELL_HIGHLIGHT);
             else setBackground(table.getBackground());
 
             return this;

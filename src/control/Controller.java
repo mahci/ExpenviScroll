@@ -22,34 +22,40 @@ public class Controller {
     private Robot robot;
 
     private ExecutorService executor;
+    private ThreadGroup scrollThreadGroup;
+    private boolean toScroll = false;
 
     //----------------------------------------------------------------
 
     // For scrolling constantly!
     private class ConstantScrollRunnable implements Runnable {
 
-        private final int delta; // Movement delta / 1 ms
+        private final double vtScrollMM; // Movement delta / 1 ms
+        private final double hzScrollMM; // Movement delta / 1 ms
 
-        private ConstantScrollRunnable(int dlt) {
-            delta = dlt;
+        private ConstantScrollRunnable(double vtScrollMM, double hzScrollMM) {
+            this.vtScrollMM = vtScrollMM;
+            this.hzScrollMM = hzScrollMM;
         }
 
         @Override
         public void run() {
             String TAG = NAME + "ConstantScrollRunnable";
             try {
-                while (!scrollThread.isInterrupted()) {
-//                    Logs.infoAll(TAG, "Scrolling with " + delta);
-//                    robot.mouseWheel(delta);
-//                    MainFrame.scroll(delta / 10);
-                    Thread.sleep(1); // 1 min = 60*1000, 1 sec = 1000
+                while (toScroll) {
+                    Logs.d(TAG, "Scrolling with", vtScrollMM);
+                    MainFrame.scroll(vtScrollMM, hzScrollMM);
+                    Thread.currentThread().sleep(1); // 1 min = 60*1000, 1 sec = 1000
                 }
             } catch (InterruptedException e) {
                 // We need this because when a sleep the interrupt from outside throws an exception
                 Thread.currentThread().interrupt();
+                toScroll = false;
             }
         }
     }
+
+
 
     //----------------------------------------------------------------
 
@@ -71,6 +77,7 @@ public class Controller {
         try {
             robot = new Robot();
             executor = Executors.newCachedThreadPool(); // Init executerService for running threads
+            scrollThreadGroup = new ThreadGroup("Scrolls");
 
         } catch (AWTException e) {
             Logs.error(TAG, "Robot couldn't be initialized!");
@@ -84,72 +91,38 @@ public class Controller {
      */
     public void perform(Memo memo) {
         String TAG = NAME + "scroll";
-        Logs.infoAll(TAG, memo.toString());
+        Logs.d(TAG, "Received", memo.toString(), memo.getValue1());
 
-        if (memo.getValue1Int() == 0 & scrollThread != null) { // STOP is received
-            Logs.infoAll(TAG, "Stopped!");
-            scrollThread.interrupt();
-        } else { // Scroll
-
+        switch (memo.getMode()) {
+        case DRAG -> {
             double vtScrollMM = memo.getValue1Double();
             double hzScrollMM = memo.getValue2Double();
 
-            switch (memo.getMode()) {
-            case DRAG -> {
-                MainFrame.scroll(vtScrollMM, hzScrollMM);
+            MainFrame.scroll(vtScrollMM, hzScrollMM);
+        }
+        case RB -> {
+            // Stop prev. scrolling if new command has come
+            if (scrollThreadGroup != null) {
+                Logs.d(TAG, "RB", "Interrupted!");
+//                scrollThreadGroup.stop();
+                toScroll = false;
             }
-            case RB -> {
 
+            if (memo.getValue1().equals(STOP)) {
+                MainFrame.stopScroll();
+            } else {
+                Logs.d(TAG, "RB", memo.getValue1());
+                double vtScrollMM = memo.getValue1Double();
+                double hzScrollMM = memo.getValue2Double();
+
+                toScroll = true;
+                scrollThread = new Thread(scrollThreadGroup, new ConstantScrollRunnable(vtScrollMM, hzScrollMM));
+                scrollThread.start();
             }
-            }
+
+        }
         }
 
-    }
-
-    /**
-     * Drag
-     * @param delta Amount to scroll
-     * @return Result (0: success, 1: error)
-     */
-    private int scrollDrag(int delta) {
-        String TAG = NAME + "scroll";
-
-        // problem with the robot
-        if (robot == null) {
-            Logs.errorAll(TAG, "Can't load the robot!");
-            return 1;
-        }
-
-        Logs.infoAll(TAG, "Scrolling: " + delta);
-//        robot.mouseWheel(delta);
-//        MainFrame.scroll(delta);;
-
-        return 0;
-    }
-
-    /**
-     * Rate-based
-     * @param delta Scroll amount (notches/ 1 ms)
-     * @return Result (0: success, 1: error)
-     */
-    private int scrollRateBased(int delta) {
-        String TAG = NAME + "scroll";
-
-        // problem with the robot
-        if (robot == null) {
-            Logs.errorAll(TAG, "Can't load the robot!");
-            return 1;
-        }
-
-        // Stop prev. scrolling if new command has come
-        if (scrollThread != null && !scrollThread.isInterrupted()) {
-            scrollThread.interrupt();
-        }
-
-        scrollThread = new Thread(new ConstantScrollRunnable(delta));
-        scrollThread.start();
-
-        return 0;
     }
 
 

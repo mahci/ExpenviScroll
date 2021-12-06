@@ -67,6 +67,14 @@ public class Memo {
     }
 
     /**
+     * Get the first value
+     * @return String
+     */
+    public String getValue1() {
+        return value1;
+    }
+
+    /**
      * Convert and return the X value
      * @return Int X value
      */

@@ -8,19 +8,21 @@ import tools.Utils;
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicScrollBarUI;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.text.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultHighlighter.DefaultHighlightPainter;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 import java.awt.*;
 import java.awt.event.MouseWheelListener;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import javax.swing.text.DefaultHighlighter.DefaultHighlightPainter;
-
 import static tools.Consts.COLORS;
 
-public class VerticalScrollPane extends JScrollPane {
-    private final static String NAME = "VerticalScrollPane";
+public class VTScrollPane extends JScrollPane {
+    private final static String NAME = "VTScrollPane/";
     //-------------------------------------------------------------------------------------------------
 
     private final String WRAPPED_FILE_NAME = "./res/wrapped.txt";
@@ -39,7 +41,7 @@ public class VerticalScrollPane extends JScrollPane {
      * Constructor
      * @param ddMM Dimention of scroll pane (W/H in mm)
      */
-    public VerticalScrollPane(DimensionD ddMM) {
+    public VTScrollPane(DimensionD ddMM) {
         dim = new Dimension(Utils.mm2px(ddMM.getWidth()), Utils.mm2px(ddMM.getHeight()));
         setPreferredSize(dim);
     }
@@ -49,7 +51,7 @@ public class VerticalScrollPane extends JScrollPane {
      * @param fileName Name of the file
      * @return Instance
      */
-    public VerticalScrollPane setText(String fileName, int wrapCharCount, float bodyFontSize) {
+    public VTScrollPane setText(String fileName, int wrapCharCount, float bodyFontSize) {
         String TAG = NAME + "setText";
 
         // Wrap the file and get the char num of each line
@@ -65,7 +67,7 @@ public class VerticalScrollPane extends JScrollPane {
             bodyTextPane.read(new FileReader(WRAPPED_FILE_NAME), "wrapped");
 
         } catch (IOException e) {
-            Logs.error(TAG, "Problem createing VerticalScrollPane -> setText");
+            Logs.error(TAG, "Problem createing VTScrollPane -> setText");
             e.printStackTrace();
         }
 
@@ -78,7 +80,7 @@ public class VerticalScrollPane extends JScrollPane {
      * @param lineNumsFontSize Font size of the line num pane
      * @return Current instance
      */
-    public VerticalScrollPane setLineNums(double lineNumsPaneW, float lineNumsFontSize) {
+    public VTScrollPane setLineNums(double lineNumsPaneW, float lineNumsFontSize) {
 
         // Set dimention
         Dimension lnpDim = new Dimension(Utils.mm2px(lineNumsPaneW), dim.height);
@@ -110,7 +112,7 @@ public class VerticalScrollPane extends JScrollPane {
      * @param thumbH Scroll thumb height (mm)
      * @return Current instance
      */
-    public VerticalScrollPane setScrollBar(double scrollBarW, double thumbH) {
+    public VTScrollPane setScrollBar(double scrollBarW, double thumbH) {
 
         // Set dimentions
         Dimension scBarDim = new Dimension(Utils.mm2px(scrollBarW), dim.height);
@@ -134,11 +136,29 @@ public class VerticalScrollPane extends JScrollPane {
      * Final creation of the component
      * @return Current instance
      */
-    public VerticalScrollPane create() {
+    public VTScrollPane create() {
         getViewport().add(bodyTextPane);
         setRowHeaderView(linesTextPane);
 
         return this;
+    }
+
+    public void highlight(int lineInd) {
+        String TAG = NAME + "highlight";
+        // Highlight the line
+        int stIndex = 0;
+        for (int li = 0; li < lineInd - 1; li++) {
+            stIndex += lineCharCounts.get(li) + 1; // prev. lines + \n
+        }
+        int endIndex = stIndex + lineCharCounts.get(lineInd - 1);
+        try {
+            DefaultHighlightPainter highlighter = new DefaultHighlightPainter(COLORS.CELL_HIGHLIGHT);
+            bodyTextPane.getHighlighter().removeAllHighlights();
+            bodyTextPane.getHighlighter().addHighlight(stIndex, endIndex, highlighter);
+        } catch (BadLocationException e) {
+            Logs.d(TAG, "Problem with highlighting: Bad location", stIndex, endIndex);
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -147,7 +167,7 @@ public class VerticalScrollPane extends JScrollPane {
      */
     public void higlight(int lineInd, int tgMinScVl, int tgMaxScVl) throws BadLocationException {
         DefaultTableCellRenderer highlightRenderer = new DefaultTableCellRenderer();
-        highlightRenderer.setBackground(Consts.COLORS.LINE_COL_HIGHLIGHT);
+        highlightRenderer.setBackground(Consts.COLORS.CELL_HIGHLIGHT);
 
         int stIndex = 0;
         for (int li = 0; li < lineInd - 1; li++) {
@@ -155,7 +175,7 @@ public class VerticalScrollPane extends JScrollPane {
         }
         int endIndex = stIndex + lineCharCounts.get(lineInd - 1);
 
-        DefaultHighlightPainter highlighter = new DefaultHighlightPainter(COLORS.LINE_COL_HIGHLIGHT);
+        DefaultHighlightPainter highlighter = new DefaultHighlightPainter(COLORS.CELL_HIGHLIGHT);
         bodyTextPane.getHighlighter().removeAllHighlights();
         bodyTextPane.getHighlighter().addHighlight(stIndex, endIndex, highlighter);
 
@@ -194,6 +214,26 @@ public class VerticalScrollPane extends JScrollPane {
         return nLines;
     }
 
+    public int getLineHeight() {
+        String TAG = NAME + "getLineHeight";
+        Logs.d(TAG, "", getPreferredSize().height, getNVisibleLines());
+        return getPreferredSize().height / getNVisibleLines();
+    }
+
+    public int getNVisibleLines() {
+        String TAG = NAME + "getNVisibleLines";
+        int max = getVerticalScrollBar().getMaximum();
+        int extent = getVerticalScrollBar().getModel().getExtent();
+        Logs.d(TAG, max, extent, nLines);
+        return extent * nLines / max;
+    }
+
+    public int getMaxScrollVal() {
+        return getVerticalScrollBar().getMaximum();
+    }
+
+
+
     //-------------------------------------------------------------------------------------------------
 
     private class CustomVScrollBarUI extends BasicScrollBarUI {
@@ -215,7 +255,6 @@ public class VerticalScrollPane extends JScrollPane {
 
         @Override
         protected void paintThumb(Graphics g, JComponent c, Rectangle thumbBounds) {
-
             // Set anti-alias
             Graphics2D graphics2D = (Graphics2D) g;
             graphics2D.setColor(Color.BLACK);

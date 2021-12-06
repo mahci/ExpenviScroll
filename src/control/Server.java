@@ -46,7 +46,6 @@ public class Server {
                 outPW = new PrintWriter(new BufferedWriter(
                         new OutputStreamWriter(socket.getOutputStream())), true);
 
-
                 // Start receiving
                 executor.execute(new InRunnable());
 

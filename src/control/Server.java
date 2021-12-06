@@ -58,17 +58,19 @@ public class Server {
     //-- Runnable for sending messages to Moose
     private class OutRunnable implements Runnable {
         String TAG = NAME + "OutRunnable";
-        String message = "";
+        Memo message;
 
-        public OutRunnable(String mssg) {
+        public OutRunnable(Memo mssg) {
             message = mssg;
         }
 
         @Override
         public void run() {
-            outPW.println(message);
-            outPW.flush();
-            Logs.info(TAG, "Message sent");
+            if (message != null) {
+                outPW.println(message);
+                outPW.flush();
+                Logs.info(TAG, "Message sent");
+            }
         }
     }
 
@@ -130,6 +132,10 @@ public class Server {
         String TAG = NAME + "start";
 
         executor.execute(new ConnWaitRunnable());
+    }
+
+    public void send(Memo mssg) {
+        executor.execute(new OutRunnable(mssg));
     }
 
 }

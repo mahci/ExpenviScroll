@@ -62,6 +62,7 @@ public class Consts {
 
     public static class STRINGS {
         public final static String SP = "_";
+        public final static String MODE = "MODE";
         public final static String SCROLL = "SCROLL";
         public final static String DRAG = "DRAG";
         public final static String RB = "RABA";

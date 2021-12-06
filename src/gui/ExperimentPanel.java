@@ -1,15 +1,15 @@
 package gui;
 
+import control.Server;
 import experiment.Experiment;
 import experiment.Trial;
-import tools.Consts;
-import tools.Logs;
-import tools.Pair;
-import tools.Utils;
+import tools.*;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+
+import static tools.Consts.STRINGS.MODE;
 
 public class ExperimentPanel extends JLayeredPane {
 
@@ -222,6 +222,9 @@ public class ExperimentPanel extends JLayeredPane {
     private void showTrial() {
         String TAG = NAME + "showTrial";
         Logs.d(TAG, "Mode", trial.scrollMode().toString());
+        // Send the mode to Moose
+//        Server.get().send(new Memo(MODE, trial.scrollMode().toString(), 0, 0));
+
         switch (trial.scrollMode()) {
             case VERTICAL -> {
                 paneDim = vtScrollPane.getPreferredSize();
@@ -231,7 +234,6 @@ public class ExperimentPanel extends JLayeredPane {
                 vtScrollPane.highlight(randVtLineInd());
 
                 add(vtScrollPane, 0);
-
             }
             case TWO_DIM -> {
                 paneDim = tdScrollPane.getPreferredSize();
@@ -326,51 +328,44 @@ public class ExperimentPanel extends JLayeredPane {
     public void scroll(double vtScrollMM, double hzScrollMM) {
         String TAG = NAME + "scroll";
 
-//        if (trial != null) {
-//            switch (trial.scrollMode) {
-//            case VERTICAL -> {
-//                int currentValue = vtScrollPane.getVerticalScrollBar().getValue();
-//                vtScrollPane.getVerticalScrollBar().setValue(currentValue + delta);
-//            }
-//            case HORIZONTAL -> {
-//                int currentValue = hzScrollPane.getHorizontalScrollBar().getValue();
-//                hzScrollPane.getHorizontalScrollBar().setValue(currentValue + delta);
-//            }
-//            }
-//        }
+        boolean isScrolled = false;
 
         int vtScrollAmt = Utils.mm2px(vtScrollMM);
         int hzScrollAmt = Utils.mm2px(hzScrollMM);
         Logs.d(TAG, "Scrolling", vtScrollMM, hzScrollMM);
 
-        Dimension vpDim = tdScrollPane.getViewport().getView().getSize(); // Can be also Preferred
-        int vtSBExtent = tdScrollPane.getVerticalScrollBar().getModel().getExtent();
-        int hzSBExtent = tdScrollPane.getHorizontalScrollBar().getModel().getExtent();
+        switch (trial.scrollMode()) {
+        case VERTICAL -> {
+            isScrolled = vtScrollPane.scroll(vtScrollAmt);
 
-//        Logs.info(TAG, "vpPos= " + vpPos);
-//        Logs.info(TAG, "vpDim= " + vpDim);
-//        Logs.info(TAG, "Extent= " + hzSBExtent);
-        // Scroll only if inside the limits
-        boolean isScrolled = false;
-        Point vpPos = tdScrollPane.getViewport().getViewPosition();
-        int newX = vpPos.x + hzScrollAmt;
-        if (newX != vpPos.x && newX >= 0 && newX <= (vpDim.width - hzSBExtent)) {
-            Logs.d(TAG, "NewX", newX);
-            tdScrollPane.getViewport().setViewPosition(new Point(newX, vpPos.y));
-            isScrolled = true;
+            if (isScrolled) vtScrollPane.revalidate();
+        }
+        case TWO_DIM -> {
+            Dimension vpDim = tdScrollPane.getViewport().getView().getSize(); // Can be also Preferred
+            int vtSBExtent = tdScrollPane.getVerticalScrollBar().getModel().getExtent();
+            int hzSBExtent = tdScrollPane.getHorizontalScrollBar().getModel().getExtent();
+
+            // Scroll only if inside the limits
+            Point vpPos = tdScrollPane.getViewport().getViewPosition();
+            int newX = vpPos.x + hzScrollAmt;
+            if (newX != vpPos.x && newX >= 0 && newX <= (vpDim.width - hzSBExtent)) {
+                Logs.d(TAG, "NewX", newX);
+                tdScrollPane.getViewport().setViewPosition(new Point(newX, vpPos.y));
+                isScrolled = true;
+            }
+
+            int newY = vpPos.y + vtScrollAmt;
+            vpPos = tdScrollPane.getViewport().getViewPosition();
+            if (newY != vpPos.y && newY >= 0 && newY <= (vpDim.height - vtSBExtent)) {
+                tdScrollPane.getViewport().setViewPosition(new Point(vpPos.x, newY));
+                isScrolled = true;
+            }
+
+            if (isScrolled)  tdScrollPane.revalidate();
+        }
         }
 
-        int newY = vpPos.y + vtScrollAmt;
-        vpPos = tdScrollPane.getViewport().getViewPosition();
-        if (newY != vpPos.y && newY >= 0 && newY <= (vpDim.height - vtSBExtent)) {
-            tdScrollPane.getViewport().setViewPosition(new Point(vpPos.x, newY));
-            isScrolled = true;
-        }
 
-        if (isScrolled) {
-            tdScrollPane.revalidate();
-            isScrolled = false;
-        }
     }
 
     public void stopScroll() {

@@ -186,6 +186,20 @@ public class VTScrollPane extends JScrollPane {
         getVerticalScrollBar().revalidate();
     }
 
+    public boolean scroll(int scrollAmt) {
+        Dimension vpDim = getViewport().getView().getSize(); // Can be also Preferred
+        int extent = getVerticalScrollBar().getModel().getExtent();
+
+        Point vpPos = getViewport().getViewPosition();
+        int newY = vpPos.y + scrollAmt;
+        if (newY != vpPos.y && newY >= 0 && newY <= (vpDim.height - extent)) {
+            getViewport().setViewPosition(new Point(vpPos.x, newY));
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * Add MouseWheelListener to every component
      * @param mwl MouseWheelListener

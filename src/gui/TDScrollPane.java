@@ -1,5 +1,6 @@
 package gui;
 
+import experiment.Experiment;
 import tools.*;
 
 import javax.swing.*;
@@ -121,7 +122,7 @@ public class TDScrollPane extends JScrollPane {
         Object[][] tableData = new Object[nRows][nRows];
         for (int i = 0; i < nRows; i++) {
             for (int j = 0; j < nRows; j++) {
-                tableData[i][j] = Utils.randInt(1, nRows * nRows + 1);
+                tableData[i][j] = Utils.randInt(1, 10);
             }
         }
         DefaultTableModel model = new DefaultTableModel(tableData, colNames);
@@ -132,7 +133,7 @@ public class TDScrollPane extends JScrollPane {
         bodyTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         bodyTable.setGridColor(COLORS.TABLE_GRID);
         bodyTable.setForeground(COLORS.TABLE_TEXT);
-        bodyTable.setFont(FONTS.TABLE_FONT);
+        bodyTable.setFont(FONTS.TABLE_FONT.deriveFont(12.0f));
         bodyTable.setEnabled(false);
 
         // Set the size of columns and rows

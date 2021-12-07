@@ -15,11 +15,13 @@ public class Experiment {
 
     //-- Config
     // Vertical
-    public final DimensionD VT_PANE_DIM_mm = new DimensionD(130.0, 145.0);
-    public final double VT_LINENUMS_W_mm = 10;
-    public final double VT_SCROLL_BAR_W_mm = 5;
-    public final double VT_SCROLL_THUMB_H_mm = 6;
-    public final int VT_WRAP_CHARS_COUNT = 82;
+    public static final DimensionD VT_PANE_DIM_mm = new DimensionD(130.0, 145.0);
+    public static final double VT_LINENUMS_W_mm = 10;
+    public static final double VT_SCROLL_BAR_W_mm = 5;
+    public static final double VT_SCROLL_THUMB_H_mm = 6;
+    public static final int VT_WRAP_CHARS_COUNT = 73; // Manual
+    public static final float VT_TEXT_FONT_SIZE = 24.0f;
+    public final float LINE_NUM_FONT_SIZE = 12.2f;
     public final int VT_N_VISIBLE_LINES = 41; // By eyes!
 
     // Horizontal
@@ -31,12 +33,12 @@ public class Experiment {
     public final int HZ_N_VISIBLE_COLS = 15;
 
     // 2D
-    public final int TD_N_ROWS = 200; // = num of columns
-    public final int TD_N_VIS_ROWS = 15; // = num of visible cols
-    public final double TD_CELL_SIZE_mm = 10.0; // Side of cells in mm
-    public final double TD_SCROLL_BAR_W_mm = 5.0; // Length = side of the pane
-    public final double TD_SCROLL_THUMB_L_mm = 6.0; // Width = width of the scrollbar
-    public final double TD_FRAME_H_mm = 7.0; // Height of frame
+    public static final int TD_N_ROWS = 200; // = num of columns
+    public static final int TD_N_VIS_ROWS = 25; // = num of visible cols
+    public static final double TD_CELL_SIZE_mm = 7.0; // Side of cells in mm
+    public static final double TD_SCROLL_BAR_W_mm = 5.0; // Length = side of the pane
+    public static final double TD_SCROLL_THUMB_L_mm = 6.0; // Width = width of the scrollbar
+    public static final double TD_FRAME_H_mm = 7.0; // Height of frame
 
     //-- Mode
 //    private Experimenter.ScrollMode mode = Experimenter.ScrollMode.VERTICAL;

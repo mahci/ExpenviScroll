@@ -13,6 +13,7 @@ import javax.swing.text.DefaultHighlighter.DefaultHighlightPainter;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
+import javax.swing.text.html.StyleSheet;
 import java.awt.*;
 import java.awt.event.MouseWheelListener;
 import java.io.FileReader;
@@ -47,6 +48,11 @@ public class VTScrollPane extends JScrollPane {
         setPreferredSize(dim);
     }
 
+    public VTScrollPane(Dimension d) {
+        dim = d;
+        setPreferredSize(dim);
+    }
+
     /**
      * Set the text file for displayed text
      * @param fileName Name of the file
@@ -58,14 +64,23 @@ public class VTScrollPane extends JScrollPane {
         // Wrap the file and get the char num of each line
         try {
             lineCharCounts = Utils.wrapFile(fileName, WRAPPED_FILE_NAME, wrapCharCount);
+            nLines = lineCharCounts.size();
 
             // Body of text
             bodyTextPane = new CustomTextPane(false);
+            bodyTextPane.read(new FileReader(WRAPPED_FILE_NAME), "wrapped");
             bodyTextPane.setEditable(false);
-            bodyTextPane.setFont(Consts.FONTS.SF_LIGHT.deriveFont(bodyFontSize));
+            bodyTextPane.setFont(Consts.FONTS.TABLE_FONT.deriveFont(bodyFontSize));
             bodyTextPane.setSelectionColor(Color.WHITE);
 
-            bodyTextPane.read(new FileReader(WRAPPED_FILE_NAME), "wrapped");
+            SimpleAttributeSet lineSpace = new SimpleAttributeSet();
+            StyleConstants.setLineSpacing(lineSpace,0.2f);
+            StyleConstants.setFontSize(lineSpace, 20);
+            StyleConstants.setFontFamily(lineSpace, "Dialog");
+            int len = bodyTextPane.getStyledDocument().getLength();
+            bodyTextPane.getStyledDocument().setParagraphAttributes(0, len, lineSpace, true);
+
+            getViewport().add(bodyTextPane);
 
         } catch (IOException e) {
             Logs.error(TAG, "Problem createing VTScrollPane -> setText");
@@ -102,7 +117,6 @@ public class VTScrollPane extends JScrollPane {
         documentStyle.setParagraphAttributes(0, documentStyle.getLength(), attributeSet, false);
 
         linesTextPane.setText(getLineNumbers(lineCharCounts.size()));
-        nLines = lineCharCounts.size();
 
         return this;
     }
@@ -114,7 +128,7 @@ public class VTScrollPane extends JScrollPane {
      * @return Current instance
      */
     public VTScrollPane setScrollBar(double scrollBarW, double thumbH) {
-
+        String TAG = NAME + "setScrollBar";
         // Set dimentions
         Dimension scBarDim = new Dimension(Utils.mm2px(scrollBarW), dim.height);
         Dimension scThumbDim = new Dimension(scBarDim.width, Utils.mm2px(thumbH));
@@ -144,7 +158,7 @@ public class VTScrollPane extends JScrollPane {
      */
     public VTScrollPane create() {
         getViewport().add(bodyTextPane);
-        setRowHeaderView(linesTextPane);
+//        setRowHeaderView(linesTextPane);
 
         return this;
     }
@@ -266,13 +280,16 @@ public class VTScrollPane extends JScrollPane {
 
     public int getLineHeight() {
         String TAG = NAME + "getLineHeight";
-        Logs.d(TAG, "", getPreferredSize().height, getNVisibleLines());
-        return getPreferredSize().height / getNVisibleLines();
+//        Logs.d(TAG, "", getPreferredSize().height, getNVisibleLines());
+//        return getPreferredSize().height / getNVisibleLines();
+        int bodyPaneH = getViewport().getView().getPreferredSize().height;
+        Logs.d(TAG, "", bodyPaneH, nLines);
+        return bodyPaneH / nLines;
     }
 
     public int getNVisibleLines() {
         String TAG = NAME + "getNVisibleLines";
-        int max = getVerticalScrollBar().getMaximum();
+        int max = getVerticalScrollBar().getModel().getMaximum();
         int extent = getVerticalScrollBar().getModel().getExtent();
         Logs.d(TAG, max, extent, nLines);
         return extent * nLines / max;

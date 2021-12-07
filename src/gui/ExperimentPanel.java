@@ -8,6 +8,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
+import static experiment.Experiment.*;
+
 public class ExperimentPanel extends JLayeredPane {
 
     private final static String NAME = "ExperimentPanel/";
@@ -36,6 +38,7 @@ public class ExperimentPanel extends JLayeredPane {
     private int targetLineNum, randLineNum;
     private boolean isScrollingEnabled = false;
     private int frameSize = 3;
+    private boolean panesCreated;
 
     // TEMP
     Point panePos = new Point();
@@ -111,21 +114,7 @@ public class ExperimentPanel extends JLayeredPane {
         label.setBounds(850, 500, 1000, 400);
         add(label, 0);
 
-        // Create the instances of each scrollPane
-        vtScrollPane = new VTScrollPane(experiment.VT_PANE_DIM_mm)
-                .setText("lorem.txt", experiment.VT_WRAP_CHARS_COUNT, Consts.FONTS.TEXT_BODY_FONT_SIZE)
-                .setScrollBar(experiment.VT_SCROLL_BAR_W_mm, experiment.VT_SCROLL_THUMB_H_mm)
-                .setLineNums(experiment.VT_LINENUMS_W_mm, Consts.FONTS.LINE_NUM_FONT_SIZE)
-                .create();
 
-        tdScrollPane = new TDScrollPane(
-                experiment.TD_N_VIS_ROWS,
-                experiment.TD_CELL_SIZE_mm,
-                experiment.TD_SCROLL_BAR_W_mm)
-                .setTable(experiment.TD_N_ROWS)
-                .setScrollBars(
-                        experiment.TD_SCROLL_BAR_W_mm,
-                        experiment.TD_SCROLL_THUMB_L_mm);
 
 //        repaint();
 
@@ -222,6 +211,10 @@ public class ExperimentPanel extends JLayeredPane {
         // Send the mode to Moose
 //        Server.get().send(new Memo(MODE, trial.scrollMode().toString(), 0, 0));
 
+        // If panes aren't created, create them (only once)
+        if (vtScrollPane == null || tdScrollPane == null) createPanes();
+
+        // Show the trial
         switch (trial.scrollMode()) {
             case VERTICAL -> {
                 paneDim = vtScrollPane.getPreferredSize();
@@ -248,6 +241,24 @@ public class ExperimentPanel extends JLayeredPane {
         repaint();
     }
 
+    /**
+     * Create one instance of each pane
+     */
+    private void createPanes() {
+        String TAG = NAME + "createPanes";
+
+        tdScrollPane = new TDScrollPane(TD_N_VIS_ROWS, TD_CELL_SIZE_mm, TD_SCROLL_BAR_W_mm)
+                .setTable(TD_N_ROWS)
+                .setScrollBars(TD_SCROLL_BAR_W_mm, TD_SCROLL_THUMB_L_mm);
+
+        // Make vtScrollPane the same size as the td
+        vtScrollPane = new VTScrollPane(tdScrollPane.getPreferredSize())
+                .setText("lorem.txt", VT_WRAP_CHARS_COUNT, VT_TEXT_FONT_SIZE)
+                .setScrollBar(VT_SCROLL_BAR_W_mm, VT_SCROLL_THUMB_H_mm);
+
+
+        Logs.d(TAG, "lineH (mm)", Utils.px2mm(vtScrollPane.getLineHeight()));
+    }
 
     /**
      * Generate a random position for a pane
@@ -392,7 +403,6 @@ public class ExperimentPanel extends JLayeredPane {
     protected void paintComponent(Graphics g) {
         String TAG = NAME + "paintComponent";
         super.paintComponent(g);
-        Logs.info(TAG, "Painting...");
         Graphics2D g2d = (Graphics2D) g;
 
         // Draw frames

@@ -1,6 +1,5 @@
 package gui;
 
-import control.Server;
 import experiment.Experiment;
 import experiment.Trial;
 import tools.*;
@@ -8,8 +7,6 @@ import tools.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-
-import static tools.Consts.STRINGS.MODE;
 
 public class ExperimentPanel extends JLayeredPane {
 
@@ -231,7 +228,7 @@ public class ExperimentPanel extends JLayeredPane {
                 panePos = getRandPosition(paneDim);
 
                 vtScrollPane.setBounds(panePos.x, panePos.y, paneDim.width, paneDim.height);
-                vtScrollPane.highlight(randVtLineInd());
+                vtScrollPane.highlight(randVtLineInd(), trial.frame());
 
                 add(vtScrollPane, 0);
             }
@@ -240,7 +237,9 @@ public class ExperimentPanel extends JLayeredPane {
                 panePos = getRandPosition(paneDim);
 
                 tdScrollPane.setBounds(panePos.x, panePos.y, paneDim.width, paneDim.height);
-                tdScrollPane.highlight(hlR, hlC, frameSize);
+
+                Pair<Integer, Integer> hlInd = randTdInd();
+                tdScrollPane.highlight(hlInd.getFirst(), hlInd.getSecond(), trial.frame());
 
                 add(tdScrollPane, 0);
             }
@@ -285,6 +284,22 @@ public class ExperimentPanel extends JLayeredPane {
         int maxInd = vtScrollPane.getNLines() - offset;
         Logs.d(TAG, "values", minInd, maxInd);
         return Utils.randInt(minInd, maxInd);
+    }
+
+    /**
+     * Get random row,col indexes
+     * @return Pair (row, col)
+     */
+    private Pair<Integer, Integer> randTdInd() {
+        String TAG = NAME + "randTdInd";
+        int offset = (experiment.TD_N_VIS_ROWS - trial.frame()) / 2;
+        int minInd = offset + 1;
+        int maxInd = experiment.TD_N_ROWS - offset;
+        Logs.d(TAG, "values", minInd, maxInd);
+        Pair<Integer, Integer> result = Pair.of(
+                Utils.randInt(minInd, maxInd),
+                Utils.randInt(minInd, maxInd));
+        return result;
     }
 
     /**
@@ -338,7 +353,7 @@ public class ExperimentPanel extends JLayeredPane {
         case VERTICAL -> {
             isScrolled = vtScrollPane.scroll(vtScrollAmt);
 
-            if (isScrolled) vtScrollPane.revalidate();
+            if (isScrolled) repaint();
         }
         case TWO_DIM -> {
             Dimension vpDim = tdScrollPane.getViewport().getView().getSize(); // Can be also Preferred
@@ -361,7 +376,7 @@ public class ExperimentPanel extends JLayeredPane {
                 isScrolled = true;
             }
 
-            if (isScrolled)  tdScrollPane.revalidate();
+            if (isScrolled) repaint();
         }
         }
 
@@ -408,7 +423,7 @@ public class ExperimentPanel extends JLayeredPane {
                 vtFrameRect.y = panePos.y + ((experiment.TD_N_VIS_ROWS - trial.frame()) / 2) * cellSize;
 
                 Rectangle hzFrameRect = new Rectangle();
-                hzFrameRect.width = frameSize * cellSize;
+                hzFrameRect.width = trial.frame() * cellSize;
                 hzFrameRect.height = frameH;
                 hzFrameRect.x = panePos.x + ((experiment.TD_N_VIS_ROWS - trial.frame()) / 2) * cellSize;
                 hzFrameRect.y = panePos.y - hzFrameRect.height;

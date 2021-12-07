@@ -55,10 +55,6 @@ public class MyScrollBarUI extends BasicScrollBarUI {
                 int hlYMin = (int) (highlightMin * ratio);
                 int hlYMax = (int) (highlightMax * ratio);
                 int hlH = hlYMax - hlYMin + thumbRect.height;
-                Logs.d(TAG, "TrackboundsH", trackBounds.height);
-                Logs.d(TAG, "Max", scrollbar.getMaximum());
-                Logs.d(TAG, "Highlights", highlightMin, highlightMax);
-                Logs.d(TAG, "Values", hlYMin, hlYMax);
                 g.setColor(highlightColor);
                 g.fillRect(trackBounds.x + 1, hlYMin, trackBounds.width, hlH);
             }

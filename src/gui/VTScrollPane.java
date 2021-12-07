@@ -32,6 +32,7 @@ public class VTScrollPane extends JScrollPane {
 
     private JTextPane linesTextPane;
     private JTextPane bodyTextPane;
+    private MyScrollBarUI scrollBarUI;
 
     protected int targetMinScVal, targetMaxScVal;
     private int nLines;
@@ -119,7 +120,12 @@ public class VTScrollPane extends JScrollPane {
         Dimension scThumbDim = new Dimension(scBarDim.width, Utils.mm2px(thumbH));
 
         // Verticall scroll bar
-        getVerticalScrollBar().setUI(new CustomVScrollBarUI());
+        scrollBarUI = new MyScrollBarUI(
+                Color.BLACK,
+                COLORS.SCROLLBAR_TRACK,
+                Color.BLACK,
+                6);
+        getVerticalScrollBar().setUI(scrollBarUI);
         getVerticalScrollBar().setPreferredSize(scBarDim);
 
         // Scroll thumb
@@ -186,6 +192,36 @@ public class VTScrollPane extends JScrollPane {
         getVerticalScrollBar().revalidate();
     }
 
+    public void highlight(int lineInd, int frameSizeLines) {
+        // Highlight line
+
+        try {
+            int stIndex = 0;
+            for (int li = 0; li < lineInd - 1; li++) {
+                stIndex += lineCharCounts.get(li) + 1; // prev. lines + \n
+            }
+            int endIndex = stIndex + lineCharCounts.get(lineInd - 1);
+
+            DefaultHighlightPainter highlighter = new DefaultHighlightPainter(COLORS.CELL_HIGHLIGHT);
+            bodyTextPane.getHighlighter().removeAllHighlights();
+            bodyTextPane.getHighlighter().addHighlight(stIndex, endIndex, highlighter);
+
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+
+        // Indicator
+        int frOffset = (getNVisibleLines() - frameSizeLines) / 2;
+        int lineH = getLineHeight();
+        int vtMinThreshold = (lineInd - (frameSizeLines - 1) - frOffset) * lineH;
+        int vtMaxThreshold = (lineInd - frOffset) * lineH;
+        scrollBarUI.setHighlight(
+                COLORS.SCROLLBAR_HIGHLIGHT,
+                vtMinThreshold,
+                vtMaxThreshold);
+        getVerticalScrollBar().setUI(scrollBarUI);
+    }
+
     public boolean scroll(int scrollAmt) {
         Dimension vpDim = getViewport().getView().getSize(); // Can be also Preferred
         int extent = getVerticalScrollBar().getModel().getExtent();
@@ -250,7 +286,7 @@ public class VTScrollPane extends JScrollPane {
 
     //-------------------------------------------------------------------------------------------------
 
-    private class CustomVScrollBarUI extends BasicScrollBarUI {
+    private class CustomScrollBarUI extends BasicScrollBarUI {
 
         @Override
         protected void paintTrack(Graphics g, JComponent c, Rectangle trackBounds) {

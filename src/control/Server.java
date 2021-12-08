@@ -80,7 +80,7 @@ public class Server {
 
         @Override
         public void run() {
-            while (!Thread.currentThread().isInterrupted()){
+            while (!Thread.currentThread().isInterrupted() && inBR != null){
                 try {
                     Logs.info(TAG, "Reading messages...");
                     String message = inBR.readLine();

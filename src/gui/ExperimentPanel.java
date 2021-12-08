@@ -1,9 +1,11 @@
 package gui;
 
+import control.Controller;
 import experiment.Experiment;
 import experiment.Trial;
 import tools.*;
 
+import javax.naming.ldap.Control;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -38,7 +40,7 @@ public class ExperimentPanel extends JLayeredPane {
     private int targetLineNum, randLineNum;
     private boolean isScrollingEnabled = false;
     private int frameSize = 3;
-    private boolean panesCreated;
+    private boolean paintTrial;
 
     // TEMP
     Point panePos = new Point();
@@ -171,11 +173,15 @@ public class ExperimentPanel extends JLayeredPane {
                 }
 
                 if (e.getKeyCode() == KeyEvent.VK_UP) {
-                    scroll(0, -10);
+                    Controller.get().testStopScroll();
+            repaint();
+                    Controller.get().testScroll(-2);
                 }
 
                 if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-                    scroll(0, 10);
+                    Controller.get().testStopScroll();
+//            repaint();
+                    Controller.get().testScroll(1);
                 }
 
                 if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
@@ -197,7 +203,37 @@ public class ExperimentPanel extends JLayeredPane {
         });
 
         addMouseWheelListener(e -> {
-            // Do nothing!
+            Controller.get().testStopScroll();
+//            repaint();
+            Controller.get().testScroll(e.getWheelRotation());
+//            scroll(10.0 * e.getWheelRotation(), 0.0);
+        });
+
+        addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                Controller.get().testStopScroll();
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+
+            }
         });
 
     }
@@ -238,6 +274,7 @@ public class ExperimentPanel extends JLayeredPane {
             }
         }
 
+        paintTrial = true;
         repaint();
     }
 
@@ -364,7 +401,7 @@ public class ExperimentPanel extends JLayeredPane {
         case VERTICAL -> {
             isScrolled = vtScrollPane.scroll(vtScrollAmt);
 
-            if (isScrolled) repaint();
+//            if (isScrolled) repaint();
         }
         case TWO_DIM -> {
             Dimension vpDim = tdScrollPane.getViewport().getView().getSize(); // Can be also Preferred
@@ -387,26 +424,24 @@ public class ExperimentPanel extends JLayeredPane {
                 isScrolled = true;
             }
 
-            if (isScrolled) repaint();
+//            if (isScrolled) repaint();
         }
         }
 
 
-    }
-
-    public void stopScroll() {
-        Logs.d(NAME, "stopScroll", 0);
-        invalidate();
     }
 
     @Override
     protected void paintComponent(Graphics g) {
-        String TAG = NAME + "paintComponent";
         super.paintComponent(g);
-        Graphics2D g2d = (Graphics2D) g;
+        String TAG = NAME + "paintComponent";
+
+        Logs.d(TAG, "Painting", 0);
 
         // Draw frames
-        if (trial != null) {
+        if (paintTrial) {
+            Graphics2D g2d = (Graphics2D) g;
+            Logs.d(TAG, "Painting trial", 0);
             int frameH = Utils.mm2px(experiment.TD_FRAME_H_mm);
 
             switch (trial.scrollMode()) {
@@ -443,6 +478,8 @@ public class ExperimentPanel extends JLayeredPane {
                 g2d.fillRect(hzFrameRect.x, hzFrameRect.y, hzFrameRect.width, hzFrameRect.height);
             }
             }
+
+            paintTrial = false;
         }
 
     }

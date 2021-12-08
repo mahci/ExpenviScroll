@@ -106,10 +106,12 @@ public class Controller {
                 Logs.d(TAG, "RB", "Interrupted!");
 //                scrollThreadGroup.stop();
                 toScroll = false;
+//                MainFrame.stopScroll();
             }
 
             if (memo.getValue1().equals(STOP)) {
-                MainFrame.stopScroll();
+//                MainFrame.stopScroll();
+                scrollThreadGroup.stop();
             } else {
                 Logs.d(TAG, "RB", memo.getValue1());
                 double vtScrollMM = memo.getValue1Double();
@@ -125,6 +127,21 @@ public class Controller {
 
     }
 
+    public void testScroll(int vtAmt) {
+        toScroll = true;
+        scrollThread = new Thread(new ConstantScrollRunnable(vtAmt, 0));
+        scrollThread.start();
+    }
+
+    public void testStopScroll() {
+
+        if (scrollThread != null && !scrollThread.isInterrupted()) {
+            toScroll = false;
+            scrollThread.stop();
+        }
+
+//        scrollThread.interrupt();
+    }
 
 
 

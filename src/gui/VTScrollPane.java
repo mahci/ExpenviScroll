@@ -131,7 +131,7 @@ public class VTScrollPane extends JScrollPane {
         String TAG = NAME + "setScrollBar";
         // Set dimentions
         Dimension scBarDim = new Dimension(Utils.mm2px(scrollBarW), dim.height);
-        Dimension scThumbDim = new Dimension(scBarDim.width, Utils.mm2px(thumbH));
+//        Dimension scThumbDim = new Dimension(scBarDim.width, Utils.mm2px(thumbH));
 
         // Verticall scroll bar
         scrollBarUI = new MyScrollBarUI(
@@ -143,7 +143,7 @@ public class VTScrollPane extends JScrollPane {
         getVerticalScrollBar().setPreferredSize(scBarDim);
 
         // Scroll thumb
-        UIManager.put("ScrollBar.thumbSize", scThumbDim);
+//        UIManager.put("ScrollBar.thumbSize", scThumbDim);
 
         // Policies
         setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
@@ -163,52 +163,9 @@ public class VTScrollPane extends JScrollPane {
         return this;
     }
 
-    public void highlight(int lineInd) {
-        String TAG = NAME + "highlight";
-        // Highlight the line
-        int stIndex = 0;
-        for (int li = 0; li < lineInd - 1; li++) {
-            stIndex += lineCharCounts.get(li) + 1; // prev. lines + \n
-        }
-        int endIndex = stIndex + lineCharCounts.get(lineInd - 1);
-        try {
-            DefaultHighlightPainter highlighter = new DefaultHighlightPainter(COLORS.CELL_HIGHLIGHT);
-            bodyTextPane.getHighlighter().removeAllHighlights();
-            bodyTextPane.getHighlighter().addHighlight(stIndex, endIndex, highlighter);
-        } catch (BadLocationException e) {
-            Logs.d(TAG, "Problem with highlighting: Bad location", stIndex, endIndex);
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Highlight a line
-     * @param lineInd Column index number (from 1)
-     */
-    public void higlight(int lineInd, int tgMinScVl, int tgMaxScVl) throws BadLocationException {
-        DefaultTableCellRenderer highlightRenderer = new DefaultTableCellRenderer();
-        highlightRenderer.setBackground(Consts.COLORS.CELL_HIGHLIGHT);
-
-        int stIndex = 0;
-        for (int li = 0; li < lineInd - 1; li++) {
-            stIndex += lineCharCounts.get(li) + 1; // prev. lines + \n
-        }
-        int endIndex = stIndex + lineCharCounts.get(lineInd - 1);
-
-        DefaultHighlightPainter highlighter = new DefaultHighlightPainter(COLORS.CELL_HIGHLIGHT);
-        bodyTextPane.getHighlighter().removeAllHighlights();
-        bodyTextPane.getHighlighter().addHighlight(stIndex, endIndex, highlighter);
-
-        // Set min/max
-        targetMinScVal = tgMinScVl;
-        targetMaxScVal = tgMaxScVl;
-
-        getVerticalScrollBar().revalidate();
-    }
-
     public void highlight(int lineInd, int frameSizeLines) {
+        String TAG = NAME + "highlight";
         // Highlight line
-
         try {
             int stIndex = 0;
             for (int li = 0; li < lineInd - 1; li++) {
@@ -225,7 +182,8 @@ public class VTScrollPane extends JScrollPane {
         }
 
         // Indicator
-        int frOffset = (getNVisibleLines() - frameSizeLines) / 2;
+        int nVisibleLines = getNVisibleLines();
+        int frOffset = (nVisibleLines - frameSizeLines) / 2;
         int lineH = getLineHeight();
         int vtMinThreshold = (lineInd - (frameSizeLines - 1) - frOffset) * lineH;
         int vtMaxThreshold = (lineInd - frOffset) * lineH;
@@ -234,6 +192,8 @@ public class VTScrollPane extends JScrollPane {
                 vtMinThreshold,
                 vtMaxThreshold);
         getVerticalScrollBar().setUI(scrollBarUI);
+        Logs.d(TAG, "Indicator", nVisibleLines, frameSizeLines, frOffset, lineH,
+                vtMinThreshold, vtMaxThreshold);
     }
 
     public boolean scroll(int scrollAmt) {
@@ -289,10 +249,7 @@ public class VTScrollPane extends JScrollPane {
 
     public int getNVisibleLines() {
         String TAG = NAME + "getNVisibleLines";
-        int max = getVerticalScrollBar().getModel().getMaximum();
-        int extent = getVerticalScrollBar().getModel().getExtent();
-        Logs.d(TAG, max, extent, nLines);
-        return extent * nLines / max;
+        return dim.height / getLineHeight();
     }
 
     public int getMaxScrollVal() {

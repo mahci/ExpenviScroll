@@ -122,7 +122,7 @@ public class TDScrollPane extends JScrollPane {
         Object[][] tableData = new Object[nRows][nRows];
         for (int i = 0; i < nRows; i++) {
             for (int j = 0; j < nRows; j++) {
-                tableData[i][j] = Utils.randInt(1, 10);
+                tableData[i][j] = Utils.randInt(1, 100);
             }
         }
         DefaultTableModel model = new DefaultTableModel(tableData, colNames);

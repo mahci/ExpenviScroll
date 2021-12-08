@@ -64,7 +64,6 @@ public class MainFrame extends JFrame {
 
     public static void scroll(double vtScrollMM, double hzScrollMM) {
         experimentPanel.scroll(vtScrollMM, hzScrollMM);
-
     }
 
     public static void stopScroll() {

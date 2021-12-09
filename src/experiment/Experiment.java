@@ -33,7 +33,7 @@ public class Experiment {
     public final int HZ_N_VISIBLE_COLS = 15;
 
     // 2D
-    public static final int TD_N_ROWS = 200; // = num of columns
+    public static final int TD_N_ROWS = 1000; // = num of columns
     public static final int TD_N_VIS_ROWS = 25; // = num of visible cols
     public static final double TD_CELL_SIZE_mm = 7.0; // Side of cells in mm
     public static final double TD_SCROLL_BAR_W_mm = 5.0; // Length = side of the pane

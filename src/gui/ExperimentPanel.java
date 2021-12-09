@@ -45,8 +45,6 @@ public class ExperimentPanel extends JLayeredPane {
     // TEMP
     Point panePos = new Point();
     Dimension paneDim = new Dimension();
-    int hlR = 67;
-    int hlC = 100;
     boolean isVt;
 
     // -------------------------------------------------------------------------------------------
@@ -163,33 +161,28 @@ public class ExperimentPanel extends JLayeredPane {
                     int frEndInd = frOffset + frameSize;
                     int maxNCells = frOffset + frameSize - 1;
                     int minNCelss = frOffset;
-                    tdScrollPane.getHorizontalScrollBar().setValue(
-                            (hlC - maxNCells) * cellSize);
-//                    tdScrollPane.getVerticalScrollBar().setValue(
-//                            (hlR - maxNCells) * cellSize);
-//                    tdScrollPane.getVerticalScrollBar().setValue((hlR - frOffset) * cellSize);
-                    Logs.d(TAG, hlR, frOffset, cellSize, (hlR - frOffset) * cellSize);
-                    tdScrollPane.getVerticalScrollBar().setValue((hlR - (frameSize - 1) - frOffset) * cellSize);
                 }
 
                 if (e.getKeyCode() == KeyEvent.VK_UP) {
-                    Controller.get().testStopScroll();
-            repaint();
-                    Controller.get().testScroll(-2);
+//                    Controller.get().testStopScroll();
+//                    repaint();
+//                    Controller.get().testScroll(-2);
+                    scroll(-10, 0);
                 }
 
                 if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-                    Controller.get().testStopScroll();
-//            repaint();
-                    Controller.get().testScroll(1);
-                }
-
-                if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+//                    Controller.get().testStopScroll();
+//                    repaint();
+//                    Controller.get().testScroll(1);
                     scroll(10, 0);
                 }
 
+                if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+                    scroll(0, 10);
+                }
+
                 if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-                    scroll(-10, 0);
+                    scroll(0, -10);
                 }
 
             }
@@ -385,17 +378,15 @@ public class ExperimentPanel extends JLayeredPane {
 
     /**
      * Scroll the 2D scrollPane
-     * @param vtScrollMM Vertical scroll amount (mm)
-     * @param hzScrollMM Horizontal scroll amount (mm)
+     * @param vtScrollAmt Vertical scroll amount
+     * @param hzScrollAmt Horizontal scroll amount
      */
-    public void scroll(double vtScrollMM, double hzScrollMM) {
+    public void scroll(int vtScrollAmt, int hzScrollAmt) {
         String TAG = NAME + "scroll";
 
         boolean isScrolled = false;
 
-        int vtScrollAmt = Utils.mm2px(vtScrollMM);
-        int hzScrollAmt = Utils.mm2px(hzScrollMM);
-        Logs.d(TAG, "Scrolling", vtScrollMM, hzScrollMM);
+        Logs.d(TAG, "Scrolling", vtScrollAmt, hzScrollAmt);
 
         switch (trial.scrollMode()) {
         case VERTICAL -> {
@@ -404,32 +395,14 @@ public class ExperimentPanel extends JLayeredPane {
 //            if (isScrolled) repaint();
         }
         case TWO_DIM -> {
-            Dimension vpDim = tdScrollPane.getViewport().getView().getSize(); // Can be also Preferred
-            int vtSBExtent = tdScrollPane.getVerticalScrollBar().getModel().getExtent();
-            int hzSBExtent = tdScrollPane.getHorizontalScrollBar().getModel().getExtent();
-
-            // Scroll only if inside the limits
-            Point vpPos = tdScrollPane.getViewport().getViewPosition();
-            int newX = vpPos.x + hzScrollAmt;
-            if (newX != vpPos.x && newX >= 0 && newX <= (vpDim.width - hzSBExtent)) {
-                Logs.d(TAG, "NewX", newX);
-                tdScrollPane.getViewport().setViewPosition(new Point(newX, vpPos.y));
-                isScrolled = true;
-            }
-
-            int newY = vpPos.y + vtScrollAmt;
-            vpPos = tdScrollPane.getViewport().getViewPosition();
-            if (newY != vpPos.y && newY >= 0 && newY <= (vpDim.height - vtSBExtent)) {
-                tdScrollPane.getViewport().setViewPosition(new Point(vpPos.x, newY));
-                isScrolled = true;
-            }
-
+            tdScrollPane.scroll(vtScrollAmt, hzScrollAmt);
+//            repaint();
 //            if (isScrolled) repaint();
         }
         }
 
-
     }
+
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -439,6 +412,7 @@ public class ExperimentPanel extends JLayeredPane {
         Logs.d(TAG, "Painting", 0);
 
         // Draw frames
+
         if (paintTrial) {
             Graphics2D g2d = (Graphics2D) g;
             Logs.d(TAG, "Painting trial", 0);
@@ -479,7 +453,7 @@ public class ExperimentPanel extends JLayeredPane {
             }
             }
 
-            paintTrial = false;
+//            paintTrial = false;
         }
 
     }

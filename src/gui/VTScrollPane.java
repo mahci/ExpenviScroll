@@ -152,17 +152,6 @@ public class VTScrollPane extends JScrollPane {
         return this;
     }
 
-    /**
-     * Final creation of the component
-     * @return Current instance
-     */
-    public VTScrollPane create() {
-        getViewport().add(bodyTextPane);
-//        setRowHeaderView(linesTextPane);
-
-        return this;
-    }
-
     public void highlight(int lineInd, int frameSizeLines) {
         String TAG = NAME + "highlight";
         // Highlight line

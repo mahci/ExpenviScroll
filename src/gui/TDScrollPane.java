@@ -246,6 +246,35 @@ public class TDScrollPane extends JScrollPane {
 
     }
 
+    public void scroll(int vtScrollAmt, int hzScrollAmt) {
+        final String TAG = NAME + "scroll";
+
+        final Dimension vpDim = bodyTable.getPreferredSize();
+        final int vtExtent = getVerticalScrollBar().getModel().getExtent();
+        final int hzExtent = getHorizontalScrollBar().getModel().getExtent();
+
+        if (vtScrollAmt != 0) {
+            final Point vpPos = getViewport().getViewPosition();
+            final int newY = vpPos.y + vtScrollAmt;
+            // Scroll only if amount != 0 and inside the limits
+            if (newY >= 0 && newY <= (vpDim.height - vtExtent)) {
+                getViewport().setViewPosition(new Point(vpPos.x, newY));
+                Logs.d(TAG, "vt scrolled to ", newY);
+            }
+        }
+
+        if (hzScrollAmt != 0) {
+            final Point vpPos = getViewport().getViewPosition();
+            final int newX = vpPos.x + hzScrollAmt;
+            if (newX >= 0 && newX <= (vpDim.width - hzExtent)) {
+                getViewport().setViewPosition(new Point(newX, vpPos.y));
+                Logs.d(TAG, "hz scrolled to ", newX);
+            }
+        }
+
+        repaint();
+    }
+
     //-------------------------------------------------------------------------------------------------
 
     /**

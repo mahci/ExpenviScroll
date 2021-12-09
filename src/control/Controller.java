@@ -30,12 +30,12 @@ public class Controller {
     // For scrolling constantly!
     private class ConstantScrollRunnable implements Runnable {
 
-        private final double vtScrollMM; // Movement delta / 1 ms
-        private final double hzScrollMM; // Movement delta / 1 ms
+        private final int vtScrollAmt; // Movement delta / 1 ms
+        private final int hzScrollAmt; // Movement delta / 1 ms
 
-        private ConstantScrollRunnable(double vtScrollMM, double hzScrollMM) {
-            this.vtScrollMM = vtScrollMM;
-            this.hzScrollMM = hzScrollMM;
+        private ConstantScrollRunnable(int vtScrollAmt, int hzScrollAmt) {
+            this.vtScrollAmt = vtScrollAmt;
+            this.hzScrollAmt = hzScrollAmt;
         }
 
         @Override
@@ -43,8 +43,8 @@ public class Controller {
             String TAG = NAME + "ConstantScrollRunnable";
             try {
                 while (toScroll) {
-                    Logs.d(TAG, "Scrolling with", vtScrollMM);
-                    MainFrame.scroll(vtScrollMM, hzScrollMM);
+                    Logs.d(TAG, "Scrolling with", vtScrollAmt, hzScrollAmt);
+                    MainFrame.scroll(vtScrollAmt, hzScrollAmt);
                     Thread.currentThread().sleep(1); // 1 min = 60*1000, 1 sec = 1000
                 }
             } catch (InterruptedException e) {
@@ -91,40 +91,53 @@ public class Controller {
      */
     public void perform(Memo memo) {
         String TAG = NAME + "scroll";
-        Logs.d(TAG, "Received", memo.toString(), memo.getValue1());
+        Logs.d(TAG, "Received", memo.toString());
+
+        final int vtScrollAmt = Utils.mm2px(memo.getValue1Double());
+        final int hzScrollAmt = Utils.mm2px(memo.getValue2Double());
 
         switch (memo.getMode()) {
         case DRAG -> {
-            double vtScrollMM = memo.getValue1Double();
-            double hzScrollMM = memo.getValue2Double();
-
-            MainFrame.scroll(vtScrollMM, hzScrollMM);
+            MainFrame.scroll(vtScrollAmt, hzScrollAmt);
         }
         case RB -> {
             // Stop prev. scrolling if new command has come
             if (scrollThreadGroup != null) {
                 Logs.d(TAG, "RB", "Interrupted!");
 //                scrollThreadGroup.stop();
-                toScroll = false;
+//                toScroll = false;
 //                MainFrame.stopScroll();
             }
 
-            if (memo.getValue1().equals(STOP)) {
-//                MainFrame.stopScroll();
-                scrollThreadGroup.stop();
-            } else {
-                Logs.d(TAG, "RB", memo.getValue1());
-                double vtScrollMM = memo.getValue1Double();
-                double hzScrollMM = memo.getValue2Double();
-
+            stopScroll();
+            if (!memo.getValue1().equals(STOP)) {
                 toScroll = true;
-                scrollThread = new Thread(scrollThreadGroup, new ConstantScrollRunnable(vtScrollMM, hzScrollMM));
+                scrollThread = new Thread(new ConstantScrollRunnable(vtScrollAmt, hzScrollAmt));
                 scrollThread.start();
             }
 
+//            if (memo.getValue1().equals(STOP)) {
+//                stopScroll();
+////                MainFrame.stopScroll();
+////                scrollThreadGroup.stop();
+//            } else {
+//                toScroll = true;
+//                scrollThread = new Thread(
+//                        scrollThreadGroup,
+//                        new ConstantScrollRunnable(vtScrollAmt, hzScrollAmt));
+//                scrollThread.start();
+//            }
+
         }
         }
 
+    }
+
+    private void stopScroll() {
+        if (scrollThread != null && !scrollThread.isInterrupted()) {
+            toScroll = false;
+            scrollThread.interrupt();
+        }
     }
 
     public void testScroll(int vtAmt) {

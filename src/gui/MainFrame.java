@@ -62,12 +62,12 @@ public class MainFrame extends JFrame {
 //        Logs.info("TAG", Toolkit.getDefaultToolkit().getScreenResolution());
     }
 
-    public static void scroll(double vtScrollMM, double hzScrollMM) {
-        experimentPanel.scroll(vtScrollMM, hzScrollMM);
+    public static void scroll(int vtScrollAmt, int hzScrollAmt) {
+        experimentPanel.scroll(vtScrollAmt, hzScrollAmt);
     }
 
     public static void stopScroll() {
-        experimentPanel.validate();
+        experimentPanel.repaint();
     }
 
 }

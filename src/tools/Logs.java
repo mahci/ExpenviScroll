@@ -14,7 +14,7 @@ public class Logs {
 //        toLogList.add("Server");
 //        toLogList.add("ExperimentPanel");
         toLogList.add("Controller");
-//        toLogList.add("TDScrollPane");
+        toLogList.add("TDScrollPane");
 //        toLogList.add("MyScrollBarUI");
         toLogList.add("VTScrollPane");
     }

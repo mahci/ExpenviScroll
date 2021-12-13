@@ -1,6 +1,7 @@
 package gui;
 
 import tools.Logs;
+import tools.MinMax;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicScrollBarUI;
@@ -28,6 +29,12 @@ public class MyScrollBarUI extends BasicScrollBarUI {
         highlightColor = hlColor;
         highlightMin = hlMin;
         highlightMax = hlMax;
+    }
+
+    public void setHighlightFrame(Color hlColor, MinMax hlMinMax) {
+        highlightColor = hlColor;
+        highlightMin = hlMinMax.getMin();
+        highlightMax = hlMinMax.getMax();
     }
 
     @Override

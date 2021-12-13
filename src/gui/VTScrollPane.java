@@ -1,9 +1,6 @@
 package gui;
 
-import tools.Consts;
-import tools.DimensionD;
-import tools.Logs;
-import tools.Utils;
+import tools.*;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicScrollBarUI;
@@ -35,7 +32,8 @@ public class VTScrollPane extends JScrollPane {
     private JTextPane bodyTextPane;
     private MyScrollBarUI scrollBarUI;
 
-    protected int targetMinScVal, targetMaxScVal;
+//    protected int targetMinScVal, targetMaxScVal;
+    private MinMax mTargetMinMax = new MinMax();
     private int nLines;
     //-------------------------------------------------------------------------------------------------
 
@@ -174,15 +172,15 @@ public class VTScrollPane extends JScrollPane {
         int nVisibleLines = getNVisibleLines();
         int frOffset = (nVisibleLines - frameSizeLines) / 2;
         int lineH = getLineHeight();
-        int vtMinThreshold = (lineInd - (frameSizeLines - 1) - frOffset) * lineH;
-        int vtMaxThreshold = (lineInd - frOffset) * lineH;
+        mTargetMinMax.setMin((lineInd - (frameSizeLines - 1) - frOffset) * lineH);
+        mTargetMinMax.setMax((lineInd - frOffset) * lineH);
         scrollBarUI.setHighlight(
                 COLORS.SCROLLBAR_HIGHLIGHT,
-                vtMinThreshold,
-                vtMaxThreshold);
+                mTargetMinMax.getMin(),
+                mTargetMinMax.getMax());
         getVerticalScrollBar().setUI(scrollBarUI);
         Logs.d(TAG, "Indicator", nVisibleLines, frameSizeLines, frOffset, lineH,
-                vtMinThreshold, vtMaxThreshold);
+                mTargetMinMax.getMin(), mTargetMinMax.getMax());
     }
 
     public boolean scroll(int scrollAmt) {
@@ -245,7 +243,10 @@ public class VTScrollPane extends JScrollPane {
         return getVerticalScrollBar().getMaximum();
     }
 
-
+    public boolean isInsideFrames(int scrollVal) {
+        final String TAG = NAME + "isInsideFrames";
+        return mTargetMinMax.isWithin(scrollVal);
+    }
 
     //-------------------------------------------------------------------------------------------------
 
@@ -260,8 +261,8 @@ public class VTScrollPane extends JScrollPane {
 
             // Highlight scroll bar rect
             double ratio = trackBounds.height / (getVerticalScrollBar().getMaximum() * 1.0);
-            int hlY = (int) (targetMinScVal * ratio);
-            int hlH = (int) ((targetMaxScVal - targetMinScVal) * ratio) + getThumbBounds().height;
+            int hlY = (int) (mTargetMinMax.getMin() * ratio);
+            int hlH = (int) (mTargetMinMax.getRange() * ratio) + getThumbBounds().height;
             g.setColor(Consts.COLORS.SCROLLBAR_HIGHLIGHT);
             g.fillRect(trackBounds.x, hlY, trackBounds.width, hlH);
         }

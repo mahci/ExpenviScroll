@@ -1,6 +1,5 @@
 package gui;
 
-import experiment.Experiment;
 import tools.*;
 
 import javax.swing.*;
@@ -28,6 +27,15 @@ public class TDScrollPane extends JScrollPane {
 
     private MyScrollBarUI vtScrollBarUI;
     private MyScrollBarUI hzScrollBarUI;
+
+    private boolean isHighlighted;
+//    private int mVtScrollTargetMin;
+//    private int mVtScrollTargetMax;
+//    private int mHzScrollTargetMin;
+//    private int mHzScrollTargetMax;
+    private MinMax mTargetVtMinMax = new MinMax();
+    private MinMax mTargetHzMinMax = new MinMax();
+
 
     //-------------------------------------------------------------------------------------------------
 
@@ -218,32 +226,26 @@ public class TDScrollPane extends JScrollPane {
         String TAG = NAME + "highlight";
 
         // Highlight the cell
-        HighlightRenderer cellHighlighter = new HighlightRenderer(rInd, cInd);
-        cellHighlighter.setHorizontalAlignment(SwingConstants.CENTER);
-        bodyTable.getColumnModel().getColumn(cInd).setCellRenderer(cellHighlighter);
+        HighlightTableRenderer hlRenderer = new HighlightTableRenderer(rInd, cInd);
+        bodyTable.setDefaultRenderer(bodyTable.getColumnClass(cInd), hlRenderer);
 
         //-- Show indicators in the scrollbars
         int frOffset = (nVisRows - frameSizeCells) / 2;
+
         // Vertical
-        int vtMinThreshold = (rInd - (frameSizeCells - 1) - frOffset) * cellSize;
-        int vtMaxThreshold = (rInd - frOffset) * cellSize;
-        vtScrollBarUI.setHighlight(
-                COLORS.SCROLLBAR_HIGHLIGHT,
-                vtMinThreshold,
-                vtMaxThreshold);
+        mTargetVtMinMax.setMin((rInd - (frameSizeCells - 1) - frOffset) * cellSize);
+        mTargetVtMinMax.setMax((rInd - frOffset) * cellSize);
+        vtScrollBarUI.setHighlightFrame(COLORS.SCROLLBAR_HIGHLIGHT, mTargetVtMinMax);
         getVerticalScrollBar().setUI(vtScrollBarUI);
 
         // Horizontal
-        int hzMinThreshold = (cInd - (frameSizeCells - 1) - frOffset) * cellSize;
-        int hzMaxThreshold = (cInd - frOffset) * cellSize;
-        hzScrollBarUI.setHighlight(
-                COLORS.SCROLLBAR_HIGHLIGHT,
-                hzMinThreshold,
-                hzMaxThreshold);
+        mTargetHzMinMax.setMin((cInd - (frameSizeCells - 1) - frOffset) * cellSize);
+        mTargetHzMinMax.setMax((cInd - frOffset) * cellSize);
+        hzScrollBarUI.setHighlightFrame(COLORS.SCROLLBAR_HIGHLIGHT, mTargetHzMinMax);
         getHorizontalScrollBar().setUI(hzScrollBarUI);
 
+        isHighlighted = true;
         return this;
-
     }
 
     public void scroll(int vtScrollAmt, int hzScrollAmt) {
@@ -275,6 +277,17 @@ public class TDScrollPane extends JScrollPane {
         repaint();
     }
 
+    /**
+     * Check if the vt,hz scroll values are inside the frames
+     * @param vtScrollVal VT scroll value
+     * @param hzScrollVal HZ scroll value
+     * @return Boolean
+     */
+    public boolean isInsideFrames(int vtScrollVal, int hzScrollVal) {
+        final String TAG = NAME + "isInsideFrames";
+        return mTargetVtMinMax.isWithin(vtScrollVal) && mTargetHzMinMax.isWithin(hzScrollVal);
+    }
+
     //-------------------------------------------------------------------------------------------------
 
     /**
@@ -295,10 +308,34 @@ public class TDScrollPane extends JScrollPane {
             super.getTableCellRendererComponent(table, obj, isSelected, hasFocus, row, column);
 
             if (row == rowInd && column == colInd) setBackground(COLORS.CELL_HIGHLIGHT);
-            else setBackground(table.getBackground());
+            else setBackground(UIManager.getColor("Table.background"));
 
             return this;
 
+        }
+    }
+
+    private static class HighlightTableRenderer extends DefaultTableCellRenderer {
+
+        private final int r, c;
+
+        public HighlightTableRenderer(int row, int col) {
+            r = row;
+            c = col;
+
+            setHorizontalAlignment(SwingConstants.CENTER);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                                                       boolean isSelected, boolean hasFocus,
+                                                       int row, int column) {
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+            if (row == r && column == c) setBackground(COLORS.CELL_HIGHLIGHT);
+            else setBackground(UIManager.getColor("Table.background"));
+
+            return this;
         }
     }
 

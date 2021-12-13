@@ -7,8 +7,15 @@ import tools.*;
 
 import javax.naming.ldap.Control;
 import javax.swing.*;
+import java.applet.Applet;
+import java.applet.AudioClip;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
+import java.util.Objects;
 
 import static experiment.Experiment.*;
 
@@ -20,6 +27,9 @@ public class ExperimentPanel extends JLayeredPane {
     // Constants
     private double LR_MARGIN_mm = 20; // (mm) Left-right margin
     private double TB_MARGIN_mm = 20; // (mm) Left-right margin
+
+    private final String HIT_SOUND = "hit.wav";
+    private final String MISS_SOUND = "miss.wav";
 
     // Experiment and trial
     private Experiment experiment;
@@ -39,8 +49,10 @@ public class ExperimentPanel extends JLayeredPane {
     private int targetColNum, randColNum;
     private int targetLineNum, randLineNum;
     private boolean isScrollingEnabled = false;
-    private int frameSize = 3;
+//    private int frameSize = 3;
     private boolean paintTrial;
+    private Rectangle mVtFrameRect = new Rectangle();
+    private Rectangle mHzFrameRect = new Rectangle();
 
     // TEMP
     Point panePos = new Point();
@@ -60,6 +72,27 @@ public class ExperimentPanel extends JLayeredPane {
                 label = new JLabel("Thank you for your participation!");
                 add(label, 0);
             }
+        }
+    };
+
+    private final Action mEndTrialAction = new AbstractAction() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (trial != null) {
+                if (checkSuccess()) playSound(HIT_SOUND);
+                else playSound(MISS_SOUND);
+            }
+
+            removeAll();
+            // Get a random-generated trial from experiment and show it
+            if (isVt) {
+                trial = experiment.randVtTrial();
+                isVt = false;
+            } else {
+                trial = experiment.randTdTrial();
+                isVt = true;
+            }
+            showTrial();
         }
     };
 
@@ -106,17 +139,14 @@ public class ExperimentPanel extends JLayeredPane {
                 KeyEvent.VK_SPACE, 0, true),
                 "SPACE");
 //        getActionMap().put("SPACE", nextTrial);
-        getActionMap().put("SPACE", randomTrial);
+//        getActionMap().put("SPACE", randomTrial);
+        getActionMap().put("SPACE", mEndTrialAction);
 
         // Add the start label
         label = new JLabel("Press SPACE to start the experiment", JLabel.CENTER);
         label.setFont(new Font("Sans", Font.BOLD, 35));
         label.setBounds(850, 500, 1000, 400);
         add(label, 0);
-
-
-
-//        repaint();
 
 
         // [FOR TEST]
@@ -155,12 +185,12 @@ public class ExperimentPanel extends JLayeredPane {
 //                    rect.translate(centerX, centerY);
 //                    tdScrollPane.getViewport().scrollRectToVisible(rect);
 //                    tdScrollPane.getVerticalScrollBar().setValue(1800);
-                    int cellSize = Utils.mm2px(experiment.TD_CELL_SIZE_mm);
-                    int frOffset = (experiment.TD_N_VIS_ROWS - frameSize) / 2;
-                    int frStartInd = frOffset + 1;
-                    int frEndInd = frOffset + frameSize;
-                    int maxNCells = frOffset + frameSize - 1;
-                    int minNCelss = frOffset;
+//                    int cellSize = Utils.mm2px(experiment.TD_CELL_SIZE_mm);
+//                    int frOffset = (experiment.TD_N_VIS_ROWS - frameSize) / 2;
+//                    int frStartInd = frOffset + 1;
+//                    int frEndInd = frOffset + frameSize;
+//                    int maxNCells = frOffset + frameSize - 1;
+//                    int minNCelss = frOffset;
                 }
 
                 if (e.getKeyCode() == KeyEvent.VK_UP) {
@@ -232,46 +262,6 @@ public class ExperimentPanel extends JLayeredPane {
     }
 
     /**
-     * Filled later...
-     */
-    private void showTrial() {
-        String TAG = NAME + "showTrial";
-        Logs.d(TAG, "Mode", trial.scrollMode().toString());
-        // Send the mode to Moose
-//        Server.get().send(new Memo(MODE, trial.scrollMode().toString(), 0, 0));
-
-        // If panes aren't created, create them (only once)
-        if (vtScrollPane == null || tdScrollPane == null) createPanes();
-
-        // Show the trial
-        switch (trial.scrollMode()) {
-            case VERTICAL -> {
-                paneDim = vtScrollPane.getPreferredSize();
-                panePos = getRandPosition(paneDim);
-
-                vtScrollPane.setBounds(panePos.x, panePos.y, paneDim.width, paneDim.height);
-                vtScrollPane.highlight(randVtLineInd(), trial.frame());
-
-                add(vtScrollPane, 0);
-            }
-            case TWO_DIM -> {
-                paneDim = tdScrollPane.getPreferredSize();
-                panePos = getRandPosition(paneDim);
-
-                tdScrollPane.setBounds(panePos.x, panePos.y, paneDim.width, paneDim.height);
-
-                Pair<Integer, Integer> hlInd = randTdInd();
-                tdScrollPane.highlight(hlInd.getFirst(), hlInd.getSecond(), trial.frame());
-
-                add(tdScrollPane, 0);
-            }
-        }
-
-        paintTrial = true;
-        repaint();
-    }
-
-    /**
      * Create one instance of each pane
      */
     private void createPanes() {
@@ -286,8 +276,85 @@ public class ExperimentPanel extends JLayeredPane {
                 .setText("lorem.txt", VT_WRAP_CHARS_COUNT, VT_TEXT_FONT_SIZE)
                 .setScrollBar(VT_SCROLL_BAR_W_mm, VT_SCROLL_THUMB_H_mm);
 
+    }
 
-        Logs.d(TAG, "lineH (mm)", Utils.px2mm(vtScrollPane.getLineHeight()));
+    private void showTrial() {
+        String TAG = NAME + "showTrial";
+        Logs.d(TAG, "Mode", trial.scrollMode().toString());
+
+        // If panes aren't created, create them (only once)
+        if (vtScrollPane == null || tdScrollPane == null) createPanes();
+
+        // Reset the frames
+        mVtFrameRect = new Rectangle();
+        mHzFrameRect = new Rectangle();
+
+        // Show the trial
+        switch (trial.scrollMode()) {
+            case VERTICAL -> {
+                paneDim = vtScrollPane.getPreferredSize();
+                panePos = getRandPosition(paneDim);
+
+                vtScrollPane.setBounds(panePos.x, panePos.y, paneDim.width, paneDim.height);
+                vtScrollPane.highlight(randVtLineInd(), trial.frame());
+
+                add(vtScrollPane, 0);
+
+                // Set frame to be drawn (by paintComponent())
+                int lineH = vtScrollPane.getLineHeight();
+
+                mVtFrameRect.width = Utils.mm2px(experiment.TD_FRAME_H_mm);
+                mVtFrameRect.height = trial.frame() * lineH;
+                mVtFrameRect.x = panePos.x - mVtFrameRect.width;
+                mVtFrameRect.y = panePos.y + ((vtScrollPane.getNVisibleLines() - trial.frame()) / 2) * lineH;
+            }
+            case TWO_DIM -> {
+                paneDim = tdScrollPane.getPreferredSize();
+                panePos = getRandPosition(paneDim);
+
+                tdScrollPane.setBounds(panePos.x, panePos.y, paneDim.width, paneDim.height);
+
+                Pair<Integer, Integer> hlInd = randTdInd();
+                tdScrollPane.highlight(hlInd.getFirst(), hlInd.getSecond(), trial.frame());
+
+                add(tdScrollPane, 0);
+
+                // Set frames to be drawn (by paintComponent())
+                final int cellSize = Utils.mm2px(experiment.TD_CELL_SIZE_mm);
+                final int frameH = Utils.mm2px(experiment.TD_FRAME_H_mm);
+
+                mVtFrameRect.width = frameH;
+                mVtFrameRect.height = trial.frame() * cellSize;
+                mVtFrameRect.x = panePos.x - mVtFrameRect.width;
+                mVtFrameRect.y = panePos.y + ((experiment.TD_N_VIS_ROWS - trial.frame()) / 2) * cellSize;
+
+                mHzFrameRect.width = trial.frame() * cellSize;
+                mHzFrameRect.height = frameH;
+                mHzFrameRect.x = panePos.x + ((experiment.TD_N_VIS_ROWS - trial.frame()) / 2) * cellSize;
+                mHzFrameRect.y = panePos.y - mHzFrameRect.height;
+            }
+        }
+
+        paintTrial = true;
+        revalidate();
+        repaint();
+    }
+
+    private boolean checkSuccess() {
+        boolean result = false;
+        switch (trial.scrollMode()) {
+        case VERTICAL -> {
+            final int vtScrollVal = vtScrollPane.getVerticalScrollBar().getValue();
+            result = vtScrollPane.isInsideFrames(vtScrollVal);
+        }
+        case TWO_DIM -> {
+            final int vtScrollVal = tdScrollPane.getVerticalScrollBar().getValue();
+            final int hzScrollVal = tdScrollPane.getHorizontalScrollBar().getValue();
+            result = tdScrollPane.isInsideFrames(vtScrollVal, hzScrollVal);
+        }
+        }
+
+        return result;
     }
 
     /**
@@ -343,38 +410,6 @@ public class ExperimentPanel extends JLayeredPane {
         return result;
     }
 
-    /**
-     * Get the vertical scroll bar values corresponding to a target cell
-     * @param frLen Length of the frame (always centered)
-     * @param tgRow Target row {fRMin <= tgRow <= (TNR - VNR) + fRMax)}
-     * @return Pair (min, max)
-     */
-    private Pair<Integer, Integer> getVtTargetRange(int frLen, int tgRow) {
-        String TAG = NAME + "getVtTargetRange";
-
-        Pair<Integer, Integer> result = Pair.of(0,0);
-
-        int nRows = experiment.TD_N_ROWS;
-        int nVisibleRows = experiment.TD_N_VIS_ROWS;
-        Pair<Integer, Integer> vtSBMinMax = Pair.of(
-                tdScrollPane.getVerticalScrollBar().getMinimum(),
-                tdScrollPane.getVerticalScrollBar().getMaximum());
-        Logs.d(TAG, vtSBMinMax);
-        // ATTENTION: minimum = 0
-        int rowScrollValue = vtSBMinMax.getSecond() / (nRows - nVisibleRows); // How much value for a row scroll?
-        Logs.d(TAG, rowScrollValue);
-        // Min/max of frame (rows)
-        Pair<Integer, Integer> frMinMax = Pair.of(
-                (nVisibleRows / 2) - (frLen / 2),
-                (nVisibleRows / 2) + (frLen / 2));
-        Logs.d(TAG, frMinMax);
-        // Vertical target values
-        result.setFirst(tgRow - frMinMax.getSecond() * rowScrollValue);
-        result.setSecond(tgRow + frMinMax.getFirst() * rowScrollValue);
-
-        return result;
-
-    }
 
     /**
      * Scroll the 2D scrollPane
@@ -411,50 +446,37 @@ public class ExperimentPanel extends JLayeredPane {
 
         Logs.d(TAG, "Painting", 0);
 
-        // Draw frames
+        Graphics2D g2d = (Graphics2D) g;
+        Logs.d(TAG, "Painting trial", 0);
 
-        if (paintTrial) {
-            Graphics2D g2d = (Graphics2D) g;
-            Logs.d(TAG, "Painting trial", 0);
-            int frameH = Utils.mm2px(experiment.TD_FRAME_H_mm);
-
-            switch (trial.scrollMode()) {
-            case VERTICAL -> {
-                int lineH = vtScrollPane.getLineHeight();
-                Logs.d(TAG, "lineH", lineH);
-                Rectangle vtFrameRect = new Rectangle();
-                vtFrameRect.width = frameH;
-                vtFrameRect.height = trial.frame() * lineH;
-                vtFrameRect.x = panePos.x - vtFrameRect.width;
-                vtFrameRect.y = panePos.y + ((vtScrollPane.getNVisibleLines() - trial.frame()) / 2) * lineH;
-
-                g2d.setColor(Consts.COLORS.CELL_HIGHLIGHT);
-                g2d.fillRect(vtFrameRect.x, vtFrameRect.y, vtFrameRect.width, vtFrameRect.height);
-
-            }
-            case TWO_DIM -> {
-                int cellSize = Utils.mm2px(experiment.TD_CELL_SIZE_mm);
-
-                Rectangle vtFrameRect = new Rectangle();
-                vtFrameRect.width = frameH;
-                vtFrameRect.height = trial.frame() * cellSize;
-                vtFrameRect.x = panePos.x - vtFrameRect.width;
-                vtFrameRect.y = panePos.y + ((experiment.TD_N_VIS_ROWS - trial.frame()) / 2) * cellSize;
-
-                Rectangle hzFrameRect = new Rectangle();
-                hzFrameRect.width = trial.frame() * cellSize;
-                hzFrameRect.height = frameH;
-                hzFrameRect.x = panePos.x + ((experiment.TD_N_VIS_ROWS - trial.frame()) / 2) * cellSize;
-                hzFrameRect.y = panePos.y - hzFrameRect.height;
-
-                g2d.setColor(Consts.COLORS.CELL_HIGHLIGHT);
-                g2d.fillRect(vtFrameRect.x, vtFrameRect.y, vtFrameRect.width, vtFrameRect.height);
-                g2d.fillRect(hzFrameRect.x, hzFrameRect.y, hzFrameRect.width, hzFrameRect.height);
-            }
-            }
-
-//            paintTrial = false;
+        g2d.setColor(Consts.COLORS.CELL_HIGHLIGHT);
+        if (mVtFrameRect.width != 0) {
+            g2d.fillRect(
+                    mVtFrameRect.x, mVtFrameRect.y,
+                    mVtFrameRect.width, mVtFrameRect.height
+            );
         }
 
+        if (mHzFrameRect.width != 0) {
+            g2d.fillRect(
+                    mHzFrameRect.x, mHzFrameRect.y,
+                    mHzFrameRect.width, mHzFrameRect.height
+            );
+        }
+
+    }
+
+    private void playSound(String resFileName) {
+        try {
+            final ClassLoader classLoader = getClass().getClassLoader();
+            final File soundFile = new File(Objects.requireNonNull(classLoader.getResource(resFileName)).getFile());
+            final URL url = soundFile.toURI().toURL();
+
+            Applet.newAudioClip(url).play();
+        } catch ( NullPointerException
+                | IOException e
+        ) {
+            e.printStackTrace();
+        }
     }
 }

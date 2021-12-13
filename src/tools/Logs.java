@@ -81,6 +81,16 @@ public class Logs {
         }
     }
 
+    public static void d(String tag, boolean... params) {
+        if(params.length > 0 && showTag(tag)) {
+            StringBuilder sb = new StringBuilder();
+            for(boolean p : params) {
+                sb.append(p).append(" | ");
+            }
+            System.out.println(tag + " >> " + sb);
+        }
+    }
+
     public static void d(String tag, Pair mssg) {
         System.out.println(tag + " >> " + mssg);
     }

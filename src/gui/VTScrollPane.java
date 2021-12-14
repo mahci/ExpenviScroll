@@ -12,6 +12,9 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.html.StyleSheet;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.MouseWheelListener;
 import java.io.FileReader;
 import java.io.IOException;
@@ -19,7 +22,7 @@ import java.util.ArrayList;
 
 import static tools.Consts.COLORS;
 
-public class VTScrollPane extends JScrollPane {
+public class VTScrollPane extends JScrollPane implements MouseListener {
     private final static String NAME = "VTScrollPane/";
     //-------------------------------------------------------------------------------------------------
 
@@ -35,6 +38,8 @@ public class VTScrollPane extends JScrollPane {
 //    protected int targetMinScVal, targetMaxScVal;
     private MinMax mTargetMinMax = new MinMax();
     private int nLines;
+
+    private boolean mIsCursorIn;
     //-------------------------------------------------------------------------------------------------
 
     /**
@@ -150,6 +155,11 @@ public class VTScrollPane extends JScrollPane {
         return this;
     }
 
+    public VTScrollPane create() {
+        getViewport().getView().addMouseListener(this);
+        return this;
+    }
+
     public void highlight(int lineInd, int frameSizeLines) {
         String TAG = NAME + "highlight";
         // Highlight line
@@ -184,14 +194,19 @@ public class VTScrollPane extends JScrollPane {
     }
 
     public boolean scroll(int scrollAmt) {
-        Dimension vpDim = getViewport().getView().getSize(); // Can be also Preferred
-        int extent = getVerticalScrollBar().getModel().getExtent();
+        final String TAG = NAME + "scroll";
+        // Scroll only if cursor is inside
+        Logs.d(TAG, mIsCursorIn);
+        if (mIsCursorIn) {
+            Dimension vpDim = getViewport().getView().getSize(); // Can be also Preferred
+            int extent = getVerticalScrollBar().getModel().getExtent();
 
-        Point vpPos = getViewport().getViewPosition();
-        int newY = vpPos.y + scrollAmt;
-        if (newY != vpPos.y && newY >= 0 && newY <= (vpDim.height - extent)) {
-            getViewport().setViewPosition(new Point(vpPos.x, newY));
-            return true;
+            Point vpPos = getViewport().getViewPosition();
+            int newY = vpPos.y + scrollAmt;
+            if (newY != vpPos.y && newY >= 0 && newY <= (vpDim.height - extent)) {
+                getViewport().setViewPosition(new Point(vpPos.x, newY));
+                return true;
+            }
         }
 
         return false;
@@ -246,6 +261,34 @@ public class VTScrollPane extends JScrollPane {
     public boolean isInsideFrames(int scrollVal) {
         final String TAG = NAME + "isInsideFrames";
         return mTargetMinMax.isWithin(scrollVal);
+    }
+
+    //------------------------------------------------------------------------------
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        Logs.d(NAME, "Mouse Clicked", 0);
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+        Logs.d(NAME, "Mouse Pressed", 0);
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+        mIsCursorIn = true;
+        Logs.d(NAME, "Mouse Entered", 0);
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+        mIsCursorIn = false;
+        Logs.d(NAME, "Mouse Exited", 0);
     }
 
     //-------------------------------------------------------------------------------------------------

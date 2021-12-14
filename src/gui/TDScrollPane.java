@@ -6,10 +6,12 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 import static tools.Consts.*;
 
-public class TDScrollPane extends JScrollPane {
+public class TDScrollPane extends JScrollPane implements MouseListener {
     private final static String NAME = "TDScrollPane/";
 
     private JTable bodyTable;                   // Inside table
@@ -36,6 +38,7 @@ public class TDScrollPane extends JScrollPane {
     private MinMax mTargetVtMinMax = new MinMax();
     private MinMax mTargetHzMinMax = new MinMax();
 
+    private boolean mIsCursorIn;
 
     //-------------------------------------------------------------------------------------------------
 
@@ -112,7 +115,6 @@ public class TDScrollPane extends JScrollPane {
 
         getViewport().add(bodyTable);
 
-        Logs.infoAll(TAG, "Table PS= " + bodyTable.getPreferredSize());
         return this;
     }
 
@@ -216,6 +218,11 @@ public class TDScrollPane extends JScrollPane {
         return this;
     }
 
+    public TDScrollPane create() {
+        getViewport().getView().addMouseListener(this);
+        return this;
+    }
+
     /**
      * Highlight one cell
      * @param rInd Row index
@@ -250,31 +257,33 @@ public class TDScrollPane extends JScrollPane {
 
     public void scroll(int vtScrollAmt, int hzScrollAmt) {
         final String TAG = NAME + "scroll";
+        // Scroll only if cursor is inside
+        if (mIsCursorIn) {
+            final Dimension vpDim = bodyTable.getPreferredSize();
+            final int vtExtent = getVerticalScrollBar().getModel().getExtent();
+            final int hzExtent = getHorizontalScrollBar().getModel().getExtent();
 
-        final Dimension vpDim = bodyTable.getPreferredSize();
-        final int vtExtent = getVerticalScrollBar().getModel().getExtent();
-        final int hzExtent = getHorizontalScrollBar().getModel().getExtent();
-
-        if (vtScrollAmt != 0) {
-            final Point vpPos = getViewport().getViewPosition();
-            final int newY = vpPos.y + vtScrollAmt;
-            // Scroll only if amount != 0 and inside the limits
-            if (newY >= 0 && newY <= (vpDim.height - vtExtent)) {
-                getViewport().setViewPosition(new Point(vpPos.x, newY));
-                Logs.d(TAG, "vt scrolled to ", newY);
+            if (vtScrollAmt != 0) {
+                final Point vpPos = getViewport().getViewPosition();
+                final int newY = vpPos.y + vtScrollAmt;
+                // Scroll only if amount != 0 and inside the limits
+                if (newY >= 0 && newY <= (vpDim.height - vtExtent)) {
+                    getViewport().setViewPosition(new Point(vpPos.x, newY));
+                    Logs.d(TAG, "vt scrolled to ", newY);
+                }
             }
-        }
 
-        if (hzScrollAmt != 0) {
-            final Point vpPos = getViewport().getViewPosition();
-            final int newX = vpPos.x + hzScrollAmt;
-            if (newX >= 0 && newX <= (vpDim.width - hzExtent)) {
-                getViewport().setViewPosition(new Point(newX, vpPos.y));
-                Logs.d(TAG, "hz scrolled to ", newX);
+            if (hzScrollAmt != 0) {
+                final Point vpPos = getViewport().getViewPosition();
+                final int newX = vpPos.x + hzScrollAmt;
+                if (newX >= 0 && newX <= (vpDim.width - hzExtent)) {
+                    getViewport().setViewPosition(new Point(newX, vpPos.y));
+                    Logs.d(TAG, "hz scrolled to ", newX);
+                }
             }
-        }
 
-        repaint();
+            repaint();
+        }
     }
 
     /**
@@ -286,6 +295,34 @@ public class TDScrollPane extends JScrollPane {
     public boolean isInsideFrames(int vtScrollVal, int hzScrollVal) {
         final String TAG = NAME + "isInsideFrames";
         return mTargetVtMinMax.isWithin(vtScrollVal) && mTargetHzMinMax.isWithin(hzScrollVal);
+    }
+
+    //------------------------------------------------------------------------------------------------
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        Logs.d(NAME, "Mouse Clicked", 0);
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+        mIsCursorIn = true;
+        Logs.d(NAME, "Mouse Entered", 0);
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+        mIsCursorIn = false;
+        Logs.d(NAME, "Mouse Exited", 0);
     }
 
     //-------------------------------------------------------------------------------------------------

@@ -17,6 +17,8 @@ public class Logs {
         toLogList.add("TDScrollPane");
 //        toLogList.add("MyScrollBarUI");
         toLogList.add("VTScrollPane");
+        toLogList.add("Experiment");
+        toLogList.add("Round");
     }
 
     public static void addTag(String tag) {

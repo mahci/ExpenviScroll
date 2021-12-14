@@ -1,7 +1,12 @@
 package experiment;
 
+import tools.Logs;
 import tools.Utils;
+
+import javax.print.attribute.standard.MediaSize;
 import java.util.*;
+import static experiment.Experiment.*;
+
 
 /**
  * Class for each round of the experiment
@@ -9,10 +14,10 @@ import java.util.*;
  */
 public class Round {
 
-    private final String NAME = "Round--";
+    private final String NAME = "Round/";
     // ------------------------------------------------------------------------------------------
 
-    private class Block {
+    private final class Block {
 
         private ArrayList<Trial> trials = new ArrayList<>();
 
@@ -36,13 +41,13 @@ public class Round {
 
         @Override
         public String toString() {
-            return "Block{" +
-                    "trials=" + trials +
+            return "Block[" + trials.size() + " trials" +
+                    ": " + trials +
                     '}';
         }
     }
 
-    Block[] blocks = new Block[2];
+    private final Block[] mBlocks = new Block[2];
 
     // ------------------------------------------------------------------------------------------
 
@@ -52,34 +57,90 @@ public class Round {
      * @param distances list of distances (in lines/cols)
      * @param frameSizes list of frame heights/widths (in lines/cols)
      */
-    public Round(Experiment.SCROLL_MODE scMode, int[] distances, int[] frames, Experiment.AREA[] areas) {
+    public Round(Experiment.SCROLL_MODE scMode, int[] distances, int[] frames) {
+        final String TAG = NAME + "Round";
 
-        // Create all the combination of dists/fHs/dirs
-        ArrayList<Trial> allTrialsList = new ArrayList<>();
-        for (int d : distances) {
-            for (int f : frames) {
-                for (Experiment.AREA a : areas) {
-                    allTrialsList.add(new Trial(scMode, a, d, f));
+        mBlocks[0] = new Block();
+        mBlocks[1] = new Block();
+
+        Logs.d(TAG, "Mode", scMode.toString());
+        switch (scMode) {
+            case VERTICAL: {
+                // Create blocks
+                for (int d : distances) {
+                    for (int f : frames) {
+                        AREA a0 = AREA.randOne(AREA.N, AREA.S);
+                        mBlocks[0].addTrial(new Trial(scMode, a0, d, f));
+                        AREA a1 = (a0 == AREA.N) ? AREA.S : AREA.N;
+                        mBlocks[1].addTrial(new Trial(scMode, a1, d, f));
+                    }
                 }
+
+                break;
+            }
+
+            case TWO_DIM: {
+                // Create blocks
+                Logs.d(TAG, "Creating TD trials", 0);
+                for (int d : distances) {
+                    for (int f : frames) {
+                        // East in one block
+                        AREA a0 = AREA.randOne(AREA.NE, AREA.SE); // Get an E randomly
+                        mBlocks[0].addTrial(new Trial(scMode, a0, d, f));
+                        AREA a1 = (a0 == AREA.NE) ? AREA.SE : AREA.NE;
+                        mBlocks[0].addTrial(new Trial(scMode, a1, d, f));
+
+                        // West in the other
+                        AREA a2 = AREA.randOne(AREA.NW, AREA.SW); // Get a W randomly
+                        mBlocks[1].addTrial(new Trial(scMode, a2, d, f));
+                        AREA a3 = (a0 == AREA.NW) ? AREA.SW : AREA.NW;
+                        mBlocks[1].addTrial(new Trial(scMode, a3, d, f));
+                    }
+                }
+
+                break;
             }
         }
 
-        // Assign randomly to blocks (for each d/fH, only one dir in each subblock)
-        blocks[0] = new Block();
-        blocks[1] = new Block();
-        List<Integer> permInd = Utils.randPerm(allTrialsList.size() / 2);
-        for (int ind : permInd) {
-            List<Integer> subInd = Utils.randPerm(2); // which subblock gets the top direction?
-            blocks[subInd.get(0)].addTrial(allTrialsList.get(ind * 2));
-            blocks[subInd.get(1)].addTrial(allTrialsList.get(ind * 2 + 1));
-        }
-        Collections.shuffle(blocks[0].trials);
-        Collections.shuffle(blocks[1].trials);
+        // Shuffle each block
+        Collections.shuffle(mBlocks[0].trials);
+        Collections.shuffle(mBlocks[1].trials);
 
     }
 
+    public Round(int[] distances, int[] frames) {
+        mBlocks[0] = new Block();
+        mBlocks[1] = new Block();
+
+        for (int d : distances) {
+            for (int f : frames) {
+                // Vertical (N/S)
+                AREA a0 = AREA.randOne(AREA.N, AREA.S);
+                mBlocks[0].addTrial(new Trial(SCROLL_MODE.VERTICAL, a0, d, f));
+                AREA a1 = (a0 == AREA.N) ? AREA.S : AREA.N;
+                mBlocks[1].addTrial(new Trial(SCROLL_MODE.VERTICAL, a1, d, f));
+
+                // 2D: East in one block
+                a0 = AREA.randOne(AREA.NE, AREA.SE); // Get an E randomly
+                mBlocks[0].addTrial(new Trial(SCROLL_MODE.TWO_DIM, a0, d, f));
+                a1 = (a0 == AREA.NE) ? AREA.SE : AREA.NE;
+                mBlocks[0].addTrial(new Trial(SCROLL_MODE.TWO_DIM, a1, d, f));
+
+                // 2D: West in the other
+                AREA a2 = AREA.randOne(AREA.NW, AREA.SW); // Get a W randomly
+                mBlocks[1].addTrial(new Trial(SCROLL_MODE.TWO_DIM, a2, d, f));
+                AREA a3 = (a0 == AREA.NW) ? AREA.SW : AREA.NW;
+                mBlocks[1].addTrial(new Trial(SCROLL_MODE.TWO_DIM, a3, d, f));
+            }
+        }
+
+        // Shuffle each block
+        Collections.shuffle(mBlocks[0].trials);
+        Collections.shuffle(mBlocks[1].trials);
+    }
+
     public int getNTrials() {
-        return blocks[0].trials.size() * 2;
+        return mBlocks[0].trials.size() * 2;
     }
 
     /**
@@ -88,23 +149,23 @@ public class Round {
      * @return Trial
      */
     public Trial getTrial(int trNum) {
-        int nTrialsInBlock = blocks[0].trials.size();
+        int nTrialsInBlock = mBlocks[0].trials.size();
 
         if (trNum <= 0) return new Trial(); // to avoid returing null
-        else if (trNum <= nTrialsInBlock) return blocks[0].getTrial(trNum);
-        else if (trNum <= 2 * nTrialsInBlock) return blocks[1].getTrial(trNum - nTrialsInBlock);
+        else if (trNum <= nTrialsInBlock) return mBlocks[0].getTrial(trNum);
+        else if (trNum <= 2 * nTrialsInBlock) return mBlocks[1].getTrial(trNum - nTrialsInBlock);
         else return new Trial();
     }
 
     @Override
     public String toString() {
-        String result = "Round{";
+        String result = "Round[";
 
-        if (blocks[0] == null) return result + "Not set";
+        if (mBlocks[0] == null) return result + "Not set";
 
         return result +
-                "SB1 = " + blocks[0] + '\n' +
-                "SB2 = " + blocks[1] +
+                "B1: " + mBlocks[0] + '\n' +
+                "B2: " + mBlocks[1] +
                 "}";
     }
 }

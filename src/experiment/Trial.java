@@ -1,16 +1,19 @@
 package experiment;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import static experiment.Experiment.*;
 
-/***
- * Class of each trial
- */
-public record Trial (SCROLL_MODE scrollMode, AREA area, int distance, int frame) {
-
-    public Trial() {
-        this(SCROLL_MODE.VERTICAL, AREA.N, 0, 0);
-    }
-
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Trial {
+    private SCROLL_MODE scrollMode;
+    private AREA area;
+    private int distance;
+    private int frame;
 
     // ------------------------------------------------------------------------------------
 

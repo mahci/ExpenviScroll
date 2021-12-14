@@ -12,8 +12,8 @@ public class Consts {
 
     // Display
     public static class DISP {
-//        public final static int PPI = 109;
-        public final static int PPI = 89;
+        public final static int PPI = 109;
+//        public final static int PPI = 89;
         public final static double INCH_MM = 25.4;
     }
 

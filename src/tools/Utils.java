@@ -1,5 +1,7 @@
 package tools;
 
+import experiment.Experiment;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -31,6 +33,10 @@ public class Utils {
      */
     public static int randInt(int min, int bound) throws IllegalArgumentException {
         return ThreadLocalRandom.current().nextInt(min, bound);
+    }
+
+    public static Experiment.AREA randOne(Experiment.AREA... areas) {
+        return areas[randInt(0, areas.length)];
     }
 
     /**

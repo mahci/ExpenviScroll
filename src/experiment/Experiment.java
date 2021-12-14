@@ -1,6 +1,7 @@
 package experiment;
 
 import tools.DimensionD;
+import tools.Logs;
 import tools.Utils;
 
 import java.util.ArrayList;
@@ -11,7 +12,7 @@ public class Experiment {
     // ------------------------------------------------------------------------------------------------------
 
     // list of rounds in this experiment
-    private ArrayList<Round> rounds = new ArrayList<>();
+    private ArrayList<Round> mRounds = new ArrayList<>();
 
     //-- Config
     // Vertical
@@ -33,7 +34,7 @@ public class Experiment {
     public final int HZ_N_VISIBLE_COLS = 15;
 
     // 2D
-    public static final int TD_N_ROWS = 1000; // = num of columns
+    public static final int TD_N_ROWS = 300; // = num of columns
     public static final int TD_N_VIS_ROWS = 25; // = num of visible cols
     public static final double TD_CELL_SIZE_mm = 7.0; // Side of cells in mm
     public static final double TD_SCROLL_BAR_W_mm = 5.0; // Length = side of the pane
@@ -44,24 +45,19 @@ public class Experiment {
 //    private Experimenter.ScrollMode mode = Experimenter.ScrollMode.VERTICAL;
 
     //-- Variables
-//    private List<Integer> DISTANCES = Arrays.asList(30, 150); // in lines/cells
-//    private List<Integer> FRAMES = Arrays.asList(3, 5); // in lines/cells
-//    private List<Integer> VT_AREAS = Arrays.asList(1, 5); // 1: UP(N), 5: DOWN(S)
-//    private List<Integer> TD_AREAS = Arrays.asList(2, 4, 6, 8); // NE, SE, SW, NW
-
     private int[] DISTANCES = new int[]{30, 150}; // in lines/cells
     private int[] FRAMES = new int[]{3, 5}; // in lines/cells
     public enum AREA {
-        N(1), S(2), E(3), W(4), NE(5), NW(6), SE(7), SW(8);
+        N(0), S(1), E(2), W(3), NE(4), NW(5), SE(6), SW(7);
         private final int n;
         AREA(int i) { n = i; }
-        // Get a N/S randomly
-        public static AREA randVt() {
-            return AREA.values()[Utils.randInt(0, 2)];
-        }
         // Get a NE/NW/SE/SW randomly
         public static AREA randTd() {
-            return AREA.values()[Utils.randInt(0, 8)];
+            return AREA.values()[Utils.randInt(4, 8)];
+        }
+        // Get a NE/SE randomly
+        public static AREA randOne(AREA... areas) {
+            return values()[Utils.randInt(0, areas.length)];
         }
     };
     public enum SCROLL_MODE {
@@ -75,8 +71,9 @@ public class Experiment {
         private final int n;
         TECHNIQUE(int i) { n = i; }
     }
-    private int VT_REP = 8;
-    private int TD_REP = 1;
+
+    private int VT_REP = 4;
+    private int TD_REP = 2;
 
     int pid;
 
@@ -86,13 +83,13 @@ public class Experiment {
      * Constructor with default values
      */
     public Experiment(int pid) {
+        final String TAG = NAME;
         this.pid = pid;
-        // TODO: We should decide on how to arrange vt and td rounds/trials
 
         // Generate rounds
-//        for (int b = 0; b < nRounds; b++) {
-//            rounds.add(new Round(mode, distances, frameSizes));
-//        }
+        // [TEMP] one round of each mode
+        mRounds.add(new Round(DISTANCES, FRAMES));
+        Logs.d(TAG, "rounds", mRounds.get(0).toString());
     }
 
     /**
@@ -101,14 +98,14 @@ public class Experiment {
      * @return Round
      */
     public Round getRound(int roundNum) {
-        if(roundNum > 0 && roundNum <= rounds.size()) return rounds.get(roundNum - 1);
+        if(roundNum > 0 && roundNum <= mRounds.size()) return mRounds.get(roundNum - 1);
         else return null;
     }
 
     public Trial randVtTrial() {
         int dist = Utils.randElement(DISTANCES);
         int fr = Utils.randElement(FRAMES);
-        return new Trial(SCROLL_MODE.VERTICAL, AREA.randVt(), dist, fr);
+        return new Trial(SCROLL_MODE.VERTICAL, AREA.randOne(AREA.N, AREA.S), dist, fr);
     }
 
     public Trial randTdTrial() {

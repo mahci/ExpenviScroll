@@ -58,11 +58,16 @@ public class Consts {
 
     public static class STRINGS {
         public final static String SP = "_";
-        public final static String MODE = "MODE";
+        public final static String TECHNIQUE = "TECHNIQUE";
         public final static String SCROLL = "SCROLL";
         public final static String DRAG = "DRAG";
         public final static String RB = "RABA";
         public final static String STOP = "STOP";
+        public final static String CONFIG = "CONFIG";
+        public final static String SENSITIVITY = "SENSITIVITY";
+        public final static String GAIN = "GAIN";
+        public final static String DENOM = "DENOM";
+
     }
 
 

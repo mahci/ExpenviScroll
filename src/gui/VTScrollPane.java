@@ -193,7 +193,7 @@ public class VTScrollPane extends JScrollPane implements MouseListener {
                 mTargetMinMax.getMin(), mTargetMinMax.getMax());
     }
 
-    public boolean scroll(int scrollAmt) {
+    public void scroll(int scrollAmt) {
         final String TAG = NAME + "scroll";
         // Scroll only if cursor is inside
         Logs.d(TAG, mIsCursorIn);
@@ -205,11 +205,11 @@ public class VTScrollPane extends JScrollPane implements MouseListener {
             int newY = vpPos.y + scrollAmt;
             if (newY != vpPos.y && newY >= 0 && newY <= (vpDim.height - extent)) {
                 getViewport().setViewPosition(new Point(vpPos.x, newY));
-                return true;
             }
+
+            repaint();
         }
 
-        return false;
     }
 
     /**

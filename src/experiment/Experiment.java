@@ -1,14 +1,19 @@
 package experiment;
 
+import control.Server;
 import tools.DimensionD;
 import tools.Logs;
+import tools.Memo;
 import tools.Utils;
 
 import java.util.ArrayList;
 
-public class Experiment {
+import static experiment.Experiment.TECHNIQUE.DRAG;
+import static experiment.Experiment.TECHNIQUE.RATE_BASED;
+import static tools.Consts.STRINGS.*;
 
-    private final String NAME = "Experiment";
+public class Experiment {
+    private final static String NAME = "Experiment/";
     // ------------------------------------------------------------------------------------------------------
 
     // list of rounds in this experiment
@@ -40,9 +45,6 @@ public class Experiment {
     public static final double TD_SCROLL_BAR_W_mm = 5.0; // Length = side of the pane
     public static final double TD_SCROLL_THUMB_L_mm = 6.0; // Width = width of the scrollbar
     public static final double TD_FRAME_H_mm = 7.0; // Height of frame
-
-    //-- Mode
-//    private Experimenter.ScrollMode mode = Experimenter.ScrollMode.VERTICAL;
 
     //-- Variables
     private int[] DISTANCES = new int[]{30, 150}; // in lines/cells
@@ -77,6 +79,14 @@ public class Experiment {
 
     int pid;
 
+    // Status
+    private static TECHNIQUE mActiveTechnique = DRAG;
+    private static int mDragSensitivity = 2;
+    private static double mDragGain = 100;
+    private static int mRBSensitivity = 1;
+    private static double mRBGain = 1.5;
+    private static int mRBDenom = 50;
+
     // -------------------------------------------------------------------------------------------------------
 
     /**
@@ -89,7 +99,6 @@ public class Experiment {
         // Generate rounds
         // [TEMP] one round of each mode
         mRounds.add(new Round(DISTANCES, FRAMES));
-        Logs.d(TAG, "rounds", mRounds.get(0).toString());
     }
 
     /**
@@ -113,5 +122,41 @@ public class Experiment {
         int fr = Utils.randElement(FRAMES);
         return new Trial(SCROLL_MODE.TWO_DIM, AREA.randTd(), dist, fr);
     }
+
+    public static void setActiveTechnique(TECHNIQUE tech) {
+        mActiveTechnique = tech;
+
+        final Memo memo = new Memo(CONFIG, TECHNIQUE, mActiveTechnique.ordinal(), 0);
+        Server.get().send(memo);
+    }
+
+    public static void setSensitivity(int sens) {
+        if (mActiveTechnique.equals(DRAG)) mDragSensitivity = sens;
+        else if (mActiveTechnique.equals(RATE_BASED)) mRBSensitivity = sens;
+
+        final Memo memo = new Memo(CONFIG, SENSITIVITY, sens, sens);
+        Server.get().send(memo);
+    }
+
+    public static void setGain(double gain) {
+        if (mActiveTechnique.equals(DRAG)) mDragGain = gain;
+        else if (mActiveTechnique.equals(RATE_BASED)) mRBGain = gain;
+
+        final Memo memo = new Memo(CONFIG, GAIN, gain, gain);
+        Server.get().send(memo);
+    }
+
+    public static void setDenom(int denom) {
+        mRBDenom = denom;
+
+        final Memo memo = new Memo(CONFIG, DENOM, denom, denom);
+        Server.get().send(memo);
+    }
+
+    public static TECHNIQUE getActiveTechnique() {
+        return mActiveTechnique;
+    }
+
+
 
 }

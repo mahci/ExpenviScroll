@@ -42,15 +42,22 @@ public class Controller {
         public void run() {
             String TAG = NAME + "ConstantScrollRunnable";
             try {
+                Logs.d(TAG, toScroll);
                 while (toScroll) {
                     Logs.d(TAG, "Scrolling with", vtScrollAmt, hzScrollAmt);
                     MainFrame.scroll(vtScrollAmt, hzScrollAmt);
                     Thread.currentThread().sleep(1); // 1 min = 60*1000, 1 sec = 1000
                 }
             } catch (InterruptedException e) {
-                // We need this because when a sleep the interrupt from outside throws an exception
-                Thread.currentThread().interrupt();
-                toScroll = false;
+                Logs.d(TAG, "Interrupted!", 0);
+                // Pls continue!
+                if (toScroll) {
+                    Thread.currentThread().resume();
+                } else {
+                    Thread.currentThread().interrupt();
+                }
+//                toScroll = false;
+
             }
         }
     }
@@ -102,38 +109,23 @@ public class Controller {
         }
         case RB -> {
             // Stop prev. scrolling if new command has come
-            if (scrollThreadGroup != null) {
-                Logs.d(TAG, "RB", "Interrupted!");
-//                scrollThreadGroup.stop();
-//                toScroll = false;
-//                MainFrame.stopScroll();
-            }
-
             stopScroll();
+
+            // New scrolling
             if (!memo.getValue1().equals(STOP)) {
                 toScroll = true;
                 scrollThread = new Thread(new ConstantScrollRunnable(vtScrollAmt, hzScrollAmt));
                 scrollThread.start();
             }
 
-//            if (memo.getValue1().equals(STOP)) {
-//                stopScroll();
-////                MainFrame.stopScroll();
-////                scrollThreadGroup.stop();
-//            } else {
-//                toScroll = true;
-//                scrollThread = new Thread(
-//                        scrollThreadGroup,
-//                        new ConstantScrollRunnable(vtScrollAmt, hzScrollAmt));
-//                scrollThread.start();
-//            }
-
         }
         }
 
     }
 
-    private void stopScroll() {
+    public void stopScroll() {
+        final String TAG = NAME + "stopScroll";
+        Logs.d(TAG, "Stop Scroll", "");
         if (scrollThread != null && !scrollThread.isInterrupted()) {
             toScroll = false;
             scrollThread.interrupt();

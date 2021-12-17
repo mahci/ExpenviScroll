@@ -1,11 +1,18 @@
 package gui;
 
+import control.Server;
 import experiment.Experiment;
+import tools.Logs;
+import tools.Memo;
 
 import javax.swing.*;
 import java.awt.*;
 
+import static experiment.Experiment.TECHNIQUE.*;
+import static tools.Consts.STRINGS.*;
+
 public class MainFrame extends JFrame {
+    private final static String NAME = "MainFrame/";
 
     private static ExperimentPanel experimentPanel;
 
@@ -69,5 +76,7 @@ public class MainFrame extends JFrame {
     public static void stopScroll() {
         experimentPanel.repaint();
     }
+
+
 
 }

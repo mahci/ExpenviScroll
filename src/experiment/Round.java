@@ -81,7 +81,6 @@ public class Round {
 
             case TWO_DIM: {
                 // Create blocks
-                Logs.d(TAG, "Creating TD trials", 0);
                 for (int d : distances) {
                     for (int f : frames) {
                         // East in one block

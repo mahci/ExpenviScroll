@@ -69,7 +69,7 @@ public class Experiment {
     }
 
     public enum TECHNIQUE {
-        DRAG(1), RATE_BASED(2), MOUSE(3);
+        DRAG(1), RATE_BASED(2), FLICK(3), MOUSE(4);
         private final int n;
         TECHNIQUE(int i) { n = i; }
     }

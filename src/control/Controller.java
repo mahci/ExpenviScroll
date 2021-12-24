@@ -1,5 +1,6 @@
 package control;
 
+import experiment.Experiment;
 import gui.MainFrame;
 import tools.*;
 
@@ -8,6 +9,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static tools.Consts.STRINGS.*;
+import static experiment.Experiment.TECHNIQUE.*;
 
 /**
  * Class responsible for getting the data from the Server and perform the actions
@@ -103,22 +105,25 @@ public class Controller {
         final int vtScrollAmt = Utils.mm2px(memo.getValue1Double());
         final int hzScrollAmt = Utils.mm2px(memo.getValue2Double());
 
-        switch (memo.getMode()) {
-        case DRAG -> {
-            MainFrame.scroll(vtScrollAmt, hzScrollAmt);
-        }
-        case RB -> {
-            // Stop prev. scrolling if new command has come
-            stopScroll();
-
-            // New scrolling
-            if (!memo.getValue1().equals(STOP)) {
-                toScroll = true;
-                scrollThread = new Thread(new ConstantScrollRunnable(vtScrollAmt, hzScrollAmt));
-                scrollThread.start();
+        final Experiment.TECHNIQUE technique = Experiment.TECHNIQUE.valueOf(memo.getMode());
+        switch (technique) {
+            case DRAG -> {
+                MainFrame.scroll(vtScrollAmt, hzScrollAmt);
             }
+            case RATE_BASED -> {
+                // Stop prev. scrolling if new command has come
+                stopScroll();
 
-        }
+                // New scrolling
+                if (!memo.isStopMemo()) {
+                    toScroll = true;
+                    scrollThread = new Thread(new ConstantScrollRunnable(vtScrollAmt, hzScrollAmt));
+                    scrollThread.start();
+                }
+            }
+            case FLICK -> {
+                MainFrame.scroll(vtScrollAmt, hzScrollAmt);
+            }
         }
 
     }

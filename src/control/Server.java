@@ -80,11 +80,12 @@ public class Server {
 
         @Override
         public void run() {
-            while (!Thread.currentThread().isInterrupted() && inBR != null){
+            while (!Thread.currentThread().isInterrupted() && inBR != null) {
                 try {
                     Logs.info(TAG, "Reading messages...");
+                    Logs.d(TAG, "inBR " + inBR, "");
                     String message = inBR.readLine();
-                    Logs.info(TAG, "Message: "  + message);
+                    Logs.info(TAG, "Message: " + message);
                     if (message != null) {
                         Memo memo = Memo.valueOf(message);
 

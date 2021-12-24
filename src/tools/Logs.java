@@ -11,7 +11,7 @@ public class Logs {
     private static List<String> toLogList = new ArrayList<>();
 
     static {
-//        toLogList.add("Server");
+        toLogList.add("Server");
         toLogList.add("ExperimentPanel");
         toLogList.add("Controller");
 //        toLogList.add("TDScrollPane");

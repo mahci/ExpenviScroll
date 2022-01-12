@@ -141,13 +141,14 @@ public class TechConfigPanel extends JPanel implements ItemListener {
         TECHNIQUE nextTechnique = TECHNIQUE.DRAG;
         switch (Experiment.getActiveTechnique()) {
             case DRAG -> nextTechnique = TECHNIQUE.RATE_BASED;
-            case RATE_BASED -> nextTechnique = TECHNIQUE.MOUSE;
+            case RATE_BASED -> nextTechnique = TECHNIQUE.FLICK;
+            case FLICK -> nextTechnique = TECHNIQUE.MOUSE;
             case MOUSE -> nextTechnique = TECHNIQUE.DRAG;
         }
 
         mTechniquesCoBx.setSelectedItem(nextTechnique);
         cl.show(mCardsPanel, nextTechnique.toString());
-        Experiment.setActiveTechnique(nextTechnique);
+//        Experiment.setActiveTechnique(nextTechnique);
     }
 
     public void adjustSensitivity(boolean inc) {

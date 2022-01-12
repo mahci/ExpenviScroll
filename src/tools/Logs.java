@@ -1,5 +1,7 @@
 package tools;
 
+import experiment.Experiment;
+
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -96,6 +98,10 @@ public class Logs {
     }
 
     public static void d(String tag, Pair mssg) {
+        System.out.println(tag + " >> " + mssg);
+    }
+
+    public static void d(String tag, Experiment.TECHNIQUE mssg) {
         System.out.println(tag + " >> " + mssg);
     }
 

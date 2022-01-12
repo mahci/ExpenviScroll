@@ -369,9 +369,11 @@ public class ExperimentPanel extends JLayeredPane {
 
         Logs.d(TAG, "Scrolling", vtScrollAmt, hzScrollAmt);
 
-        switch (trial.getScrollMode()) {
-        case VERTICAL -> vtScrollPane.scroll(vtScrollAmt);
-        case TWO_DIM -> tdScrollPane.scroll(vtScrollAmt, hzScrollAmt);
+        if (trial != null) {
+            switch (trial.getScrollMode()) {
+                case VERTICAL -> vtScrollPane.scroll(vtScrollAmt);
+                case TWO_DIM -> tdScrollPane.scroll(vtScrollAmt, hzScrollAmt);
+            }
         }
 
     }

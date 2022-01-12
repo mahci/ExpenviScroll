@@ -57,7 +57,7 @@ public class Consts {
     }
 
     public static class STRINGS {
-        public final static String SP = "_";
+        public final static String SP = ";";
         public final static String TECHNIQUE = "TECHNIQUE";
         public final static String SCROLL = "SCROLL";
         public final static String DRAG = "DRAG";

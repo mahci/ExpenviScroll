@@ -99,15 +99,16 @@ public class Controller {
      * @param memo Memo containing info
      */
     public void perform(Memo memo) {
-        String TAG = NAME + "scroll";
+        String TAG = NAME + "perform";
         Logs.d(TAG, "Received", memo.toString());
 
         final int vtScrollAmt = Utils.mm2px(memo.getValue1Double());
         final int hzScrollAmt = Utils.mm2px(memo.getValue2Double());
 
         final Experiment.TECHNIQUE technique = Experiment.TECHNIQUE.valueOf(memo.getMode());
+        Logs.d(TAG, technique);
         switch (technique) {
-            case DRAG -> {
+            case DRAG, FLICK -> {
                 MainFrame.scroll(vtScrollAmt, hzScrollAmt);
             }
             case RATE_BASED -> {
@@ -116,13 +117,11 @@ public class Controller {
 
                 // New scrolling
                 if (!memo.isStopMemo()) {
+                    Logs.d(TAG, "RB", memo.getValue1());
                     toScroll = true;
                     scrollThread = new Thread(new ConstantScrollRunnable(vtScrollAmt, hzScrollAmt));
                     scrollThread.start();
                 }
-            }
-            case FLICK -> {
-                MainFrame.scroll(vtScrollAmt, hzScrollAmt);
             }
         }
 

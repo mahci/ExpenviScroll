@@ -69,7 +69,7 @@ public class Server {
             if (message != null) {
                 outPW.println(message);
                 outPW.flush();
-                Logs.info(TAG, "Message sent");
+                Logs.info(TAG, message.toString());
             }
         }
     }
@@ -83,7 +83,6 @@ public class Server {
             while (!Thread.currentThread().isInterrupted() && inBR != null) {
                 try {
                     Logs.info(TAG, "Reading messages...");
-                    Logs.d(TAG, "inBR " + inBR, "");
                     String message = inBR.readLine();
                     Logs.info(TAG, "Message: " + message);
                     if (message != null) {

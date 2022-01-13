@@ -221,9 +221,11 @@ public class ExperimentPanel extends JLayeredPane {
                 .setScrollBar(VT_SCROLL_BAR_W_mm, VT_SCROLL_THUMB_H_mm)
                 .create();
 
-
     }
 
+    /**
+     * Show the trial
+     */
     private void showTrial() {
         String TAG = NAME + "showTrial";
         Logs.d(TAG, "Mode", trial.getScrollMode().toString());
@@ -238,12 +240,15 @@ public class ExperimentPanel extends JLayeredPane {
         // Show the trial
         switch (trial.getScrollMode()) {
             case VERTICAL -> {
+                // Position
                 mPaneDim = vtScrollPane.getPreferredSize();
                 mPanePos = getRandPosition(mPaneDim);
-
                 vtScrollPane.setBounds(mPanePos.x, mPanePos.y, mPaneDim.width, mPaneDim.height);
-                vtScrollPane.highlight(randVtLineInd(), trial.getFrame());
 
+                // Highlight
+                int highlightInd = randVtLineInd();
+                vtScrollPane.highlight(highlightInd, trial.getFrame());
+                Logs.d(TAG, "HLIndex= ", highlightInd);
                 add(vtScrollPane, 0);
 
                 // Set frame to be drawn (by paintComponent())
@@ -253,6 +258,12 @@ public class ExperimentPanel extends JLayeredPane {
                 mVtFrameRect.height = trial.getFrame() * lineH;
                 mVtFrameRect.x = mPanePos.x - mVtFrameRect.width;
                 mVtFrameRect.y = mPanePos.y + ((vtScrollPane.getNVisibleLines() - trial.getFrame()) / 2) * lineH;
+
+                // Scroll to random line (based on the distance and highlited line
+                int vtThumbPos = 0;
+                if (trial.getDirection() == DIRECTION.N) vtThumbPos = highlightInd + trial.getDistance();
+                else vtThumbPos = highlightInd - trial.getDistance();
+                vtScrollPane.setThumbPosition(vtThumbPos);
             }
             case TWO_DIM -> {
                 mPaneDim = tdScrollPane.getPreferredSize();
@@ -334,10 +345,24 @@ public class ExperimentPanel extends JLayeredPane {
     private int randVtLineInd() {
         String TAG = NAME + "randVtScrollValue";
         int offset = (vtScrollPane.getNVisibleLines() - trial.getFrame()) / 2;
-        int minInd = offset + 1;
-        int maxInd = vtScrollPane.getNLines() - offset;
-        Logs.d(TAG, "values", minInd, maxInd);
-        return Utils.randInt(minInd, maxInd);
+
+//        int minInd = offset + 1;
+//        int maxInd = vtScrollPane.getNLines() - offset;
+        // General min/max
+        int minInd = vtScrollPane.getNVisibleLines(); // No highlight in the top
+        int maxInd = (vtScrollPane.getNLines() - 1) - vtScrollPane.getNVisibleLines();
+        // Correction based on direction
+        if (trial.getDirection() == DIRECTION.N) {
+            Logs.d(TAG, "Direction: ", trial.getDirection().toString());
+            maxInd -= trial.getDistance();
+        } else {
+            Logs.d(TAG, "Direction: ", trial.getDirection().toString());
+            minInd += trial.getDistance();
+        }
+
+        Logs.d(TAG, "min/max", minInd, maxInd);
+//        return Utils.randInt(minInd, maxInd);
+        return vtScrollPane.getRandLine(minInd, maxInd);
     }
 
     /**
@@ -358,7 +383,7 @@ public class ExperimentPanel extends JLayeredPane {
 
 
     /**
-     * Scroll the 2D scrollPane
+     * Scroll the scrollPanes for a certain amount
      * @param vtScrollAmt Vertical scroll amount
      * @param hzScrollAmt Horizontal scroll amount
      */
@@ -403,6 +428,10 @@ public class ExperimentPanel extends JLayeredPane {
 
     }
 
+    /**
+     * Play a sound
+     * @param resFileName Sound file
+     */
     private void playSound(String resFileName) {
         try {
             final ClassLoader classLoader = getClass().getClassLoader();

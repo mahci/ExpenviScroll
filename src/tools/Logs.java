@@ -13,16 +13,16 @@ public class Logs {
     private static List<String> toLogList = new ArrayList<>();
 
     static {
-        toLogList.add("Server");
+//        toLogList.add("Server");
         toLogList.add("ExperimentPanel");
-        toLogList.add("Controller");
+//        toLogList.add("Controller");
 //        toLogList.add("TDScrollPane");
 //        toLogList.add("MyScrollBarUI");
 //        toLogList.add("VTScrollPane");
-        toLogList.add("Experiment");
-        toLogList.add("Round");
-        toLogList.add("TechConfigPanel");
-        toLogList.add("MainFrame");
+//        toLogList.add("Experiment");
+//        toLogList.add("Round");
+//        toLogList.add("TechConfigPanel");
+//        toLogList.add("MainFrame");
     }
 
     public static void addTag(String tag) {

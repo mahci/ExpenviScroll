@@ -35,8 +35,8 @@ public class Utils {
         return ThreadLocalRandom.current().nextInt(min, bound);
     }
 
-    public static Experiment.AREA randOne(Experiment.AREA... areas) {
-        return areas[randInt(0, areas.length)];
+    public static Experiment.DIRECTION randOne(Experiment.DIRECTION... DIRECTIONS) {
+        return DIRECTIONS[randInt(0, DIRECTIONS.length)];
     }
 
     /**

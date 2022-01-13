@@ -155,21 +155,31 @@ public class VTScrollPane extends JScrollPane implements MouseListener {
         return this;
     }
 
+    /**
+     * Create the pane (last method)
+     * @return The VTScrollPane instance
+     */
     public VTScrollPane create() {
         getViewport().getView().addMouseListener(this);
         return this;
     }
 
+    /**
+     * Highlight a line indicated by lineInd
+     * @param lineInd Index of the line (starting from 1)
+     * @param frameSizeLines Size of the frame (in lines)
+     */
     public void highlight(int lineInd, int frameSizeLines) {
         String TAG = NAME + "highlight";
+
         // Highlight line
         try {
             int stIndex = 0;
-            for (int li = 0; li < lineInd - 1; li++) {
+            for (int li = 0; li < lineInd; li++) {
                 stIndex += lineCharCounts.get(li) + 1; // prev. lines + \n
             }
-            int endIndex = stIndex + lineCharCounts.get(lineInd - 1);
-
+            int endIndex = stIndex + lineCharCounts.get(lineInd); // highlight the whole line
+            Logs.d(TAG, lineCharCounts.size(), lineInd, frameSizeLines, stIndex, endIndex);
             DefaultHighlightPainter highlighter = new DefaultHighlightPainter(COLORS.CELL_HIGHLIGHT);
             bodyTextPane.getHighlighter().removeAllHighlights();
             bodyTextPane.getHighlighter().addHighlight(stIndex, endIndex, highlighter);
@@ -193,6 +203,10 @@ public class VTScrollPane extends JScrollPane implements MouseListener {
                 mTargetMinMax.getMin(), mTargetMinMax.getMax());
     }
 
+    /**
+     * Scroll a certain amount
+     * @param scrollAmt Amount to scroll (in lines)
+     */
     public void scroll(int scrollAmt) {
         final String TAG = NAME + "scroll";
         // Scroll only if cursor is inside
@@ -210,6 +224,17 @@ public class VTScrollPane extends JScrollPane implements MouseListener {
             repaint();
         }
 
+    }
+
+    /**
+     * Set the thumb to a new position
+     * @param val Y position
+     */
+    public void setThumbPosition(int val) {
+        Point vpPos = getViewport().getViewPosition();
+        getViewport().setViewPosition(new Point(vpPos.x, vpPos.y + val));
+
+        repaint();
     }
 
     /**
@@ -236,10 +261,18 @@ public class VTScrollPane extends JScrollPane implements MouseListener {
         return text.toString();
     }
 
+    /**
+     * Get the number of lines
+     * @return Number of lines
+     */
     public int getNLines() {
         return nLines;
     }
 
+    /**
+     * Get the height of one line
+     * @return Line height (in px)
+     */
     public int getLineHeight() {
         String TAG = NAME + "getLineHeight";
 //        Logs.d(TAG, "", getPreferredSize().height, getNVisibleLines());
@@ -249,6 +282,10 @@ public class VTScrollPane extends JScrollPane implements MouseListener {
         return bodyPaneH / nLines;
     }
 
+    /**
+     * Get the number of visible lines
+     * @return Number of visible lines
+     */
     public int getNVisibleLines() {
         String TAG = NAME + "getNVisibleLines";
         return dim.height / getLineHeight();
@@ -258,9 +295,31 @@ public class VTScrollPane extends JScrollPane implements MouseListener {
         return getVerticalScrollBar().getMaximum();
     }
 
+    /**
+     * Check if a value is inside the frame
+     * @param scrollVal Scroll value
+     * @return True/false
+     */
     public boolean isInsideFrames(int scrollVal) {
         final String TAG = NAME + "isInsideFrames";
         return mTargetMinMax.isWithin(scrollVal);
+    }
+
+    /**
+     * Get a random line between the two values
+     * @param min Min line index (inclusive)
+     * @param max Max line index (exclusive)
+     * @return Line number
+     */
+    public int getRandLine(int min, int max) {
+        final String TAG = NAME + "getRandLine";
+
+        int lineInd = 0;
+        do {
+            lineInd = Utils.randInt(min, max);
+        } while (lineCharCounts.get(lineInd) == 0);
+
+        return lineInd;
     }
 
     //------------------------------------------------------------------------------
@@ -293,6 +352,9 @@ public class VTScrollPane extends JScrollPane implements MouseListener {
 
     //-------------------------------------------------------------------------------------------------
 
+    /***
+     * Custom class for scroll bars
+     */
     private class CustomScrollBarUI extends BasicScrollBarUI {
 
         @Override

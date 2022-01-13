@@ -11,15 +11,15 @@ import static experiment.Experiment.*;
 @AllArgsConstructor
 public class Trial {
     private SCROLL_MODE scrollMode;
-    private AREA area;
+    private DIRECTION direction;
     private int distance;
     private int frame;
 
     // ------------------------------------------------------------------------------------
 
-//    public Trial(SCROLL_MODE scMode, AREA ar, int dist, int fr) {
+//    public Trial(SCROLL_MODE scMode, DIRECTION ar, int dist, int fr) {
 //        scrollMode = scMode;
-//        area = ar;
+//        DIRECTION = ar;
 //        distance = dist;
 //        frame = fr;
 //    }
@@ -32,7 +32,7 @@ public class Trial {
 //    public String toString() {
 //        return "Trial{" +
 //                "scrollMode=" + scrollMode +
-//                "| area=" + area +
+//                "| DIRECTION=" + DIRECTION +
 //                "| distance=" + distance +
 //                "| frame=" + frame +
 //                '}';

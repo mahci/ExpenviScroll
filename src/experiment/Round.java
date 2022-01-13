@@ -1,9 +1,7 @@
 package experiment;
 
 import tools.Logs;
-import tools.Utils;
 
-import javax.print.attribute.standard.MediaSize;
 import java.util.*;
 import static experiment.Experiment.*;
 
@@ -69,9 +67,9 @@ public class Round {
                 // Create blocks
                 for (int d : distances) {
                     for (int f : frames) {
-                        AREA a0 = AREA.randOne(AREA.N, AREA.S);
+                        DIRECTION a0 = DIRECTION.randOne(DIRECTION.N, DIRECTION.S);
                         mBlocks[0].addTrial(new Trial(scMode, a0, d, f));
-                        AREA a1 = (a0 == AREA.N) ? AREA.S : AREA.N;
+                        DIRECTION a1 = (a0 == DIRECTION.N) ? DIRECTION.S : DIRECTION.N;
                         mBlocks[1].addTrial(new Trial(scMode, a1, d, f));
                     }
                 }
@@ -84,15 +82,15 @@ public class Round {
                 for (int d : distances) {
                     for (int f : frames) {
                         // East in one block
-                        AREA a0 = AREA.randOne(AREA.NE, AREA.SE); // Get an E randomly
+                        DIRECTION a0 = DIRECTION.randOne(DIRECTION.NE, DIRECTION.SE); // Get an E randomly
                         mBlocks[0].addTrial(new Trial(scMode, a0, d, f));
-                        AREA a1 = (a0 == AREA.NE) ? AREA.SE : AREA.NE;
+                        DIRECTION a1 = (a0 == DIRECTION.NE) ? DIRECTION.SE : DIRECTION.NE;
                         mBlocks[0].addTrial(new Trial(scMode, a1, d, f));
 
                         // West in the other
-                        AREA a2 = AREA.randOne(AREA.NW, AREA.SW); // Get a W randomly
+                        DIRECTION a2 = DIRECTION.randOne(DIRECTION.NW, DIRECTION.SW); // Get a W randomly
                         mBlocks[1].addTrial(new Trial(scMode, a2, d, f));
-                        AREA a3 = (a0 == AREA.NW) ? AREA.SW : AREA.NW;
+                        DIRECTION a3 = (a0 == DIRECTION.NW) ? DIRECTION.SW : DIRECTION.NW;
                         mBlocks[1].addTrial(new Trial(scMode, a3, d, f));
                     }
                 }
@@ -114,21 +112,21 @@ public class Round {
         for (int d : distances) {
             for (int f : frames) {
                 // Vertical (N/S)
-                AREA a0 = AREA.randOne(AREA.N, AREA.S);
+                DIRECTION a0 = DIRECTION.randOne(DIRECTION.N, DIRECTION.S);
                 mBlocks[0].addTrial(new Trial(SCROLL_MODE.VERTICAL, a0, d, f));
-                AREA a1 = (a0 == AREA.N) ? AREA.S : AREA.N;
+                DIRECTION a1 = (a0 == DIRECTION.N) ? DIRECTION.S : DIRECTION.N;
                 mBlocks[1].addTrial(new Trial(SCROLL_MODE.VERTICAL, a1, d, f));
 
                 // 2D: East in one block
-                a0 = AREA.randOne(AREA.NE, AREA.SE); // Get an E randomly
+                a0 = DIRECTION.randOne(DIRECTION.NE, DIRECTION.SE); // Get an E randomly
                 mBlocks[0].addTrial(new Trial(SCROLL_MODE.TWO_DIM, a0, d, f));
-                a1 = (a0 == AREA.NE) ? AREA.SE : AREA.NE;
+                a1 = (a0 == DIRECTION.NE) ? DIRECTION.SE : DIRECTION.NE;
                 mBlocks[0].addTrial(new Trial(SCROLL_MODE.TWO_DIM, a1, d, f));
 
                 // 2D: West in the other
-                AREA a2 = AREA.randOne(AREA.NW, AREA.SW); // Get a W randomly
+                DIRECTION a2 = DIRECTION.randOne(DIRECTION.NW, DIRECTION.SW); // Get a W randomly
                 mBlocks[1].addTrial(new Trial(SCROLL_MODE.TWO_DIM, a2, d, f));
-                AREA a3 = (a0 == AREA.NW) ? AREA.SW : AREA.NW;
+                DIRECTION a3 = (a0 == DIRECTION.NW) ? DIRECTION.SW : DIRECTION.NW;
                 mBlocks[1].addTrial(new Trial(SCROLL_MODE.TWO_DIM, a3, d, f));
             }
         }

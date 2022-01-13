@@ -2,7 +2,6 @@ package experiment;
 
 import control.Server;
 import tools.DimensionD;
-import tools.Logs;
 import tools.Memo;
 import tools.Utils;
 
@@ -49,17 +48,17 @@ public class Experiment {
     //-- Variables
     private int[] DISTANCES = new int[]{30, 150}; // in lines/cells
     private int[] FRAMES = new int[]{3, 5}; // in lines/cells
-    public enum AREA {
+    public enum DIRECTION {
         N(0), S(1), E(2), W(3), NE(4), NW(5), SE(6), SW(7);
         private final int n;
-        AREA(int i) { n = i; }
+        DIRECTION(int i) { n = i; }
         // Get a NE/NW/SE/SW randomly
-        public static AREA randTd() {
-            return AREA.values()[Utils.randInt(4, 8)];
+        public static DIRECTION randTd() {
+            return DIRECTION.values()[Utils.randInt(4, 8)];
         }
         // Get a NE/SE randomly
-        public static AREA randOne(AREA... areas) {
-            return values()[Utils.randInt(0, areas.length)];
+        public static DIRECTION randOne(DIRECTION... DIRECTIONS) {
+            return values()[Utils.randInt(0, DIRECTIONS.length)];
         }
     };
     public enum SCROLL_MODE {
@@ -114,13 +113,13 @@ public class Experiment {
     public Trial randVtTrial() {
         int dist = Utils.randElement(DISTANCES);
         int fr = Utils.randElement(FRAMES);
-        return new Trial(SCROLL_MODE.VERTICAL, AREA.randOne(AREA.N, AREA.S), dist, fr);
+        return new Trial(SCROLL_MODE.VERTICAL, DIRECTION.randOne(DIRECTION.N, DIRECTION.S), dist, fr);
     }
 
     public Trial randTdTrial() {
         int dist = Utils.randElement(DISTANCES);
         int fr = Utils.randElement(FRAMES);
-        return new Trial(SCROLL_MODE.TWO_DIM, AREA.randTd(), dist, fr);
+        return new Trial(SCROLL_MODE.TWO_DIM, DIRECTION.randTd(), dist, fr);
     }
 
     public static void setActiveTechnique(TECHNIQUE tech) {

@@ -16,9 +16,9 @@ public class Logs {
 //        toLogList.add("Server");
         toLogList.add("ExperimentPanel");
 //        toLogList.add("Controller");
-//        toLogList.add("TDScrollPane");
 //        toLogList.add("MyScrollBarUI");
-//        toLogList.add("VTScrollPane");
+        toLogList.add("VTScrollPane");
+        toLogList.add("TDScrollPane");
 //        toLogList.add("Experiment");
 //        toLogList.add("Round");
 //        toLogList.add("TechConfigPanel");
@@ -59,6 +59,16 @@ public class Logs {
         if(params.length > 0 && showTag(tag)) {
             StringBuilder sb = new StringBuilder();
             for(int p : params) {
+                sb.append(p).append(" | ");
+            }
+            System.out.println(tag + " >> " + sb);
+        }
+    }
+
+    public static void d(String tag, Pair... params) {
+        if(params.length > 0 && showTag(tag)) {
+            StringBuilder sb = new StringBuilder();
+            for(Pair p : params) {
                 sb.append(p).append(" | ");
             }
             System.out.println(tag + " >> " + sb);

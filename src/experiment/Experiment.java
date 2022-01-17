@@ -24,10 +24,6 @@ public class Experiment {
     public static final double VT_LINENUMS_W_mm = 10;
     public static final double VT_SCROLL_BAR_W_mm = 5;
     public static final double VT_SCROLL_THUMB_H_mm = 6;
-    public static final int VT_WRAP_CHARS_COUNT = 73; // Manual
-    public static final float VT_TEXT_FONT_SIZE = 24.0f;
-    public final float LINE_NUM_FONT_SIZE = 12.2f;
-    public final int VT_N_VISIBLE_LINES = 41; // By eyes!
 
     // Horizontal
     public final DimensionD DIM_HZ_PANE_mm = new DimensionD(140.0, 110.0);
@@ -46,8 +42,9 @@ public class Experiment {
     public static final double TD_FRAME_H_mm = 7.0; // Height of frame
 
     //-- Variables
-    private int[] DISTANCES = new int[]{30, 150}; // in lines/cells
+    private int[] DISTANCES = new int[]{50, 200}; // in lines/cells
     private int[] FRAMES = new int[]{3, 5}; // in lines/cells
+
     public enum DIRECTION {
         N(0), S(1), E(2), W(3), NE(4), NW(5), SE(6), SW(7);
         private final int n;
@@ -60,7 +57,34 @@ public class Experiment {
         public static DIRECTION randOne(DIRECTION... DIRECTIONS) {
             return values()[Utils.randInt(0, DIRECTIONS.length)];
         }
-    };
+        // Get the opposite direction (Horizontal)
+        public static DIRECTION oppHz(DIRECTION dr) {
+            return switch (dr) {
+                case N -> N;
+                case S -> S;
+                case E -> W;
+                case W -> E;
+                case NE -> NW;
+                case NW -> NE;
+                case SE -> SW;
+                case SW -> SE;
+            };
+        }
+        // Get the opposite direction (Vertical)
+        public static DIRECTION oppVt(DIRECTION dr) {
+            return switch (dr) {
+                case N -> S;
+                case S -> N;
+                case E -> E;
+                case W -> W;
+                case NE -> SE;
+                case NW -> SW;
+                case SE -> NE;
+                case SW -> SE;
+            };
+        }
+    }
+
     public enum SCROLL_MODE {
         VERTICAL(1), TWO_DIM(2);
         private final int n;
@@ -76,7 +100,7 @@ public class Experiment {
     private int VT_REP = 4;
     private int TD_REP = 2;
 
-    int pid;
+    int mPaId; // Participant id
 
     // Status
     private static TECHNIQUE mActiveTechnique = DRAG;
@@ -93,7 +117,8 @@ public class Experiment {
      */
     public Experiment(int pid) {
         final String TAG = NAME;
-        this.pid = pid;
+
+        this.mPaId = pid;
 
         // Generate rounds
         // [TEMP] one round of each mode
@@ -110,24 +135,37 @@ public class Experiment {
         else return null;
     }
 
+    /**
+     * Get a random vertical trial
+     * @return Random vertical trial
+     */
     public Trial randVtTrial() {
         int dist = Utils.randElement(DISTANCES);
         int fr = Utils.randElement(FRAMES);
         return new Trial(SCROLL_MODE.VERTICAL, DIRECTION.randOne(DIRECTION.N, DIRECTION.S), dist, fr);
     }
 
+    /**
+     * Get a random 2D trial
+     * @return Random 2D trial
+     */
     public Trial randTdTrial() {
         int dist = Utils.randElement(DISTANCES);
         int fr = Utils.randElement(FRAMES);
         return new Trial(SCROLL_MODE.TWO_DIM, DIRECTION.randTd(), dist, fr);
     }
 
+    /**
+     * Set the active technique
+     * @param tech TECHNIQUE
+     */
     public static void setActiveTechnique(TECHNIQUE tech) {
         mActiveTechnique = tech;
 
         final Memo memo = new Memo(CONFIG, TECHNIQUE, mActiveTechnique.ordinal(), 0);
         Server.get().send(memo);
     }
+
 
     public static void setSensitivity(int sens) {
         if (mActiveTechnique.equals(DRAG)) mDragSensitivity = sens;
@@ -155,7 +193,5 @@ public class Experiment {
     public static TECHNIQUE getActiveTechnique() {
         return mActiveTechnique;
     }
-
-
 
 }

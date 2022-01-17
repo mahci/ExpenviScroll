@@ -35,6 +35,16 @@ public class Utils {
         return ThreadLocalRandom.current().nextInt(min, bound);
     }
 
+    /**
+     * Returns a random int int between the min (inclusive) max (exclusive)
+     * @param minMax Thresholds
+     * @return Random int
+     * @throws IllegalArgumentException if bound < min
+     */
+    public static int randIntBetween(MinMax minMax) throws IllegalArgumentException {
+        return ThreadLocalRandom.current().nextInt(minMax.getMin(), minMax.getMax());
+    }
+
     public static Experiment.DIRECTION randOne(Experiment.DIRECTION... DIRECTIONS) {
         return DIRECTIONS[randInt(0, DIRECTIONS.length)];
     }

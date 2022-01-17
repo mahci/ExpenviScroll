@@ -105,29 +105,37 @@ public class Round {
 
     }
 
+    /**
+     * Generate a round
+     * @param distances List of distance
+     * @param frames List of frame sizes
+     */
     public Round(int[] distances, int[] frames) {
         mBlocks[0] = new Block();
         mBlocks[1] = new Block();
 
-        for (int d : distances) {
-            for (int f : frames) {
-                // Vertical (N/S)
-                DIRECTION a0 = DIRECTION.randOne(DIRECTION.N, DIRECTION.S);
-                mBlocks[0].addTrial(new Trial(SCROLL_MODE.VERTICAL, a0, d, f));
-                DIRECTION a1 = (a0 == DIRECTION.N) ? DIRECTION.S : DIRECTION.N;
-                mBlocks[1].addTrial(new Trial(SCROLL_MODE.VERTICAL, a1, d, f));
+        for (int fr : frames) {
+            // Vertical (N/S)
+            for (int dist : distances) {
+                final DIRECTION d0 = DIRECTION.randOne(DIRECTION.N, DIRECTION.S);
+                final DIRECTION d1 = DIRECTION.oppVt(d0);
+                mBlocks[0].addTrial(new Trial(SCROLL_MODE.VERTICAL, d0, dist, fr));
+                mBlocks[1].addTrial(new Trial(SCROLL_MODE.VERTICAL, d1, dist, fr));
+            }
 
-                // 2D: East in one block
-                a0 = DIRECTION.randOne(DIRECTION.NE, DIRECTION.SE); // Get an E randomly
-                mBlocks[0].addTrial(new Trial(SCROLL_MODE.TWO_DIM, a0, d, f));
-                a1 = (a0 == DIRECTION.NE) ? DIRECTION.SE : DIRECTION.NE;
-                mBlocks[0].addTrial(new Trial(SCROLL_MODE.TWO_DIM, a1, d, f));
+            // 2D: NE,SE in b0 | NW,SW in b1
+            for (int vtDist : distances) {
+                for (int hzDist : distances) {
+                    final DIRECTION d00 = DIRECTION.randOne(DIRECTION.NE, DIRECTION.SE);
+                    final DIRECTION d01 = DIRECTION.oppVt(d00);
+                    mBlocks[0].addTrial(new Trial(SCROLL_MODE.TWO_DIM, d00, vtDist, hzDist, fr));
+                    mBlocks[0].addTrial(new Trial(SCROLL_MODE.TWO_DIM, d01, vtDist, hzDist, fr));
 
-                // 2D: West in the other
-                DIRECTION a2 = DIRECTION.randOne(DIRECTION.NW, DIRECTION.SW); // Get a W randomly
-                mBlocks[1].addTrial(new Trial(SCROLL_MODE.TWO_DIM, a2, d, f));
-                DIRECTION a3 = (a0 == DIRECTION.NW) ? DIRECTION.SW : DIRECTION.NW;
-                mBlocks[1].addTrial(new Trial(SCROLL_MODE.TWO_DIM, a3, d, f));
+                    final DIRECTION d10 = DIRECTION.oppHz(d00);
+                    final DIRECTION d11 = DIRECTION.oppHz(d01);
+                    mBlocks[1].addTrial(new Trial(SCROLL_MODE.TWO_DIM, d10, vtDist, hzDist, fr));
+                    mBlocks[1].addTrial(new Trial(SCROLL_MODE.TWO_DIM, d11, vtDist, hzDist, fr));
+                }
             }
         }
 
@@ -136,6 +144,10 @@ public class Round {
         Collections.shuffle(mBlocks[1].trials);
     }
 
+    /**
+     * Get the number of trials
+     * @return Number of trials
+     */
     public int getNTrials() {
         return mBlocks[0].trials.size() * 2;
     }

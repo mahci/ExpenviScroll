@@ -3,6 +3,7 @@ package experiment;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import tools.Pair;
 
 import static experiment.Experiment.*;
 
@@ -12,17 +13,17 @@ import static experiment.Experiment.*;
 public class Trial {
     private SCROLL_MODE scrollMode;
     private DIRECTION direction;
-    private int distance;
+    private int vtDist;
+    private int hzDist;
     private int frame;
 
-    // ------------------------------------------------------------------------------------
+    public Trial(SCROLL_MODE scMode, DIRECTION dr, int vtD, int fr) {
+        scrollMode = scMode;
+        direction = dr;
+        vtDist = vtD;
+        frame = fr;
+    }
 
-//    public Trial(SCROLL_MODE scMode, DIRECTION ar, int dist, int fr) {
-//        scrollMode = scMode;
-//        DIRECTION = ar;
-//        distance = dist;
-//        frame = fr;
-//    }
 //
 //    public Trial() {
 //

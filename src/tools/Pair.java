@@ -2,10 +2,17 @@ package tools;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor(staticName = "of")
-public class Pair<F, S> {
-    private F first;
-    private S second;
+@NoArgsConstructor
+@AllArgsConstructor
+public class Pair {
+    private int first;
+    private int second;
+
+    public void set(int f, int s) {
+        first = f;
+        second = s;
+    }
 }

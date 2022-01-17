@@ -1,18 +1,15 @@
 package gui;
 
+import experiment.Experiment;
 import tools.*;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicScrollBarUI;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter.DefaultHighlightPainter;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
-import javax.swing.text.html.StyleSheet;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseWheelListener;
@@ -20,24 +17,25 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import static tools.Consts.COLORS;
+import static tools.Consts.*;
 
 public class VTScrollPane extends JScrollPane implements MouseListener {
     private final static String NAME = "VTScrollPane/";
     //-------------------------------------------------------------------------------------------------
-
+    public static final int WRAP_CHARS_COUNT = 70;
+//    private final int WRAP_CHARS_COUNT = 67;
     private final String WRAPPED_FILE_NAME = "./res/wrapped.txt";
 
-    private final Dimension dim; // in px
-    private ArrayList<Integer> lineCharCounts = new ArrayList<>();
+    private final Dimension mDim; // in px
+    private ArrayList<Integer> mLineCharCounts = new ArrayList<>();
 
-    private JTextPane linesTextPane;
-    private JTextPane bodyTextPane;
-    private MyScrollBarUI scrollBarUI;
+    private JTextPane mLinesTextPane;
+    private JTextPane mBodyTextPane;
+    private MyScrollBarUI mScrollBarUI;
 
 //    protected int targetMinScVal, targetMaxScVal;
     private MinMax mTargetMinMax = new MinMax();
-    private int nLines;
+    private int mNumLines;
 
     private boolean mIsCursorIn;
     //-------------------------------------------------------------------------------------------------
@@ -47,13 +45,13 @@ public class VTScrollPane extends JScrollPane implements MouseListener {
      * @param ddMM Dimention of scroll pane (W/H in mm)
      */
     public VTScrollPane(DimensionD ddMM) {
-        dim = new Dimension(Utils.mm2px(ddMM.getWidth()), Utils.mm2px(ddMM.getHeight()));
-        setPreferredSize(dim);
+        mDim = new Dimension(Utils.mm2px(ddMM.getWidth()), Utils.mm2px(ddMM.getHeight()));
+        setPreferredSize(mDim);
     }
 
     public VTScrollPane(Dimension d) {
-        dim = d;
-        setPreferredSize(dim);
+        mDim = d;
+        setPreferredSize(mDim);
     }
 
     /**
@@ -61,29 +59,31 @@ public class VTScrollPane extends JScrollPane implements MouseListener {
      * @param fileName Name of the file
      * @return Instance
      */
-    public VTScrollPane setText(String fileName, int wrapCharCount, float bodyFontSize) {
+    public VTScrollPane setText(String fileName) {
         String TAG = NAME + "setText";
 
         // Wrap the file and get the char num of each line
         try {
-            lineCharCounts = Utils.wrapFile(fileName, WRAPPED_FILE_NAME, wrapCharCount);
-            nLines = lineCharCounts.size();
+            mLineCharCounts = Utils.wrapFile(fileName, WRAPPED_FILE_NAME, WRAP_CHARS_COUNT);
+            mNumLines = mLineCharCounts.size();
 
             // Body of text
-            bodyTextPane = new CustomTextPane(false);
-            bodyTextPane.read(new FileReader(WRAPPED_FILE_NAME), "wrapped");
-            bodyTextPane.setEditable(false);
-            bodyTextPane.setFont(Consts.FONTS.TABLE_FONT.deriveFont(bodyFontSize));
-            bodyTextPane.setSelectionColor(Color.WHITE);
+            mBodyTextPane = new CustomTextPane(false);
+            mBodyTextPane.read(new FileReader(WRAPPED_FILE_NAME), "wrapped");
+            mBodyTextPane.setEditable(false);
+            final Font bodyFont = Consts.FONTS.SF_LIGHT.deriveFont(FONTS.TEXT_FONT_SIZE);
+            mBodyTextPane.setFont(bodyFont);
+            mBodyTextPane.setSelectionColor(Color.WHITE);
 
-            SimpleAttributeSet lineSpace = new SimpleAttributeSet();
-            StyleConstants.setLineSpacing(lineSpace,0.2f);
-            StyleConstants.setFontSize(lineSpace, 20);
-            StyleConstants.setFontFamily(lineSpace, "Dialog");
-            int len = bodyTextPane.getStyledDocument().getLength();
-            bodyTextPane.getStyledDocument().setParagraphAttributes(0, len, lineSpace, true);
+            SimpleAttributeSet bodyStyle = new SimpleAttributeSet();
+            StyleConstants.setLineSpacing(bodyStyle,FONTS.TEXT_LINE_SPACING);
+//            StyleConstants.setFontSize(bodyStyle, FONTS.TEXT_FONT_SIZE_INT);
+//            StyleConstants.setFontFamily(bodyStyle, Font.SANS_SERIF);
 
-            getViewport().add(bodyTextPane);
+            final int len = mBodyTextPane.getStyledDocument().getLength();
+            mBodyTextPane.getStyledDocument().setParagraphAttributes(0, len, bodyStyle, false);
+
+            getViewport().add(mBodyTextPane);
 
         } catch (IOException e) {
             Logs.error(TAG, "Problem createing VTScrollPane -> setText");
@@ -96,30 +96,35 @@ public class VTScrollPane extends JScrollPane implements MouseListener {
     /**
      * Set the line numbers (H is the same as the scroll pane)
      * @param lineNumsPaneW Width of the line num pane (mm)
-     * @param lineNumsFontSize Font size of the line num pane
      * @return Current instance
      */
-    public VTScrollPane setLineNums(double lineNumsPaneW, float lineNumsFontSize) {
+    public VTScrollPane setLineNums(double lineNumsPaneW) {
 
         // Set dimention
-        Dimension lnpDim = new Dimension(Utils.mm2px(lineNumsPaneW), dim.height);
+        Dimension lnpDim = new Dimension(Utils.mm2px(lineNumsPaneW), mDim.height);
 
-        // Line numbers
-        linesTextPane = new JTextPane();
-        linesTextPane.setPreferredSize(lnpDim);
-        linesTextPane.setBackground(Consts.COLORS.LINE_NUM_BG);
-        linesTextPane.setEditable(false);
-        Font linesFont = Consts.FONTS.SF_LIGHT
-                .deriveFont(lineNumsFontSize)
+        // Set up Line numbers
+        mLinesTextPane = new JTextPane();
+        mLinesTextPane.setPreferredSize(lnpDim);
+        mLinesTextPane.setBackground(COLORS.LINE_NUM_BG);
+        mLinesTextPane.setEditable(false);
+        final Font linesFont = Consts.FONTS.SF_LIGHT
+                .deriveFont(FONTS.TEXT_FONT_SIZE)
                 .deriveFont(Consts.FONTS.ATTRIB_ITALIC);
-        linesTextPane.setFont(linesFont);
-        linesTextPane.setForeground(Color.GRAY);
-        StyledDocument documentStyle = linesTextPane.getStyledDocument();
+        mLinesTextPane.setFont(linesFont);
+        mLinesTextPane.setForeground(Color.GRAY);
         SimpleAttributeSet attributeSet = new SimpleAttributeSet();
         StyleConstants.setAlignment(attributeSet, StyleConstants.ALIGN_CENTER);
-        documentStyle.setParagraphAttributes(0, documentStyle.getLength(), attributeSet, false);
+        StyleConstants.setLineSpacing(attributeSet,FONTS.TEXT_LINE_SPACING);
+        final int len = mBodyTextPane.getStyledDocument().getLength();
+        mLinesTextPane.
+                getStyledDocument().
+                setParagraphAttributes(0, len, attributeSet, false);
 
-        linesTextPane.setText(getLineNumbers(lineCharCounts.size()));
+        mLinesTextPane.setText(getLineNumbers(mLineCharCounts.size()));
+
+        // Show the line nums
+        setRowHeaderView(mLinesTextPane);
 
         return this;
     }
@@ -133,16 +138,16 @@ public class VTScrollPane extends JScrollPane implements MouseListener {
     public VTScrollPane setScrollBar(double scrollBarW, double thumbH) {
         String TAG = NAME + "setScrollBar";
         // Set dimentions
-        Dimension scBarDim = new Dimension(Utils.mm2px(scrollBarW), dim.height);
+        Dimension scBarDim = new Dimension(Utils.mm2px(scrollBarW), mDim.height);
 //        Dimension scThumbDim = new Dimension(scBarDim.width, Utils.mm2px(thumbH));
 
         // Verticall scroll bar
-        scrollBarUI = new MyScrollBarUI(
+        mScrollBarUI = new MyScrollBarUI(
                 Color.BLACK,
                 COLORS.SCROLLBAR_TRACK,
                 Color.BLACK,
                 6);
-        getVerticalScrollBar().setUI(scrollBarUI);
+        getVerticalScrollBar().setUI(mScrollBarUI);
         getVerticalScrollBar().setPreferredSize(scBarDim);
 
         // Scroll thumb
@@ -176,13 +181,13 @@ public class VTScrollPane extends JScrollPane implements MouseListener {
         try {
             int stIndex = 0;
             for (int li = 0; li < lineInd; li++) {
-                stIndex += lineCharCounts.get(li) + 1; // prev. lines + \n
+                stIndex += mLineCharCounts.get(li) + 1; // prev. lines + \n
             }
-            int endIndex = stIndex + lineCharCounts.get(lineInd); // highlight the whole line
-            Logs.d(TAG, lineCharCounts.size(), lineInd, frameSizeLines, stIndex, endIndex);
+            int endIndex = stIndex + mLineCharCounts.get(lineInd); // highlight the whole line
+            Logs.d(TAG, mLineCharCounts.size(), lineInd, frameSizeLines, stIndex, endIndex);
             DefaultHighlightPainter highlighter = new DefaultHighlightPainter(COLORS.CELL_HIGHLIGHT);
-            bodyTextPane.getHighlighter().removeAllHighlights();
-            bodyTextPane.getHighlighter().addHighlight(stIndex, endIndex, highlighter);
+            mBodyTextPane.getHighlighter().removeAllHighlights();
+            mBodyTextPane.getHighlighter().addHighlight(stIndex, endIndex, highlighter);
 
         } catch (BadLocationException e) {
             e.printStackTrace();
@@ -194,18 +199,18 @@ public class VTScrollPane extends JScrollPane implements MouseListener {
         int lineH = getLineHeight();
         mTargetMinMax.setMin((lineInd - (frameSizeLines - 1) - frOffset) * lineH);
         mTargetMinMax.setMax((lineInd - frOffset) * lineH);
-        scrollBarUI.setHighlight(
+        mScrollBarUI.setHighlight(
                 COLORS.SCROLLBAR_HIGHLIGHT,
                 mTargetMinMax.getMin(),
                 mTargetMinMax.getMax());
-        getVerticalScrollBar().setUI(scrollBarUI);
+        getVerticalScrollBar().setUI(mScrollBarUI);
         Logs.d(TAG, "Indicator", nVisibleLines, frameSizeLines, frOffset, lineH,
                 mTargetMinMax.getMin(), mTargetMinMax.getMax());
     }
 
     /**
      * Scroll a certain amount
-     * @param scrollAmt Amount to scroll (in lines)
+     * @param scrollAmt Amount to scroll (in px)
      */
     public void scroll(int scrollAmt) {
         final String TAG = NAME + "scroll";
@@ -227,15 +232,27 @@ public class VTScrollPane extends JScrollPane implements MouseListener {
     }
 
     /**
-     * Set the thumb to a new position
-     * @param val Y position
+     * Put the specified line is in the center of the view
+     * @param lineInd Line index (from 0)
      */
-    public void setThumbPosition(int val) {
-        Point vpPos = getViewport().getViewPosition();
-        getViewport().setViewPosition(new Point(vpPos.x, vpPos.y + val));
+    public void centerLine(int lineInd) {
+        final String TAG = NAME + "centerLine";
+
+        // Check if the lineInd is in the range (to be able to be centered)
+        final int halfViewLines = Experiment.TD_N_VIS_ROWS / 2;
+        final int lastCenterLineInd = (mNumLines - Experiment.TD_N_VIS_ROWS) + halfViewLines;
+        if (lineInd > halfViewLines && lineInd < lastCenterLineInd) {
+            final int newPosY = (lineInd - halfViewLines) * getLineHeight(); // Centering the line
+
+            Point vpPos = getViewport().getViewPosition();
+            getViewport().setViewPosition(new Point(vpPos.x, newPosY));
+        } else {
+            Logs.d(TAG, "Can't center line", lineInd, halfViewLines, lastCenterLineInd);
+        }
 
         repaint();
     }
+
 
     /**
      * Add MouseWheelListener to every component
@@ -243,8 +260,8 @@ public class VTScrollPane extends JScrollPane implements MouseListener {
      */
     public void addWheelListener(MouseWheelListener mwl) {
         getVerticalScrollBar().addMouseWheelListener(mwl);
-        bodyTextPane.addMouseWheelListener(mwl);
-        linesTextPane.addMouseWheelListener(mwl);
+        mBodyTextPane.addMouseWheelListener(mwl);
+        mLinesTextPane.addMouseWheelListener(mwl);
     }
 
     /**
@@ -254,8 +271,8 @@ public class VTScrollPane extends JScrollPane implements MouseListener {
      */
     public String getLineNumbers(int nLines) {
         Logs.info(this.getClass().getName(), "Total lines = " + nLines);
-        StringBuilder text = new StringBuilder("1" + System.getProperty("line.separator"));
-        for(int i = 2; i < nLines + 2; i++){
+        StringBuilder text = new StringBuilder("0" + System.getProperty("line.separator"));
+        for(int i = 1; i < nLines + 1; i++){
             text.append(i).append(System.getProperty("line.separator"));
         }
         return text.toString();
@@ -266,7 +283,7 @@ public class VTScrollPane extends JScrollPane implements MouseListener {
      * @return Number of lines
      */
     public int getNLines() {
-        return nLines;
+        return mNumLines;
     }
 
     /**
@@ -278,8 +295,8 @@ public class VTScrollPane extends JScrollPane implements MouseListener {
 //        Logs.d(TAG, "", getPreferredSize().height, getNVisibleLines());
 //        return getPreferredSize().height / getNVisibleLines();
         int bodyPaneH = getViewport().getView().getPreferredSize().height;
-        Logs.d(TAG, "", bodyPaneH, nLines);
-        return bodyPaneH / nLines;
+        Logs.d(TAG, "", bodyPaneH, mNumLines);
+        return bodyPaneH / mNumLines;
     }
 
     /**
@@ -288,9 +305,13 @@ public class VTScrollPane extends JScrollPane implements MouseListener {
      */
     public int getNVisibleLines() {
         String TAG = NAME + "getNVisibleLines";
-        return dim.height / getLineHeight();
+        return mDim.height / getLineHeight();
     }
 
+    /**
+     * Get the maximum value of the scroll bar
+     * @return Maximum scroll value
+     */
     public int getMaxScrollVal() {
         return getVerticalScrollBar().getMaximum();
     }
@@ -317,7 +338,7 @@ public class VTScrollPane extends JScrollPane implements MouseListener {
         int lineInd = 0;
         do {
             lineInd = Utils.randInt(min, max);
-        } while (lineCharCounts.get(lineInd) == 0);
+        } while (mLineCharCounts.get(lineInd) == 0);
 
         return lineInd;
     }

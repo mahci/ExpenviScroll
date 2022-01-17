@@ -34,7 +34,15 @@ public class Consts {
 
         // Font types
         public static Font SF_REGULAR = Font.getFont("serif");
-        public static Font SF_LIGHT = Font.getFont("serif");
+        public static Font SF_LIGHT = new Font(Font.DIALOG,  Font.PLAIN, 5);
+
+        // Font sizes
+        public static final float TEXT_FONT_SIZE = 20.5f;
+//        public static final float TEXT_FONT_SIZE = 19.4f;
+
+        // Line spacing
+        public static final float TEXT_LINE_SPACING = 0.193f;
+//        public static final float TEXT_LINE_SPACING = 0.08f;
 
         // Italic attribute
         public static Map<? extends AttributedCharacterIterator.Attribute, ?>

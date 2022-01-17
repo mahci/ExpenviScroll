@@ -29,66 +29,55 @@ public class ExperimentPanel extends JLayeredPane {
     private final String HIT_SOUND = "hit.wav";
     private final String MISS_SOUND = "miss.wav";
 
+    private KeyStroke KS_SPACE;
+    private KeyStroke KS_SLASH;
+    private KeyStroke KS_Q;
+    private KeyStroke KS_A;
+    private KeyStroke KS_W;
+    private KeyStroke KS_S;
+    private KeyStroke KS_E;
+    private KeyStroke KS_D;
+
     // Experiment and trial
-    private Experiment experiment;
-    private Trial trial;
+    private Experiment mExperiment;
+    private Trial mTrial;
 
     // Elements
-    private VTScrollPane vtScrollPane;
+    private VTScrollPane mVTScrollPane;
     private HorizontalScrollPane hzScrollPane;
-    private TDScrollPane tdScrollPane;
-    private JLabel label;
+    private TDScrollPane mTDScrollPane;
+    private JLabel mLabel;
+    private JLabel levelLabel;
     private TechConfigPanel mConfigPanel;
 
     // Experiment
-    private Point panePosition; // Position of the scrolling pane
-    private int blockNum = 1; // Round = 2 blocks
-    private int trialNum = 1;
+    private int mBlockNum = 1; // Round = 2 blocks
+    private int mTrialNum = 0;
     private boolean isPaneSet;
     private int targetColNum, randColNum;
     private int targetLineNum, randLineNum;
     private boolean isScrollingEnabled = false;
-//    private int frameSize = 3;
     private boolean paintTrial;
     private Rectangle mVtFrameRect = new Rectangle();
     private Rectangle mHzFrameRect = new Rectangle();
 
-    // Keys
-    private final KeyStroke KS_SPACE =
-            KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0, true);
-    private final KeyStroke KS_SLASH =
-            KeyStroke.getKeyStroke(KeyEvent.VK_SLASH, 0, true);
-    private final KeyStroke KS_Q =
-            KeyStroke.getKeyStroke(KeyEvent.VK_Q, 0, true);
-    private final KeyStroke KS_A =
-            KeyStroke.getKeyStroke(KeyEvent.VK_A, 0, true);
-    private final KeyStroke KS_W =
-            KeyStroke.getKeyStroke(KeyEvent.VK_W, 0, true);
-    private final KeyStroke KS_S =
-            KeyStroke.getKeyStroke(KeyEvent.VK_S, 0, true);
-    private final KeyStroke KS_E =
-            KeyStroke.getKeyStroke(KeyEvent.VK_E, 0, true);
-    private final KeyStroke KS_D =
-            KeyStroke.getKeyStroke(KeyEvent.VK_D, 0, true);
-
-
     // TEMP
-    Point mPanePos = new Point();
-    Dimension mPaneDim = new Dimension();
+    private Point mPanePos = new Point();
+    private Dimension mPaneDim = new Dimension();
     boolean isVt;
 
     // -------------------------------------------------------------------------------------------
     private final Action nextTrial = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
-            int nTrials = experiment.getRound(blockNum).getNTrials();
-            if (trialNum < nTrials) {
-                trialNum++;
-                trial = experiment.getRound(blockNum).getTrial(trialNum);
+            int nTrials = mExperiment.getRound(mBlockNum).getNTrials();
+            if (mTrialNum < nTrials) {
+                mTrialNum++;
+                mTrial = mExperiment.getRound(mBlockNum).getTrial(mTrialNum);
             } else {
                 removeAll();
-                label = new JLabel("Thank you for your participation!");
-                add(label, 0);
+                mLabel = new JLabel("Thank you for your participation!");
+                add(mLabel, 0);
             }
         }
     };
@@ -96,53 +85,58 @@ public class ExperimentPanel extends JLayeredPane {
     private final Action mEndTrialAction = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (trial != null) {
+            final String TAG = NAME + "mEndTrialAction";
+            Logs.d(TAG, e.getID());
+            if (mTrial != null) {
                 if (checkSuccess()) playSound(HIT_SOUND);
                 else playSound(MISS_SOUND);
             }
 
             remove(0);
-//            int nTrials = experiment.getRound(blockNum).getNTrials();
-//            if (trialNum < nTrials) {
-//                trialNum++;
-//                trial = experiment.getRound(blockNum).getTrial(trialNum);
-//
-//                showTrial();
-//            } else {
-//                remove(0);
-//                label = new JLabel("Thank you for your participation!");
-//                add(label, 0);
-//            }
+
+            int nTrials = mExperiment.getRound(mBlockNum).getNTrials();
+            if (mTrialNum < nTrials) {
+                mTrialNum++;
+                mTrial = mExperiment.getRound(mBlockNum).getTrial(mTrialNum);
+                Logs.d(TAG, mBlockNum, mTrialNum);
+                showTrial();
+            } else {
+                remove(0);
+                mLabel = new JLabel("Thank you for your participation!");
+                add(mLabel, 0);
+            }
 
             // Get a random-generated trial from experiment and show it
-            if (isVt) {
-                trial = experiment.randVtTrial();
-                isVt = false;
-            } else {
-                trial = experiment.randTdTrial();
-                isVt = true;
-            }
-            showTrial();
+//            if (isVt) {
+//                mTrial = mExperiment.randVtTrial();
+//                isVt = false;
+//            } else {
+//                mTrial = mExperiment.randTdTrial();
+//                isVt = true;
+//            }
+//            showTrial();
         }
     };
 
-    private final Action randomTrial = new AbstractAction() {
+    private final Action mRandomTrialAction = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
-            removeAll();
+            remove(0);
+
             // Get a random-generated trial from experiment and show it
             if (isVt) {
-                trial = experiment.randVtTrial();
+                mTrial = mExperiment.randVtTrial();
                 isVt = false;
             } else {
-                trial = experiment.randTdTrial();
+                mTrial = mExperiment.randTdTrial();
                 isVt = true;
             }
+
             showTrial();
         }
     };
 
-    private final Action enableScrolling = new AbstractAction() {
+    private final Action mEnableScrollingAction = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
             hzScrollPane.setWheelScrollingEnabled(enabled);
@@ -170,18 +164,10 @@ public class ExperimentPanel extends JLayeredPane {
         setLayout(null);
 
         // Set the experiment
-        experiment = exp;
+        mExperiment = exp;
 
-        // Map the keys
-        getInputMap().put(KS_SPACE, "SPACE");
-        getInputMap().put(KS_SLASH, "SLASH");
-        getInputMap().put(KS_Q, "Q");
-        getInputMap().put(KS_A, "A");
-        getInputMap().put(KS_W, "W");
-        getInputMap().put(KS_S, "S");
-        getInputMap().put(KS_E, "E");
-        getInputMap().put(KS_D, "D");
-
+        // Set key actions
+        mapKeys();
         getActionMap().put("SPACE", mEndTrialAction);
         getActionMap().put("SLASH", mNextTechnique);
         getActionMap().put("Q", mIncSensitivity);
@@ -192,16 +178,21 @@ public class ExperimentPanel extends JLayeredPane {
         getActionMap().put("D", mDecDenom);
 
         // Add the start label
-        label = new JLabel("Press SPACE to start the experiment", JLabel.CENTER);
-        label.setFont(new Font("Sans", Font.BOLD, 35));
-        label.setBounds(850, 500, 1000, 400);
-        add(label, 0);
+        mLabel = new JLabel("Press SPACE to start the experiment", JLabel.CENTER);
+        mLabel.setFont(new Font("Sans", Font.BOLD, 35));
+        mLabel.setBounds(850, 500, 1000, 400);
+        add(mLabel, 0);
 
         // Add paramter controls
         mConfigPanel = new TechConfigPanel();
-//        configPanel.setBounds(20, 1000, 800, 30);
         mConfigPanel.setBounds(1000, 1200, 800, 30);
         add(mConfigPanel, 1);
+
+        // Create levellabel (don't show yet)
+        levelLabel = new JLabel("", JLabel.CENTER);
+        levelLabel.setFont(new Font("Sans", Font.PLAIN, 18));
+        levelLabel.setBounds(2300, 30, 200, 100);
+        add(levelLabel, 2);
     }
 
     /**
@@ -210,14 +201,14 @@ public class ExperimentPanel extends JLayeredPane {
     private void createPanes() {
         String TAG = NAME + "createPanes";
 
-        tdScrollPane = new TDScrollPane(TD_N_VIS_ROWS, TD_CELL_SIZE_mm, TD_SCROLL_BAR_W_mm)
+        mTDScrollPane = new TDScrollPane(TD_N_VIS_ROWS, TD_CELL_SIZE_mm, TD_SCROLL_BAR_W_mm)
                 .setTable(TD_N_ROWS)
                 .setScrollBars(TD_SCROLL_BAR_W_mm, TD_SCROLL_THUMB_L_mm)
                 .create();
 
         // Make vtScrollPane the same size as the td
-        vtScrollPane = new VTScrollPane(tdScrollPane.getPreferredSize())
-                .setText("lorem.txt", VT_WRAP_CHARS_COUNT, VT_TEXT_FONT_SIZE)
+        mVTScrollPane = new VTScrollPane(mTDScrollPane.getPreferredSize())
+                .setText("lorem.txt")
                 .setScrollBar(VT_SCROLL_BAR_W_mm, VT_SCROLL_THUMB_H_mm)
                 .create();
 
@@ -228,86 +219,117 @@ public class ExperimentPanel extends JLayeredPane {
      */
     private void showTrial() {
         String TAG = NAME + "showTrial";
-        Logs.d(TAG, "Mode", trial.getScrollMode().toString());
+        Logs.d(TAG, "Mode", mTrial.getScrollMode().toString());
 
         // If panes aren't created, create them (only once)
-        if (vtScrollPane == null || tdScrollPane == null) createPanes();
+        if (mVTScrollPane == null || mTDScrollPane == null) createPanes();
 
         // Reset the frames
         mVtFrameRect = new Rectangle();
         mHzFrameRect = new Rectangle();
 
         // Show the trial
-        switch (trial.getScrollMode()) {
+        switch (mTrial.getScrollMode()) {
             case VERTICAL -> {
                 // Position
-                mPaneDim = vtScrollPane.getPreferredSize();
+                mPaneDim = mVTScrollPane.getPreferredSize();
                 mPanePos = getRandPosition(mPaneDim);
-                vtScrollPane.setBounds(mPanePos.x, mPanePos.y, mPaneDim.width, mPaneDim.height);
+                mVTScrollPane.setBounds(mPanePos.x, mPanePos.y, mPaneDim.width, mPaneDim.height);
 
                 // Highlight
-                int highlightInd = randVtLineInd();
-                vtScrollPane.highlight(highlightInd, trial.getFrame());
-                Logs.d(TAG, "HLIndex= ", highlightInd);
-                add(vtScrollPane, 0);
+                int targetLineInd = randVtLineInd();
+                mVTScrollPane.highlight(targetLineInd, mTrial.getFrame());
+                Logs.d(TAG, "HLIndex= ", targetLineInd);
+                add(mVTScrollPane, 0);
 
                 // Set frame to be drawn (by paintComponent())
-                int lineH = vtScrollPane.getLineHeight();
+                int lineH = mVTScrollPane.getLineHeight();
 
-                mVtFrameRect.width = Utils.mm2px(experiment.TD_FRAME_H_mm);
-                mVtFrameRect.height = trial.getFrame() * lineH;
+                mVtFrameRect.width = Utils.mm2px(mExperiment.TD_FRAME_H_mm);
+                mVtFrameRect.height = mTrial.getFrame() * lineH;
                 mVtFrameRect.x = mPanePos.x - mVtFrameRect.width;
-                mVtFrameRect.y = mPanePos.y + ((vtScrollPane.getNVisibleLines() - trial.getFrame()) / 2) * lineH;
+                mVtFrameRect.y = mPanePos.y + ((mVTScrollPane.getNVisibleLines() - mTrial.getFrame()) / 2) * lineH;
 
-                // Scroll to random line (based on the distance and highlited line
-                int vtThumbPos = 0;
-                if (trial.getDirection() == DIRECTION.N) vtThumbPos = highlightInd + trial.getDistance();
-                else vtThumbPos = highlightInd - trial.getDistance();
-                vtScrollPane.setThumbPosition(vtThumbPos);
+                // Center to a random line (based on the distance and highlited line
+                int centerLineInd = 0;
+                if (mTrial.getDirection() == DIRECTION.N) centerLineInd = targetLineInd + mTrial.getVtDist();
+                else centerLineInd = targetLineInd - mTrial.getVtDist();
+                mVTScrollPane.centerLine(centerLineInd);
+                Logs.d(TAG, targetLineInd, mTrial.getVtDist(), centerLineInd);
             }
+
+            // Two-Dim
             case TWO_DIM -> {
-                mPaneDim = tdScrollPane.getPreferredSize();
+                mPaneDim = mTDScrollPane.getPreferredSize();
                 mPanePos = getRandPosition(mPaneDim);
 
-                tdScrollPane.setBounds(mPanePos.x, mPanePos.y, mPaneDim.width, mPaneDim.height);
+                mTDScrollPane.setBounds(
+                        mPanePos.x, mPanePos.y,
+                        mPaneDim.width, mPaneDim.height
+                );
 
-                Pair<Integer, Integer> hlInd = randTdInd();
-                tdScrollPane.highlight(hlInd.getFirst(), hlInd.getSecond(), trial.getFrame());
+                Pair targetInd = randTdInd();
+                mTDScrollPane.highlight(targetInd, mTrial.getFrame());
+//                mTDScrollPane.highlight(new Pair(60, 100), mTrial.getFrame());
+//                mTDScrollPane.centerCell(new Pair(150, 100));
 
-                add(tdScrollPane, 0);
+                add(mTDScrollPane, 0);
 
                 // Set frames to be drawn (by paintComponent())
-                final int cellSize = Utils.mm2px(experiment.TD_CELL_SIZE_mm);
-                final int frameH = Utils.mm2px(experiment.TD_FRAME_H_mm);
+                final int cellSize = Utils.mm2px(mExperiment.TD_CELL_SIZE_mm);
+                final int frameH = Utils.mm2px(mExperiment.TD_FRAME_H_mm);
 
                 mVtFrameRect.width = frameH;
-                mVtFrameRect.height = trial.getFrame() * cellSize;
+                mVtFrameRect.height = mTrial.getFrame() * cellSize;
                 mVtFrameRect.x = mPanePos.x - mVtFrameRect.width;
-                mVtFrameRect.y = mPanePos.y + ((experiment.TD_N_VIS_ROWS - trial.getFrame()) / 2) * cellSize;
+                mVtFrameRect.y = mPanePos.y + ((mExperiment.TD_N_VIS_ROWS - mTrial.getFrame()) / 2) * cellSize;
 
-                mHzFrameRect.width = trial.getFrame() * cellSize;
+                mHzFrameRect.width = mTrial.getFrame() * cellSize;
                 mHzFrameRect.height = frameH;
-                mHzFrameRect.x = mPanePos.x + ((experiment.TD_N_VIS_ROWS - trial.getFrame()) / 2) * cellSize;
+                mHzFrameRect.x = mPanePos.x + ((mExperiment.TD_N_VIS_ROWS - mTrial.getFrame()) / 2) * cellSize;
                 mHzFrameRect.y = mPanePos.y - mHzFrameRect.height;
+
+                // Center to a random cell (based on the dists and highlited cell)
+                final Pair centerInd = new Pair();
+                final int targetRow = targetInd.getFirst();
+                final int targetCol = targetInd.getSecond();
+                final int vtDist = mTrial.getVtDist();
+                final int hzDist = mTrial.getHzDist();
+                Logs.d(TAG, "Target", targetInd.toString());
+                switch (mTrial.getDirection()) {
+                    case NE -> centerInd.set(targetRow + vtDist, targetCol - hzDist);
+                    case NW -> centerInd.set(targetRow + vtDist, targetCol + hzDist);
+                    case SE -> centerInd.set(targetRow - vtDist, targetCol - hzDist);
+                    case SW -> centerInd.set(targetRow - vtDist, targetCol + hzDist);
+                }
+
+                mTDScrollPane.centerCell(centerInd);
+                Logs.d(TAG, "dir|target|center",
+                        mTrial.getDirection().toString(), targetInd.toString(), centerInd.toString());
             }
         }
 
         paintTrial = true;
+
+        // Show level label
+        levelLabel.setText("Trial: " + mTrialNum + " | Block: " + mBlockNum);
+
         revalidate();
         repaint();
+
     }
 
     private boolean checkSuccess() {
         boolean result = false;
-        switch (trial.getScrollMode()) {
+        switch (mTrial.getScrollMode()) {
         case VERTICAL -> {
-            final int vtScrollVal = vtScrollPane.getVerticalScrollBar().getValue();
-            result = vtScrollPane.isInsideFrames(vtScrollVal);
+            final int vtScrollVal = mVTScrollPane.getVerticalScrollBar().getValue();
+            result = mVTScrollPane.isInsideFrames(vtScrollVal);
         }
         case TWO_DIM -> {
-            final int vtScrollVal = tdScrollPane.getVerticalScrollBar().getValue();
-            final int hzScrollVal = tdScrollPane.getHorizontalScrollBar().getValue();
-            result = tdScrollPane.isInsideFrames(vtScrollVal, hzScrollVal);
+            final int vtScrollVal = mTDScrollPane.getVerticalScrollBar().getValue();
+            final int hzScrollVal = mTDScrollPane.getHorizontalScrollBar().getValue();
+            result = mTDScrollPane.isInsideFrames(vtScrollVal, hzScrollVal);
         }
         }
 
@@ -344,40 +366,60 @@ public class ExperimentPanel extends JLayeredPane {
      */
     private int randVtLineInd() {
         String TAG = NAME + "randVtScrollValue";
-        int offset = (vtScrollPane.getNVisibleLines() - trial.getFrame()) / 2;
+        int offset = (mVTScrollPane.getNVisibleLines() - mTrial.getFrame()) / 2;
 
 //        int minInd = offset + 1;
 //        int maxInd = vtScrollPane.getNLines() - offset;
         // General min/max
-        int minInd = vtScrollPane.getNVisibleLines(); // No highlight in the top
-        int maxInd = (vtScrollPane.getNLines() - 1) - vtScrollPane.getNVisibleLines();
+        int minInd = mVTScrollPane.getNVisibleLines(); // No highlight at the top
+        int maxInd = (mVTScrollPane.getNLines() - 1) - mVTScrollPane.getNVisibleLines();
         // Correction based on direction
-        if (trial.getDirection() == DIRECTION.N) {
-            Logs.d(TAG, "Direction: ", trial.getDirection().toString());
-            maxInd -= trial.getDistance();
+        if (mTrial.getDirection() == DIRECTION.N) {
+            maxInd -= mTrial.getVtDist();
         } else {
-            Logs.d(TAG, "Direction: ", trial.getDirection().toString());
-            minInd += trial.getDistance();
+            minInd += mTrial.getVtDist();
         }
 
         Logs.d(TAG, "min/max", minInd, maxInd);
 //        return Utils.randInt(minInd, maxInd);
-        return vtScrollPane.getRandLine(minInd, maxInd);
+        return mVTScrollPane.getRandLine(minInd, maxInd);
     }
 
     /**
      * Get random row,col indexes
      * @return Pair (row, col)
      */
-    private Pair<Integer, Integer> randTdInd() {
+    private Pair randTdInd() {
         String TAG = NAME + "randTdInd";
-        int offset = (experiment.TD_N_VIS_ROWS - trial.getFrame()) / 2;
-        int minInd = offset + 1;
-        int maxInd = experiment.TD_N_ROWS - offset;
-        Logs.d(TAG, "values", minInd, maxInd);
-        Pair<Integer, Integer> result = Pair.of(
-                Utils.randInt(minInd, maxInd),
-                Utils.randInt(minInd, maxInd));
+//        int offset = (mExperiment.TD_N_VIS_ROWS - mTrial.getFrame()) / 2;
+//        int minInd = offset + 1;
+//        int maxInd = mExperiment.TD_N_ROWS - offset;
+
+        // General threshold
+        final MinMax vtInd = new MinMax(TD_N_VIS_ROWS + 1, (TD_N_ROWS - 1) - TD_N_VIS_ROWS);
+        final MinMax hzInd = new MinMax(TD_N_VIS_ROWS + 1, (TD_N_ROWS - 1) - TD_N_VIS_ROWS);
+        // Correction based on direction
+        switch (mTrial.getDirection()) {
+            case NE -> {
+                vtInd.move(0, -mTrial.getVtDist());
+                hzInd.move(mTrial.getHzDist(), 0);
+            }
+            case NW -> {
+                vtInd.move(0, -mTrial.getVtDist());
+                hzInd.move(0, -mTrial.getHzDist());
+            }
+            case SE -> {
+                vtInd.move(mTrial.getVtDist(), 0);
+                hzInd.move(mTrial.getHzDist(), 0);
+            }
+            case SW -> {
+                vtInd.move(mTrial.getVtDist(), 0);
+                hzInd.move(0, -mTrial.getHzDist());
+            }
+        }
+        Logs.d(TAG, "vt|hz", vtInd.toString(), hzInd.toString());
+        Pair result = new Pair(Utils.randIntBetween(vtInd), Utils.randIntBetween(hzInd));
+
         return result;
     }
 
@@ -394,10 +436,10 @@ public class ExperimentPanel extends JLayeredPane {
 
         Logs.d(TAG, "Scrolling", vtScrollAmt, hzScrollAmt);
 
-        if (trial != null) {
-            switch (trial.getScrollMode()) {
-                case VERTICAL -> vtScrollPane.scroll(vtScrollAmt);
-                case TWO_DIM -> tdScrollPane.scroll(vtScrollAmt, hzScrollAmt);
+        if (mTrial != null) {
+            switch (mTrial.getScrollMode()) {
+                case VERTICAL -> mVTScrollPane.scroll(vtScrollAmt);
+                case TWO_DIM -> mTDScrollPane.scroll(vtScrollAmt, hzScrollAmt);
             }
         }
 
@@ -444,6 +486,29 @@ public class ExperimentPanel extends JLayeredPane {
         ) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Map the keys
+     */
+    private void mapKeys() {
+        KS_SPACE = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0, true);
+        KS_SLASH = KeyStroke.getKeyStroke(KeyEvent.VK_SLASH, 0, true);
+        KS_Q = KeyStroke.getKeyStroke(KeyEvent.VK_Q, 0, true);
+        KS_A = KeyStroke.getKeyStroke(KeyEvent.VK_A, 0, true);
+        KS_W = KeyStroke.getKeyStroke(KeyEvent.VK_W, 0, true);
+        KS_S = KeyStroke.getKeyStroke(KeyEvent.VK_S, 0, true);
+        KS_E = KeyStroke.getKeyStroke(KeyEvent.VK_E, 0, true);
+        KS_D = KeyStroke.getKeyStroke(KeyEvent.VK_D, 0, true);
+
+        getInputMap().put(KS_SPACE, "SPACE");
+        getInputMap().put(KS_SLASH, "SLASH");
+        getInputMap().put(KS_Q, "Q");
+        getInputMap().put(KS_A, "A");
+        getInputMap().put(KS_W, "W");
+        getInputMap().put(KS_S, "S");
+        getInputMap().put(KS_E, "E");
+        getInputMap().put(KS_D, "D");
     }
 
     //----------------------------------------------------------------------------------------------------

@@ -66,7 +66,7 @@ public class Server {
 
         @Override
         public void run() {
-            if (message != null) {
+            if (message != null && outPW != null) {
                 outPW.println(message);
                 outPW.flush();
                 Logs.info(TAG, message.toString());

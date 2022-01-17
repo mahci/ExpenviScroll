@@ -1,5 +1,6 @@
 package gui;
 
+import experiment.Experiment;
 import tools.*;
 
 import javax.swing.*;
@@ -225,12 +226,14 @@ public class TDScrollPane extends JScrollPane implements MouseListener {
 
     /**
      * Highlight one cell
-     * @param rInd Row index
-     * @param cInd Column index
+     * @param rcInd Row,Col index
      * @param frameSizeCells Size of fram in cells
      */
-    public TDScrollPane highlight(int rInd, int cInd, int frameSizeCells) {
+    public TDScrollPane highlight(Pair rcInd, int frameSizeCells) {
         String TAG = NAME + "highlight";
+
+        final int rInd = rcInd.getFirst();
+        final int cInd = rcInd.getSecond();
 
         // Highlight the cell
         HighlightTableRenderer hlRenderer = new HighlightTableRenderer(rInd, cInd);
@@ -255,6 +258,11 @@ public class TDScrollPane extends JScrollPane implements MouseListener {
         return this;
     }
 
+    /**
+     * Scroll a certain amount (in both directions)
+     * @param vtScrollAmt Vertical scroll amount (px)
+     * @param hzScrollAmt Horizontal scroll amount (px)
+     */
     public void scroll(int vtScrollAmt, int hzScrollAmt) {
         final String TAG = NAME + "scroll";
         // Scroll only if cursor is inside
@@ -284,6 +292,35 @@ public class TDScrollPane extends JScrollPane implements MouseListener {
 
             repaint();
         }
+    }
+
+    /**
+     * Put the specified cell is in the center of the view
+     * @param rcInd Row,Column of the cell
+     */
+    public void centerCell(Pair rcInd) {
+        final String TAG = NAME + "centerCell";
+
+        // Check if the lineInd is in the range (to be able to be centered)
+        final int nVisRows = Experiment.TD_N_VIS_ROWS;
+        final int nRows = Experiment.TD_N_ROWS;
+        final int half = nVisRows / 2;
+        final MinMax halfViewMinMax = new MinMax(half, (nRows - nVisRows) + half);
+        Logs.d(TAG, "rcInd|half:", rcInd.toString(), halfViewMinMax.toString());
+        final int rowInd = rcInd.getFirst();
+        final int colInd = rcInd.getSecond();
+        if (halfViewMinMax.isWithinEx(rowInd) && halfViewMinMax.isWithinEx(colInd)) {
+            final Point newPos = new Point(
+                    (colInd - half) * cellSize,
+                    (rowInd - half) * cellSize
+            );
+
+            getViewport().setViewPosition(newPos);
+        } else {
+            Logs.d(TAG, "ERROR:", "Can't center cell");
+        }
+
+        repaint();
     }
 
     /**

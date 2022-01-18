@@ -135,6 +135,7 @@ public class Round {
                     final DIRECTION d11 = DIRECTION.oppHz(d01);
                     mBlocks[1].addTrial(new Trial(SCROLL_MODE.TWO_DIM, d10, vtDist, hzDist, fr));
                     mBlocks[1].addTrial(new Trial(SCROLL_MODE.TWO_DIM, d11, vtDist, hzDist, fr));
+                    Logs.d(NAME, d00, d01, d10, d11);
                 }
             }
         }

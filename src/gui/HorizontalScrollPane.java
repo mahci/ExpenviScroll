@@ -198,9 +198,6 @@ public class HorizontalScrollPane extends JScrollPane {
             double ratio = trackBounds.width / (getHorizontalScrollBar().getMaximum() * 1.0);
             int hlX = (int) (targetMinScVal * ratio);
             int hlW = (int) ((targetMaxScVal - targetMinScVal) * ratio) + getThumbBounds().width;
-            Logs.infoAll(TAG, ratio);
-            Logs.infoAll(TAG, targetMinScVal, targetMaxScVal);
-            Logs.infoAll(TAG, hlX, hlW);
             g.setColor(Consts.COLORS.SCROLLBAR_HIGHLIGHT);
             g.fillRect(hlX, trackBounds.y, hlW, trackBounds.height);
         }

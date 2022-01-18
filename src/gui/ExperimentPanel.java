@@ -60,11 +60,11 @@ public class ExperimentPanel extends JLayeredPane {
     private boolean paintTrial;
     private Rectangle mVtFrameRect = new Rectangle();
     private Rectangle mHzFrameRect = new Rectangle();
-
-    // TEMP
     private Point mPanePos = new Point();
+    private Point mLasPanePos = new Point();
     private Dimension mPaneDim = new Dimension();
-    boolean isVt;
+    private boolean isVt;
+    private long mStartTime;
 
     // -------------------------------------------------------------------------------------------
     private final Action nextTrial = new AbstractAction() {
@@ -85,17 +85,23 @@ public class ExperimentPanel extends JLayeredPane {
     private final Action mEndTrialAction = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
-            final String TAG = NAME + "mEndTrialAction";
-            Logs.d(TAG, e.getID());
+            final String TAG = ExperimentPanel.NAME + "mEndTrialAction";
+
             if (mTrial != null) {
                 if (checkSuccess()) playSound(HIT_SOUND);
                 else playSound(MISS_SOUND);
+                final long trialTime = System.currentTimeMillis() - mStartTime;
+                Logs.d(TAG, "", "Trial Time = " + (trialTime / 1000.0));
             }
 
             remove(0);
 
             int nTrials = mExperiment.getRound(mBlockNum).getNTrials();
+            Logs.d(TAG, "Number of Trials", nTrials);
             if (mTrialNum < nTrials) {
+                // Time the trial
+                mStartTime = System.currentTimeMillis();
+
                 mTrialNum++;
                 mTrial = mExperiment.getRound(mBlockNum).getTrial(mTrialNum);
                 Logs.d(TAG, mBlockNum, mTrialNum);
@@ -105,16 +111,6 @@ public class ExperimentPanel extends JLayeredPane {
                 mLabel = new JLabel("Thank you for your participation!");
                 add(mLabel, 0);
             }
-
-            // Get a random-generated trial from experiment and show it
-//            if (isVt) {
-//                mTrial = mExperiment.randVtTrial();
-//                isVt = false;
-//            } else {
-//                mTrial = mExperiment.randTdTrial();
-//                isVt = true;
-//            }
-//            showTrial();
         }
     };
 
@@ -163,9 +159,6 @@ public class ExperimentPanel extends JLayeredPane {
         String TAG = NAME;
         setLayout(null);
 
-        // Set the experiment
-        mExperiment = exp;
-
         // Set key actions
         mapKeys();
         getActionMap().put("SPACE", mEndTrialAction);
@@ -177,10 +170,13 @@ public class ExperimentPanel extends JLayeredPane {
         getActionMap().put("E", mIncDenom);
         getActionMap().put("D", mDecDenom);
 
+        // Set the experiment
+        mExperiment = exp;
+
         // Add the start label
-        mLabel = new JLabel("Press SPACE to start the experiment", JLabel.CENTER);
+        mLabel = new JLabel(STRINGS.WELCOME_MESSAGE, JLabel.CENTER);
         mLabel.setFont(new Font("Sans", Font.BOLD, 35));
-        mLabel.setBounds(850, 500, 1000, 400);
+        mLabel.setBounds(800, 500, 1000, 400);
         add(mLabel, 0);
 
         // Add paramter controls
@@ -235,6 +231,7 @@ public class ExperimentPanel extends JLayeredPane {
                 mPaneDim = mVTScrollPane.getPreferredSize();
                 mPanePos = getRandPosition(mPaneDim);
                 mVTScrollPane.setBounds(mPanePos.x, mPanePos.y, mPaneDim.width, mPaneDim.height);
+                mLasPanePos = mPanePos;
 
                 // Highlight
                 int targetLineInd = randVtLineInd();
@@ -262,12 +259,13 @@ public class ExperimentPanel extends JLayeredPane {
             case TWO_DIM -> {
                 mPaneDim = mTDScrollPane.getPreferredSize();
                 mPanePos = getRandPosition(mPaneDim);
-
                 mTDScrollPane.setBounds(
                         mPanePos.x, mPanePos.y,
                         mPaneDim.width, mPaneDim.height
                 );
+                mLasPanePos = mPanePos;
 
+                // Random target and scroll position
                 Pair targetInd = randTdInd();
                 mTDScrollPane.highlight(targetInd, mTrial.getFrame());
 //                mTDScrollPane.highlight(new Pair(60, 100), mTrial.getFrame());
@@ -316,7 +314,6 @@ public class ExperimentPanel extends JLayeredPane {
 
         revalidate();
         repaint();
-
     }
 
     private boolean checkSuccess() {
@@ -345,18 +342,22 @@ public class ExperimentPanel extends JLayeredPane {
     private Point getRandPosition(Dimension paneDim) {
         String TAG = NAME + "randPosition";
 
-        int lrMargin = Utils.mm2px(LR_MARGIN_mm);
-        int tbMargin = Utils.mm2px(TB_MARGIN_mm);
+        final int lrMargin = Utils.mm2px(LR_MARGIN_mm);
 
-        int minX = lrMargin;
-        int maxX = getWidth() - (lrMargin + paneDim.width);
+        final int minX = lrMargin;
+        final int maxX = getWidth() - (lrMargin + paneDim.width);
 
-        int midY = (getHeight() - paneDim.height) / 2;
-//        int minY = tbMargin;
-//        int maxY = getHeight() - (tbMargin + paneDim.height);
+        final int midY = (getHeight() - paneDim.height) / 2;
 
         if (minX >= maxX) return new Point(); // Invalid dimensions
-        else return new Point(Utils.randInt(minX, maxX), midY);
+        else {
+            int randX = 0;
+            do {
+                randX = Utils.randInt(minX, maxX);
+            } while (Math.abs(randX - mLasPanePos.x) <= paneDim.width); // New position shuold be further than W
+
+            return new Point(randX, midY);
+        }
     }
 
     /**

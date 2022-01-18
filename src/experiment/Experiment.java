@@ -54,8 +54,9 @@ public class Experiment {
             return DIRECTION.values()[Utils.randInt(4, 8)];
         }
         // Get a NE/SE randomly
-        public static DIRECTION randOne(DIRECTION... DIRECTIONS) {
-            return values()[Utils.randInt(0, DIRECTIONS.length)];
+        public static DIRECTION randOne(DIRECTION d0, DIRECTION d1) {
+            if (Utils.randInt(0, 2) == 0) return d0;
+            else return d1;
         }
         // Get the opposite direction (Horizontal)
         public static DIRECTION oppHz(DIRECTION dr) {
@@ -80,7 +81,7 @@ public class Experiment {
                 case NE -> SE;
                 case NW -> SW;
                 case SE -> NE;
-                case SW -> SE;
+                case SW -> NW;
             };
         }
     }
@@ -109,6 +110,7 @@ public class Experiment {
     private static int mRBSensitivity = 1;
     private static double mRBGain = 1.5;
     private static int mRBDenom = 50;
+    private static double mCoef = 0.1;
 
     // -------------------------------------------------------------------------------------------------------
 
@@ -118,11 +120,14 @@ public class Experiment {
     public Experiment(int pid) {
         final String TAG = NAME;
 
-        this.mPaId = pid;
+        mPaId = pid;
+        createRounds(2);
+    }
 
-        // Generate rounds
-        // [TEMP] one round of each mode
-        mRounds.add(new Round(DISTANCES, FRAMES));
+    public void createRounds(int nRounds) {
+        for (int r = 0; r < nRounds; r++) {
+            mRounds.add(new Round(DISTANCES, FRAMES));
+        }
     }
 
     /**
@@ -187,6 +192,13 @@ public class Experiment {
         mRBDenom = denom;
 
         final Memo memo = new Memo(CONFIG, DENOM, denom, denom);
+        Server.get().send(memo);
+    }
+
+    public static void setCoef(double coef) {
+        mCoef = coef;
+
+        final Memo memo = new Memo(CONFIG, COEF, coef, coef);
         Server.get().send(memo);
     }
 

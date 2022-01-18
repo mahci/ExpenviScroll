@@ -13,12 +13,12 @@ public class Logs {
     private static List<String> toLogList = new ArrayList<>();
 
     static {
-//        toLogList.add("Server");
+        toLogList.add("Server");
         toLogList.add("ExperimentPanel");
 //        toLogList.add("Controller");
 //        toLogList.add("MyScrollBarUI");
-        toLogList.add("VTScrollPane");
-        toLogList.add("TDScrollPane");
+//        toLogList.add("VTScrollPane");
+//        toLogList.add("TDScrollPane");
 //        toLogList.add("Experiment");
 //        toLogList.add("Round");
 //        toLogList.add("TechConfigPanel");
@@ -35,14 +35,9 @@ public class Logs {
         if (toLogList.contains(cName)) System.out.println(tag + " >> " + mssg);
     }
 
-    public static void errorAll(String tag, String mssg) {
-        System.out.println(tag + " >> " + mssg);
-    }
-
     public static void info(String tag, String mssg) {
         String cName = tag.split("/")[0];
         if (toLogList.contains(cName)) System.out.println(tag + " >> " + mssg);
-//        System.out.println(tag + " >> " + mssg);
     }
 
     public static void d(String tag, String... params) {
@@ -69,6 +64,16 @@ public class Logs {
         if(params.length > 0 && showTag(tag)) {
             StringBuilder sb = new StringBuilder();
             for(Pair p : params) {
+                sb.append(p).append(" | ");
+            }
+            System.out.println(tag + " >> " + sb);
+        }
+    }
+
+    public static void d(String tag, Experiment.DIRECTION... params) {
+        if(params.length > 0 && showTag(tag)) {
+            StringBuilder sb = new StringBuilder();
+            for(Experiment.DIRECTION p : params) {
                 sb.append(p).append(" | ");
             }
             System.out.println(tag + " >> " + sb);
@@ -107,47 +112,11 @@ public class Logs {
         }
     }
 
-    public static void d(String tag, Pair mssg) {
-        System.out.println(tag + " >> " + mssg);
-    }
-
     public static void d(String tag, Experiment.TECHNIQUE mssg) {
         System.out.println(tag + " >> " + mssg);
     }
 
     public static void infoAll(String tag, String mssg) {
-        System.out.println(tag + " >> " + mssg);
-    }
-
-    public static void infoAll(String tag, String s1, String s2) {
-        System.out.println(tag + " >> " + s1 + " | " + s2);
-    }
-
-    public static void infoMulti(String tag, int s1, int s2) {
-        System.out.println(tag + " >> " + s1 + " | " + s2);
-    }
-
-    public static void infoAll(String tag, Dimension dim) {
-        System.out.println(tag + " >> " + dim);
-    }
-
-    public static void infoAll(String tag, double d) {
-        System.out.println(tag + " >> " + d);
-    }
-
-    public static void infoAll(String tag, int mssg) {
-        System.out.println(tag + " >> " + mssg);
-    }
-
-    public static void infoAll(String tag, int i1, int i2) {
-        System.out.println(tag + " >> " + i1 + " | " + i2);
-    }
-
-    public static void d(String tag, int mssg) {
-        System.out.println(tag + " >> " + mssg);
-    }
-
-    public static void d(String tag, double mssg) {
         System.out.println(tag + " >> " + mssg);
     }
 

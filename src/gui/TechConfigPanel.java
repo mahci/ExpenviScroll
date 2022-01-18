@@ -28,9 +28,7 @@ public class TechConfigPanel extends JPanel implements ItemListener {
     private MyConfigSpinner mRBGainSp;
     private MyConfigSpinner mRBDenomSp;
 
-    private Component mStBox = Box.createRigidArea(new Dimension(20, 0));
-    private Component mSepBox = Box.createRigidArea(new Dimension(20, 0));
-    private Component mEndBox = Box.createRigidArea(new Dimension(300, 0));
+    private MyConfigSpinner mFlickCoefSp;
 
     public TechConfigPanel() {
         final String TAG = NAME + "TechConfigPanel";
@@ -46,10 +44,10 @@ public class TechConfigPanel extends JPanel implements ItemListener {
         mDragSensitivitySp = new MyConfigSpinner(dragSensitivityModel);
 
         final SpinnerModel dragGainModel = new SpinnerNumberModel(
-                50.0,
+                20.0,
                 10.0,
                 1000.0,
-                10.0);
+                5.0);
         mDragGainSp = new MyConfigSpinner(dragGainModel);
 
         // Rate-based models
@@ -74,11 +72,18 @@ public class TechConfigPanel extends JPanel implements ItemListener {
                 10);
         mRBDenomSp = new MyConfigSpinner(rbDenomModel);
 
+        // Flick models
+        final SpinnerModel flickCoefModel = new SpinnerNumberModel(
+                0.1,
+                0.1,
+                1.0,
+                0.1);
+        mFlickCoefSp = new MyConfigSpinner(flickCoefModel);
+
         // Choosing technique
         mTechniquesCoBx = new JComboBox(TECHNIQUE.values());
         mTechniquesCoBx.setEditable(false);
         mTechniquesCoBx.setSelectedItem(TECHNIQUE.DRAG);
-//        mTechniquesCoBx.addItemListener(this);
         mTechniquesCoBx.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -114,13 +119,23 @@ public class TechConfigPanel extends JPanel implements ItemListener {
         rbCard.add(mRBDenomSp);
         rbCard.add(Box.createRigidArea(new Dimension(200, 0)));
 
+        // Flick card
+        final JPanel flickCard = new JPanel();
+        flickCard.setLayout(new BoxLayout(flickCard, BoxLayout.LINE_AXIS));
+        flickCard.add(Box.createRigidArea(new Dimension(20, 0)));
+        flickCard.add(new JLabel("Coef: "));
+        flickCard.add(mFlickCoefSp);
+        flickCard.add(Box.createRigidArea(new Dimension(600, 0)));
+
         // Mouse card
         final JPanel mouseCard = new JPanel();
 
+        //------------------------------------------------------------------------
         //Create the panel that contains the "cards".
         mCardsPanel = new JPanel(new CardLayout());
         mCardsPanel.add(dragCard, TECHNIQUE.DRAG.toString());
         mCardsPanel.add(rbCard, TECHNIQUE.RATE_BASED.toString());
+        mCardsPanel.add(flickCard, TECHNIQUE.FLICK.toString());
         mCardsPanel.add(mouseCard, TECHNIQUE.MOUSE.toString());
 
         // Add components
@@ -175,6 +190,14 @@ public class TechConfigPanel extends JPanel implements ItemListener {
             case RATE_BASED -> newValue = (int) mRBDenomSp.change(inc);
         }
         Experiment.setDenom(newValue);
+    }
+
+    public void adjustCoef(boolean inc) {
+        double newValue = 1;
+        switch (Experiment.getActiveTechnique()) {
+            case FLICK -> newValue = (double) mRBDenomSp.change(inc);
+        }
+        Experiment.setCoef(newValue);
     }
 
 //    public void adjustGain(boolean inc) {

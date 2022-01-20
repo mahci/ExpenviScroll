@@ -33,7 +33,6 @@ public class VTScrollPane extends JScrollPane implements MouseListener {
     private JTextPane mBodyTextPane;
     private MyScrollBarUI mScrollBarUI;
 
-//    protected int targetMinScVal, targetMaxScVal;
     private MinMax mTargetMinMax = new MinMax();
     private int mNumLines;
 

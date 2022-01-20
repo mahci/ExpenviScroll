@@ -25,7 +25,7 @@ public class MainFrame extends JFrame {
         setDisplayConfig();
 
         // Create and show an experiment
-        final int pid = 6;
+        final int pid = 7;
         final Experiment experiment = new Experiment(pid);
         Logs.d(NAME, experiment.getListOfTechniques());
         experimentPanel = new ExperimentPanel(experiment);

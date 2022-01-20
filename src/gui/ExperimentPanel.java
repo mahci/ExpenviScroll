@@ -352,6 +352,10 @@ public class ExperimentPanel extends JLayeredPane {
         repaint();
     }
 
+    /**
+     * Check whehter the trial was a hit
+     * @return True (Hit) / false (Miss)
+     */
     private boolean checkSuccess() {
         boolean result = false;
         switch (mTrial.getScrollMode()) {

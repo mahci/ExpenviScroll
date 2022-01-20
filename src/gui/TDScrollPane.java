@@ -7,8 +7,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.*;
 
 import static tools.Consts.*;
 
@@ -32,14 +31,11 @@ public class TDScrollPane extends JScrollPane implements MouseListener {
     private MyScrollBarUI hzScrollBarUI;
 
     private boolean isHighlighted;
-//    private int mVtScrollTargetMin;
-//    private int mVtScrollTargetMax;
-//    private int mHzScrollTargetMin;
-//    private int mHzScrollTargetMax;
     private MinMax mTargetVtMinMax = new MinMax();
     private MinMax mTargetHzMinMax = new MinMax();
 
     private boolean mIsCursorIn;
+    private boolean mIsMouseHorizontal;
 
     //-------------------------------------------------------------------------------------------------
 
@@ -334,7 +330,7 @@ public class TDScrollPane extends JScrollPane implements MouseListener {
         return mTargetVtMinMax.isWithin(vtScrollVal) && mTargetHzMinMax.isWithin(hzScrollVal);
     }
 
-    //------------------------------------------------------------------------------------------------
+    // Interface impl. ---------------------------------------------------------------------------------------
     @Override
     public void mouseClicked(MouseEvent e) {
         Logs.d(NAME, "Mouse Clicked", 0);

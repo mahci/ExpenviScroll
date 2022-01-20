@@ -1,6 +1,7 @@
 package gui;
 
 import control.Controller;
+import experiment.Block;
 import experiment.Experiment;
 import experiment.Trial;
 import tools.*;
@@ -12,23 +13,24 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.Objects;
 
 import static experiment.Experiment.*;
 import static tools.Consts.*;
+import static tools.Consts.SOUNDS.HIT_SOUND;
+import static tools.Consts.SOUNDS.MISS_SOUND;
 
 public class ExperimentPanel extends JLayeredPane {
 
     private final static String NAME = "ExperimentPanel/";
     // -------------------------------------------------------------------------------------------
 
-    // Constants
+    // Margins
     private double LR_MARGIN_mm = 20; // (mm) Left-right margin
     private double TB_MARGIN_mm = 20; // (mm) Left-right margin
 
-    private final String HIT_SOUND = "hit.wav";
-    private final String MISS_SOUND = "miss.wav";
-
+    // Keystrokes
     private KeyStroke KS_SPACE;
     private KeyStroke KS_SLASH;
     private KeyStroke KS_Q;
@@ -40,6 +42,8 @@ public class ExperimentPanel extends JLayeredPane {
 
     // Experiment and trial
     private Experiment mExperiment;
+    private List<Block> mBlocks;
+    private Block mBlock;
     private Trial mTrial;
 
     // Elements
@@ -47,12 +51,17 @@ public class ExperimentPanel extends JLayeredPane {
     private HorizontalScrollPane hzScrollPane;
     private TDScrollPane mTDScrollPane;
     private JLabel mLabel;
-    private JLabel levelLabel;
+    private JLabel mLevelLabel;
+    private JLabel mTechLabel;
     private TechConfigPanel mConfigPanel;
 
     // Experiment
-    private int mBlockNum = 1; // Round = 2 blocks
-    private int mTrialNum = 0;
+    private int mTechBlocksInd; // 0, 1
+    private int mBlockInd, mBlockNum; // Block num = block ind + 1
+    private int mTrialInd, mTrialNum; // Trial num = trial ind + 1
+    private int mTechInd;
+    private List<TECHNIQUE> mTechs;
+
     private boolean isPaneSet;
     private int targetColNum, randColNum;
     private int targetLineNum, randLineNum;
@@ -67,18 +76,24 @@ public class ExperimentPanel extends JLayeredPane {
     private long mStartTime;
 
     // -------------------------------------------------------------------------------------------
-    private final Action nextTrial = new AbstractAction() {
+    private final Action mStartExperiment = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
-            int nTrials = mExperiment.getRound(mBlockNum).getNTrials();
-            if (mTrialNum < nTrials) {
-                mTrialNum++;
-                mTrial = mExperiment.getRound(mBlockNum).getTrial(mTrialNum);
-            } else {
-                removeAll();
-                mLabel = new JLabel("Thank you for your participation!");
-                add(mLabel, 0);
-            }
+            mTechs = mExperiment.getListOfTechniques();
+
+            mTechBlocksInd = 0;
+            mBlockInd = 0;
+            mTrialInd = 0;
+            mTechInd = 0;
+
+            mBlocks = mExperiment.getTechBlocks(mTechBlocksInd);
+            mBlock = mBlocks.get(mBlockInd);
+            mTrial = mBlock.getTrial(mTrialInd);
+
+            remove(0);
+            showTrial();
+
+            getActionMap().put("SPACE", mEndTrialAction);
         }
     };
 
@@ -87,29 +102,44 @@ public class ExperimentPanel extends JLayeredPane {
         public void actionPerformed(ActionEvent e) {
             final String TAG = ExperimentPanel.NAME + "mEndTrialAction";
 
-            if (mTrial != null) {
-                if (checkSuccess()) playSound(HIT_SOUND);
-                else playSound(MISS_SOUND);
-                final long trialTime = System.currentTimeMillis() - mStartTime;
-                Logs.d(TAG, "", "Trial Time = " + (trialTime / 1000.0));
+            // Was the trial a success?
+            if (checkSuccess()){
+                playSound(HIT_SOUND);
             }
+            else { // Miss
+                playSound(MISS_SOUND);
+
+                // Shuffle the trial into the rest of trials
+                mBlock.dupeShuffleTrial(mTrialInd);
+            }
+
+            final long trialTime = System.currentTimeMillis() - mStartTime;
+            Logs.d(TAG, "", "Trial Time = " + (trialTime / 1000.0));
 
             remove(0);
 
-            int nTrials = mExperiment.getRound(mBlockNum).getNTrials();
-            Logs.d(TAG, "Number of Trials", nTrials);
-            if (mTrialNum < nTrials) {
-                // Time the trial
-                mStartTime = System.currentTimeMillis();
-
-                mTrialNum++;
-                mTrial = mExperiment.getRound(mBlockNum).getTrial(mTrialNum);
-                Logs.d(TAG, mBlockNum, mTrialNum);
+            if (mTrialInd < mBlock.getNTrials() - 1) { // Still trials left
+                mTrialInd++;
+                mTrial = mBlock.getTrial(mTrialInd);
                 showTrial();
-            } else {
+            } else if (mBlockInd < mBlocks.size() - 1) { // Next block
+                mBlockInd++;
+                mTrialInd = 0;
+                mBlock = mBlocks.get(mBlockInd);
+                mTrial = mBlock.getTrial(mTrialInd);
+                showTrial();
+            } else if (mTechBlocksInd < 1) { // Next block set (in this technique)
+                mTechBlocksInd++;
+                mBlockInd = 0;
+                mTrialInd = 0;
+                mBlocks = mExperiment.getTechBlocks(mTechBlocksInd);
+                mBlock = mBlocks.get(mBlockInd);
+                mTrial = mBlock.getTrial(mTrialInd);
+                showTrial();
+            } else { // Technique is finished
                 remove(0);
-                mLabel = new JLabel("Thank you for your participation!");
-                add(mLabel, 0);
+
+                // Start with the next technique
             }
         }
     };
@@ -159,9 +189,9 @@ public class ExperimentPanel extends JLayeredPane {
         String TAG = NAME;
         setLayout(null);
 
-        // Set key actions
+        // Set initial key actions
         mapKeys();
-        getActionMap().put("SPACE", mEndTrialAction);
+        getActionMap().put("SPACE", mStartExperiment);
         getActionMap().put("SLASH", mNextTechnique);
         getActionMap().put("Q", mIncSensitivity);
         getActionMap().put("A", mDecSensitivity);
@@ -185,10 +215,16 @@ public class ExperimentPanel extends JLayeredPane {
         add(mConfigPanel, 1);
 
         // Create levellabel (don't show yet)
-        levelLabel = new JLabel("", JLabel.CENTER);
-        levelLabel.setFont(new Font("Sans", Font.PLAIN, 18));
-        levelLabel.setBounds(2300, 30, 200, 100);
-        add(levelLabel, 2);
+        mLevelLabel = new JLabel("", JLabel.CENTER);
+        mLevelLabel.setFont(new Font("Sans", Font.PLAIN, 18));
+        mLevelLabel.setBounds(2300, 30, 200, 100);
+        add(mLevelLabel, 2);
+
+        // Create tehcnique label
+        mTechLabel = new JLabel("", JLabel.CENTER);
+        mTechLabel.setFont(new Font("Sans", Font.PLAIN, 18));
+        mTechLabel.setBounds(100, 30, 200, 100);
+        add(mTechLabel, 2);
     }
 
     /**
@@ -215,7 +251,6 @@ public class ExperimentPanel extends JLayeredPane {
      */
     private void showTrial() {
         String TAG = NAME + "showTrial";
-        Logs.d(TAG, "Mode", mTrial.getScrollMode().toString());
 
         // If panes aren't created, create them (only once)
         if (mVTScrollPane == null || mTDScrollPane == null) createPanes();
@@ -310,7 +345,8 @@ public class ExperimentPanel extends JLayeredPane {
         paintTrial = true;
 
         // Show level label
-        levelLabel.setText("Trial: " + mTrialNum + " | Block: " + mBlockNum);
+        mLevelLabel.setText("Trial: " + (mTrialInd + 1) + " | Block: " + (mBlockInd + 1));
+        mTechLabel.setText("Technique: " + mTechs.get(mTechInd));
 
         revalidate();
         repaint();

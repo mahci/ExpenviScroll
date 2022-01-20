@@ -6,7 +6,9 @@ import tools.Logs;
 import tools.Memo;
 
 import javax.swing.*;
+import javax.swing.text.html.HTML;
 import java.awt.*;
+import java.util.Arrays;
 
 import static experiment.Experiment.TECHNIQUE.*;
 import static tools.Consts.STRINGS.*;
@@ -22,22 +24,13 @@ public class MainFrame extends JFrame {
     public MainFrame() {
         setDisplayConfig();
 
-        // start the Setup panel
-//        SetupPanel setupPanel = new SetupPanel();
-//        this.add(setupPanel);
-
         // Create and show an experiment
-        int pid = 0;
-        experimentPanel = new ExperimentPanel(new Experiment(pid));
+        final int pid = 6;
+        final Experiment experiment = new Experiment(pid);
+        Logs.d(NAME, experiment.getListOfTechniques());
+        experimentPanel = new ExperimentPanel(experiment);
         add(experimentPanel);
         pack();
-
-//        SwingUtilities.invokeLater(new Runnable() {
-//            @Override
-//            public void run() {
-//
-//            }
-//        });
 
         setVisible(true);
     }

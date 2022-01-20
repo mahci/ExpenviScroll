@@ -55,7 +55,7 @@ public class Round {
      * @param distances list of distances (in lines/cols)
      * @param frameSizes list of frame heights/widths (in lines/cols)
      */
-    public Round(Experiment.SCROLL_MODE scMode, int[] distances, int[] frames) {
+    public Round(TASK scMode, int[] distances, int[] frames) {
         final String TAG = NAME + "Round";
 
         mBlocks[0] = new Block();
@@ -119,8 +119,8 @@ public class Round {
             for (int dist : distances) {
                 final DIRECTION d0 = DIRECTION.randOne(DIRECTION.N, DIRECTION.S);
                 final DIRECTION d1 = DIRECTION.oppVt(d0);
-                mBlocks[0].addTrial(new Trial(SCROLL_MODE.VERTICAL, d0, dist, fr));
-                mBlocks[1].addTrial(new Trial(SCROLL_MODE.VERTICAL, d1, dist, fr));
+                mBlocks[0].addTrial(new Trial(TASK.VERTICAL, d0, dist, fr));
+                mBlocks[1].addTrial(new Trial(TASK.VERTICAL, d1, dist, fr));
             }
 
             // 2D: NE,SE in b0 | NW,SW in b1
@@ -128,13 +128,13 @@ public class Round {
                 for (int hzDist : distances) {
                     final DIRECTION d00 = DIRECTION.randOne(DIRECTION.NE, DIRECTION.SE);
                     final DIRECTION d01 = DIRECTION.oppVt(d00);
-                    mBlocks[0].addTrial(new Trial(SCROLL_MODE.TWO_DIM, d00, vtDist, hzDist, fr));
-                    mBlocks[0].addTrial(new Trial(SCROLL_MODE.TWO_DIM, d01, vtDist, hzDist, fr));
+                    mBlocks[0].addTrial(new Trial(TASK.TWO_DIM, d00, vtDist, hzDist, fr));
+                    mBlocks[0].addTrial(new Trial(TASK.TWO_DIM, d01, vtDist, hzDist, fr));
 
                     final DIRECTION d10 = DIRECTION.oppHz(d00);
                     final DIRECTION d11 = DIRECTION.oppHz(d01);
-                    mBlocks[1].addTrial(new Trial(SCROLL_MODE.TWO_DIM, d10, vtDist, hzDist, fr));
-                    mBlocks[1].addTrial(new Trial(SCROLL_MODE.TWO_DIM, d11, vtDist, hzDist, fr));
+                    mBlocks[1].addTrial(new Trial(TASK.TWO_DIM, d10, vtDist, hzDist, fr));
+                    mBlocks[1].addTrial(new Trial(TASK.TWO_DIM, d11, vtDist, hzDist, fr));
                     Logs.d(NAME, d00, d01, d10, d11);
                 }
             }

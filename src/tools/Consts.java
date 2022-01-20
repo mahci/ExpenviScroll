@@ -64,12 +64,15 @@ public class Consts {
         }
     }
 
+    public static class SOUNDS {
+        public final static String HIT_SOUND = "hit.wav";
+        public final static String MISS_SOUND = "miss.wav";
+    }
+
     public static class STRINGS {
         public final static String SP = ";";
         public final static String TECHNIQUE = "TECHNIQUE";
         public final static String SCROLL = "SCROLL";
-        public final static String DRAG = "DRAG";
-        public final static String RB = "RABA";
         public final static String STOP = "STOP";
         public final static String CONFIG = "CONFIG";
         public final static String SENSITIVITY = "SENSITIVITY";

@@ -5,19 +5,14 @@ import tools.DimensionD;
 import tools.Memo;
 import tools.Utils;
 
-import java.util.ArrayList;
+import java.util.*;
 
-import static experiment.Experiment.TECHNIQUE.DRAG;
-import static experiment.Experiment.TECHNIQUE.RATE_BASED;
+import static experiment.Experiment.TECHNIQUE.*;
 import static tools.Consts.STRINGS.*;
 
 public class Experiment {
     private final static String NAME = "Experiment/";
     // ------------------------------------------------------------------------------------------------------
-
-    // list of rounds in this experiment
-    private ArrayList<Round> mRounds = new ArrayList<>();
-
     //-- Config
     // Vertical
     public static final DimensionD VT_PANE_DIM_mm = new DimensionD(130.0, 145.0);
@@ -40,10 +35,6 @@ public class Experiment {
     public static final double TD_SCROLL_BAR_W_mm = 5.0; // Length = side of the pane
     public static final double TD_SCROLL_THUMB_L_mm = 6.0; // Width = width of the scrollbar
     public static final double TD_FRAME_H_mm = 7.0; // Height of frame
-
-    //-- Variables
-    private int[] DISTANCES = new int[]{50, 200}; // in lines/cells
-    private int[] FRAMES = new int[]{3, 5}; // in lines/cells
 
     public enum DIRECTION {
         N(0), S(1), E(2), W(3), NE(4), NW(5), SE(6), SW(7);
@@ -86,10 +77,10 @@ public class Experiment {
         }
     }
 
-    public enum SCROLL_MODE {
+    public enum TASK {
         VERTICAL(1), TWO_DIM(2);
         private final int n;
-        SCROLL_MODE(int i) { n = i; }
+        TASK(int i) { n = i; }
     }
 
     public enum TECHNIQUE {
@@ -98,12 +89,24 @@ public class Experiment {
         TECHNIQUE(int i) { n = i; }
     }
 
-    private int VT_REP = 4;
-    private int TD_REP = 2;
+    //-- Variables
+    private int[] DISTANCES = new int[]{50, 200}; // in lines/cells
+    private int[] FRAMES = new int[]{3, 5}; // in lines/cells
+    private List<TECHNIQUE> TECH_ORDERS = Arrays.asList(
+            FLICK, DRAG, MOUSE,
+            FLICK, MOUSE, DRAG,
+            DRAG, FLICK, MOUSE,
+            DRAG, MOUSE, FLICK,
+            MOUSE, FLICK, DRAG,
+            MOUSE, DRAG, FLICK);
+    private Map<TASK, Integer> N_BLOCKS = Map.of(TASK.VERTICAL, 8, TASK.TWO_DIM, 4);
 
-    int mPaId; // Participant id
+    //--- Participant's things!
+    int mPId;
+    private List<TASK> mPcTasks;
+    private List<TECHNIQUE> mPcTechs;
 
-    // Status
+    //---------- Status
     private static TECHNIQUE mActiveTechnique = DRAG;
     private static int mDragSensitivity = 2;
     private static double mDragGain = 100;
@@ -115,29 +118,44 @@ public class Experiment {
     // -------------------------------------------------------------------------------------------------------
 
     /**
-     * Constructor with default values
+     * Constructor
+     * @param pid Participant's Id (from 1)
      */
     public Experiment(int pid) {
         final String TAG = NAME;
 
-        mPaId = pid;
-        createRounds(2);
-    }
+        mPId = pid;
 
-    public void createRounds(int nRounds) {
-        for (int r = 0; r < nRounds; r++) {
-            mRounds.add(new Round(DISTANCES, FRAMES));
-        }
+        // Set up the order of tasks and techniques for the participant
+        if (pid <= 6) mPcTasks = Arrays.asList(TASK.VERTICAL, TASK.TWO_DIM);
+        else mPcTasks = Arrays.asList(TASK.TWO_DIM, TASK.VERTICAL);
+
+        final int stTechInd = ((mPId - 1) % 6) * 3;
+        mPcTechs = TECH_ORDERS.subList(stTechInd, stTechInd + 3);
+
     }
 
     /**
-     * Get a block
-     * @param roundNum Round number (starting from 1)
-     * @return Round
+     * Get the order of the techniques to experiment
+     * @return List of techniques (n = 3)
      */
-    public Round getRound(int roundNum) {
-        if(roundNum > 0 && roundNum <= mRounds.size()) return mRounds.get(roundNum - 1);
-        else return null;
+    public List<TECHNIQUE> getListOfTechniques() {
+        return mPcTechs;
+    }
+
+    /**
+     * Get the list of blocks
+     * @param setInd Index of block set (0 or 1)
+     * @return Arraylist of Blocks
+     */
+    public List<Block> getTechBlocks(int setInd) {
+        final List<Block> result = new ArrayList<>();
+        final TASK task = mPcTasks.get(setInd);
+        for (int i = 0; i < N_BLOCKS.get(task); i++) {
+            result.add(new Block(task, DISTANCES, FRAMES));
+        }
+
+        return result;
     }
 
     /**
@@ -147,7 +165,7 @@ public class Experiment {
     public Trial randVtTrial() {
         int dist = Utils.randElement(DISTANCES);
         int fr = Utils.randElement(FRAMES);
-        return new Trial(SCROLL_MODE.VERTICAL, DIRECTION.randOne(DIRECTION.N, DIRECTION.S), dist, fr);
+        return new Trial(TASK.VERTICAL, DIRECTION.randOne(DIRECTION.N, DIRECTION.S), dist, fr);
     }
 
     /**
@@ -157,7 +175,7 @@ public class Experiment {
     public Trial randTdTrial() {
         int dist = Utils.randElement(DISTANCES);
         int fr = Utils.randElement(FRAMES);
-        return new Trial(SCROLL_MODE.TWO_DIM, DIRECTION.randTd(), dist, fr);
+        return new Trial(TASK.TWO_DIM, DIRECTION.randTd(), dist, fr);
     }
 
     /**

@@ -81,8 +81,6 @@ public class DemoPanel extends JPanel {
 
         // Map keys
         mapKeys();
-        getActionMap().put("SPACE", RAND_TRIAL_ACTION);
-        getActionMap().put("ENTER", END_DEMO_ACTION);
 
         // Show elements
         final int labelY = 400;
@@ -106,6 +104,10 @@ public class DemoPanel extends JPanel {
                 removeAll();
                 add(mTechLabel, 0);
                 randomTrial();
+
+                // Map the actions
+                getActionMap().put("SPACE", RAND_TRIAL_ACTION);
+                getActionMap().put("ENTER", END_DEMO_ACTION);
             }
         });
         mNextButton.setFocusable(false);
@@ -230,7 +232,7 @@ public class DemoPanel extends JPanel {
                 final int targetRow = targetInd.getFirst();
                 final int targetCol = targetInd.getSecond();
                 final int vtDist = mTrial.getVtDist();
-                final int hzDist = mTrial.getHzDist();
+                final int hzDist = mTrial.getTdDist();
                 Logs.d(TAG, "Target", targetInd.toString());
                 switch (mTrial.getDirection()) {
                     case NE -> centerInd.set(targetRow + vtDist, targetCol - hzDist);
@@ -313,19 +315,19 @@ public class DemoPanel extends JPanel {
         switch (mTrial.getDirection()) {
             case NE -> {
                 vtInd.move(0, -mTrial.getVtDist());
-                hzInd.move(mTrial.getHzDist(), 0);
+                hzInd.move(mTrial.getTdDist(), 0);
             }
             case NW -> {
                 vtInd.move(0, -mTrial.getVtDist());
-                hzInd.move(0, -mTrial.getHzDist());
+                hzInd.move(0, -mTrial.getTdDist());
             }
             case SE -> {
                 vtInd.move(mTrial.getVtDist(), 0);
-                hzInd.move(mTrial.getHzDist(), 0);
+                hzInd.move(mTrial.getTdDist(), 0);
             }
             case SW -> {
                 vtInd.move(mTrial.getVtDist(), 0);
-                hzInd.move(0, -mTrial.getHzDist());
+                hzInd.move(0, -mTrial.getTdDist());
             }
         }
         Pair result = new Pair(Utils.randIntBetween(vtInd), Utils.randIntBetween(hzInd));

@@ -36,6 +36,8 @@ public class Logger {
     private PrintWriter mEventsLogFile;
 
     private String mExpLogId;
+
+    private long mHomingStTime;
     // -------------------------------------------------------------------------------------------
 
     /**
@@ -155,6 +157,17 @@ public class Logger {
         } catch (NullPointerException | IOException e) {
             Main.showDialog("Problem in logging instant!");
         }
+    }
+
+    public void startHomingTime() {
+        mHomingStTime = Utils.nowInMillis();
+    }
+
+    public long getHomingStTime() {
+        final long result = mHomingStTime;
+        mHomingStTime = 0; // reset the time
+
+        return result;
     }
 
     /**

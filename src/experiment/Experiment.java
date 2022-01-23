@@ -1,6 +1,5 @@
 package experiment;
 
-import control.Logger;
 import control.Server;
 import tools.DimensionD;
 import tools.Memo;
@@ -91,7 +90,8 @@ public class Experiment {
     }
 
     //-- Variables
-    private int[] DISTANCES = new int[]{50, 200}; // in lines/cells
+    private int[] VT_DISTANCES = new int[]{50, 700}; // in lines/cells
+    private int[] TD_DISTANCES = new int[]{50, 200};
     private int[] FRAMES = new int[]{3, 5}; // in lines/cells
     private List<TECHNIQUE> TECH_ORDERS = Arrays.asList(
             FLICK, DRAG, MOUSE,
@@ -149,11 +149,17 @@ public class Experiment {
      * @param techTaskInd Index of the techTask (0 or 1)
      * @return Arraylist of Blocks
      */
-    public List<Block> getChunklocks(int techTaskInd) {
+    public List<Block> getTechTaskBlocks(int techTaskInd) {
         final List<Block> result = new ArrayList<>();
         final TASK task = mPcTasks.get(techTaskInd);
-        for (int i = 0; i < N_BLOCKS.get(task); i++) {
-            result.add(new Block(task, DISTANCES, FRAMES));
+        if (task.equals(TASK.VERTICAL)) {
+            for (int i = 0; i < N_BLOCKS.get(task); i++) {
+                result.add(new Block(task, VT_DISTANCES, TD_DISTANCES, FRAMES));
+            }
+        } else {
+            for (int i = 0; i < N_BLOCKS.get(task); i++) {
+                result.add(new Block(task, VT_DISTANCES, TD_DISTANCES, FRAMES));
+            }
         }
 
         return result;
@@ -172,9 +178,9 @@ public class Experiment {
      * @return Random vertical trial
      */
     public Trial randVtTrial() {
-        int dist = Utils.randElement(DISTANCES);
+        int dist = Utils.randElement(VT_DISTANCES);
         int fr = Utils.randElement(FRAMES);
-        return new Trial(TASK.VERTICAL, DIRECTION.randOne(DIRECTION.N, DIRECTION.S), dist, fr);
+        return new Trial(TASK.VERTICAL, DIRECTION.randOne(DIRECTION.N, DIRECTION.S), dist, 0, fr);
     }
 
     /**
@@ -182,9 +188,9 @@ public class Experiment {
      * @return Random 2D trial
      */
     public Trial randTdTrial() {
-        int dist = Utils.randElement(DISTANCES);
+        int dist = Utils.randElement(TD_DISTANCES);
         int fr = Utils.randElement(FRAMES);
-        return new Trial(TASK.TWO_DIM, DIRECTION.randTd(), dist, fr);
+        return new Trial(TASK.TWO_DIM, DIRECTION.randTd(), 0, dist, fr);
     }
 
     /**

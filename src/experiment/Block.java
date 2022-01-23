@@ -20,14 +20,14 @@ public class Block {
      * Construct the block of TASK t
      * @param t TASK (vertical or 2D)
      */
-    public Block(TASK t, int[] distances, int[] frames) {
+    public Block(TASK t, int[] vtDistances, int[] tdDistances, int[] frames) {
         task = t;
         if (t.equals(TASK.VERTICAL)) {
 
-            for (int d : distances) {
+            for (int d : vtDistances) {
                 for (int f : frames) {
-                    trials.add(new Trial(t, DIRECTION.N, d, f));
-                    trials.add(new Trial(t, DIRECTION.S, d, f));
+                    trials.add(new Trial(t, DIRECTION.N, d, 0, f));
+                    trials.add(new Trial(t, DIRECTION.S, d, 0, f));
                 }
             }
 
@@ -36,12 +36,12 @@ public class Block {
 
         } else { // 2D
 
-            for (int d : distances) {
+            for (int d : tdDistances) {
                 for (int f : frames) {
-                    trials.add(new Trial(t, DIRECTION.NE, d, f));
-                    trials.add(new Trial(t, DIRECTION.SE, d, f));
-                    trials.add(new Trial(t, DIRECTION.NW, d, f));
-                    trials.add(new Trial(t, DIRECTION.SW, d, f));
+                    trials.add(new Trial(t, DIRECTION.NE, 0, d, f));
+                    trials.add(new Trial(t, DIRECTION.SE, 0, d, f));
+                    trials.add(new Trial(t, DIRECTION.NW, 0, d, f));
+                    trials.add(new Trial(t, DIRECTION.SW, 0, d, f));
                 }
             }
 

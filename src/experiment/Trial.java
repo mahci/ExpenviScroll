@@ -15,15 +15,8 @@ public class Trial {
     private TASK task;
     private DIRECTION direction;
     private int vtDist;
-    private int hzDist;
+    private int tdDist;
     private int frame;
-
-    public Trial(TASK tsk, DIRECTION dr, int vtD, int fr) {
-        task = tsk;
-        direction = dr;
-        vtDist = vtD;
-        frame = fr;
-    }
 
     public String toLogString() {
         return task.ordinal() + SP +

@@ -11,6 +11,10 @@ public class MainFrame extends JFrame {
     // -------------------------------------------------------------------------------------------
     private static MainFrame self; // Singelton instance
 
+    private Rectangle scrBound;
+    private int scrW, scrH;
+    private int frW, frH;
+
     private static DemoPanel mDemoPanel;
     private static ExperimentPanel mExperimentPanel;
 
@@ -50,6 +54,20 @@ public class MainFrame extends JFrame {
         revalidate();
     }
 
+    public void showDialog(JDialog dialog) {
+        dialog.pack();
+        dialog.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
+
+        int frW = dialog.getSize().width;
+        int frH = dialog.getSize().height;
+
+        dialog.setLocation(
+                ((scrW / 2) - (frW / 2)) + scrBound.x,
+                ((scrH / 2) - (frH / 2)) + scrBound.y
+        );
+        dialog.setVisible(true);
+    }
+
     /**
      * Set the config for showing panels
      */
@@ -60,12 +78,12 @@ public class MainFrame extends JFrame {
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice[] gd = ge.getScreenDevices();
 
-        Rectangle scrBound = gd[1].getDefaultConfiguration().getBounds();
-        int scrW = scrBound.width;
-        int scrH = scrBound.height;
+        scrBound = gd[1].getDefaultConfiguration().getBounds();
+        scrW = scrBound.width;
+        scrH = scrBound.height;
 
-        int frW = getSize().width;
-        int frH = getSize().height;
+        frW = getSize().width;
+        frH = getSize().height;
 
         setLocation(
                 ((scrW / 2) - (frW / 2)) + scrBound.x,

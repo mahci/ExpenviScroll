@@ -89,8 +89,13 @@ public class Consts {
                 "Welcome to the scrolling experiment!";
         public final static String DEMO_NEXT =
                 "First, let's have a demo >";
-        public final static String WELCOME_MESSAGE =
-                "Welcome! Please press SPACE to begin the experiment.";
+
+        public static final String DLG_BREAK_TITLE  = "Time for a break!";
+        public static final String DLG_BREAK_TEXT   =
+                "<html>When ready, press <B>BLUE + RED</B> keys to start the next block</html>";
+
+        public final static String EXP_START_MESSAGE =
+                "To beging the experiment, press SPACE.";
         public static String[] END_TECH_MESSAGES = new String[2];
         public static String END_EXPERIMENT_MESSAGE =
                 "All finished! Thank you for participating in this experiment!";

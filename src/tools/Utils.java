@@ -7,10 +7,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static tools.Consts.DISP.PPI;
@@ -163,4 +163,38 @@ public class Utils {
 
         return outStr.toString();
     }
+
+    /**
+     * Get the current time up to the seconds
+     * @return LocalTime
+     */
+    public static LocalTime nowTimeSec() {
+        return LocalTime.now().truncatedTo(ChronoUnit.SECONDS);
+    }
+
+    /**
+     * Get the current time up to the milliseconds
+     * @return LocalTime
+     */
+    public static LocalTime nowTimeMilli() {
+        return LocalTime.now().truncatedTo(ChronoUnit.MILLIS);
+    }
+
+    /**
+     * Get the time in millis
+     * @return Long timestamp
+     */
+    public static long nowInMillis() {
+        return Calendar.getInstance().getTimeInMillis();
+    }
+
+    /**
+     * Get the current date+time up to minutes
+     * @return LocalDateTime
+     */
+    public static String nowDateTime() {
+        SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy_hh-mm");
+        return format.format(Calendar.getInstance().getTime());
+    }
+
 }

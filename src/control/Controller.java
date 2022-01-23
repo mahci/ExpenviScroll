@@ -89,7 +89,7 @@ public class Controller {
             scrollThreadGroup = new ThreadGroup("Scrolls");
 
         } catch (AWTException e) {
-            Logs.error(TAG, "Robot couldn't be initialized!");
+            Logs.d(TAG, "Robot couldn't be initialized!");
             System.exit(1);
         }
     }

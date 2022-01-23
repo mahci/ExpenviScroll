@@ -58,7 +58,7 @@ public class Consts {
                 SF_LIGHT = Font.createFont(Font.TRUETYPE_FONT, sfLightFile);
 
             } catch (FontFormatException | IOException e) {
-                Logs.error("FONTS", "Can't load the font file!");
+                Logs.d("FONTS", "Can't load the font file!");
                 e.printStackTrace();
             }
         }
@@ -79,9 +79,22 @@ public class Consts {
         public final static String GAIN = "GAIN";
         public final static String DENOM = "DENOM";
         public final static String COEF = "COEF";
+        public final static String LOG = "LOG";
+        public final static String PID = "PID";
+        public final static String BLOCK_TRIAL = "BLOCK_TRIAL";
+        public final static String TSK = "TSK";
+        public final static String P_INIT = "P";
 
         public final static String WELCOME_MESSAGE =
                 "Welcome! Please press SPACE to begin the experiment.";
+        public static String[] END_TECH_MESSAGES = new String[2];
+        public static String END_EXPERIMENT_MESSAGE =
+                "All finished! Thank you for participating in this experiment!";
+
+        static {
+            END_TECH_MESSAGES[0] = "Thank you! The first technique is done.";
+            END_TECH_MESSAGES[1] = "Thank you! The second technique is done.";
+        }
 
     }
 

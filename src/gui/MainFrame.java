@@ -2,12 +2,15 @@ package gui;
 
 import control.Server;
 import experiment.Experiment;
+import tools.Consts;
 import tools.Logs;
 import tools.Memo;
 
 import javax.swing.*;
 import javax.swing.text.html.HTML;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Arrays;
 
 import static experiment.Experiment.TECHNIQUE.*;
@@ -17,6 +20,7 @@ public class MainFrame extends JFrame {
     private final static String NAME = "MainFrame/";
 
     private static ExperimentPanel experimentPanel;
+    private static JDialog dialog;
 
     /**
      * Constructor
@@ -25,12 +29,36 @@ public class MainFrame extends JFrame {
         setDisplayConfig();
 
         // Create and show an experiment
-        final int pid = 7;
+        final int pid = 123;
         final Experiment experiment = new Experiment(pid);
         Logs.d(NAME, experiment.getListOfTechniques());
         experimentPanel = new ExperimentPanel(experiment);
         add(experimentPanel);
         pack();
+
+        dialog = new JDialog(this, "Child", true);
+        dialog.setSize(800, 500);
+        dialog.setLocationRelativeTo(this);
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
+        panel.setSize(800, 500);
+        JLabel label = new JLabel(END_EXPERIMENT_MESSAGE);
+        label.setFont(new Font("Sans", Font.BOLD, 35));
+        label.setAlignmentX(Component.CENTER_ALIGNMENT);
+        panel.add(label);
+        JButton button = new JButton("Button");
+        button.setSize(300, 200);
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dialog.dispose();
+            }
+        });
+        button.setAlignmentX(Component.CENTER_ALIGNMENT);
+        panel.add(button);
+        dialog.add(panel);
+        button.setFocusable(false);
+//        dialog.setUndecorated(true);
 
         setVisible(true);
     }
@@ -70,6 +98,9 @@ public class MainFrame extends JFrame {
         experimentPanel.repaint();
     }
 
+    public static void showDialog() {
+        dialog.setVisible(true);
+    }
 
 
 }

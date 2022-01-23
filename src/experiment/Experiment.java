@@ -1,5 +1,6 @@
 package experiment;
 
+import control.Logger;
 import control.Server;
 import tools.DimensionD;
 import tools.Memo;
@@ -102,7 +103,7 @@ public class Experiment {
     private Map<TASK, Integer> N_BLOCKS = Map.of(TASK.VERTICAL, 8, TASK.TWO_DIM, 4);
 
     //--- Participant's things!
-    int mPId;
+    private int mPId;
     private List<TASK> mPcTasks;
     private List<TECHNIQUE> mPcTechs;
 
@@ -144,18 +145,26 @@ public class Experiment {
     }
 
     /**
-     * Get the list of blocks
-     * @param setInd Index of block set (0 or 1)
+     * Get the list of blocks for a TechTask
+     * @param techTaskInd Index of the techTask (0 or 1)
      * @return Arraylist of Blocks
      */
-    public List<Block> getTechBlocks(int setInd) {
+    public List<Block> getChunklocks(int techTaskInd) {
         final List<Block> result = new ArrayList<>();
-        final TASK task = mPcTasks.get(setInd);
+        final TASK task = mPcTasks.get(techTaskInd);
         for (int i = 0; i < N_BLOCKS.get(task); i++) {
             result.add(new Block(task, DISTANCES, FRAMES));
         }
 
         return result;
+    }
+
+    /**
+     * Get the participant's id
+     * @return Participant's id
+     */
+    public int getPId() {
+        return mPId;
     }
 
     /**
@@ -187,6 +196,7 @@ public class Experiment {
 
         final Memo memo = new Memo(CONFIG, TECHNIQUE, mActiveTechnique.ordinal(), 0);
         Server.get().send(memo);
+
     }
 
 

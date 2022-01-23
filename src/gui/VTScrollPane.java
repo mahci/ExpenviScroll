@@ -1,5 +1,6 @@
 package gui;
 
+import control.Logger;
 import experiment.Experiment;
 import tools.*;
 
@@ -36,7 +37,13 @@ public class VTScrollPane extends JScrollPane implements MouseListener {
     private MinMax mTargetMinMax = new MinMax();
     private int mNumLines;
 
-    private boolean mIsCursorIn;
+    private boolean mCursorIn;
+
+    // For logging
+    private Logger.InstantInfo mInstantInfo = new Logger.InstantInfo();
+    private boolean mEntered;
+    private boolean mScrolled;
+
     //-------------------------------------------------------------------------------------------------
 
     /**
@@ -85,7 +92,7 @@ public class VTScrollPane extends JScrollPane implements MouseListener {
             getViewport().add(mBodyTextPane);
 
         } catch (IOException e) {
-            Logs.error(TAG, "Problem createing VTScrollPane -> setText");
+            Logs.d(TAG, "Problem createing VTScrollPane -> setText");
             e.printStackTrace();
         }
 
@@ -214,8 +221,8 @@ public class VTScrollPane extends JScrollPane implements MouseListener {
     public void scroll(int scrollAmt) {
         final String TAG = NAME + "scroll";
         // Scroll only if cursor is inside
-        Logs.d(TAG, mIsCursorIn);
-        if (mIsCursorIn) {
+        Logs.d(TAG, mCursorIn);
+        if (mCursorIn) {
             Dimension vpDim = getViewport().getView().getSize(); // Can be also Preferred
             int extent = getVerticalScrollBar().getModel().getExtent();
 
@@ -226,6 +233,14 @@ public class VTScrollPane extends JScrollPane implements MouseListener {
             }
 
             repaint();
+
+            // Log
+            if (!mScrolled) {
+                mInstantInfo.firstScroll = Utils.nowInMillis();
+                mScrolled = true;
+            } else {
+                mInstantInfo.lastScroll = Utils.nowInMillis();
+            }
         }
 
     }
@@ -269,7 +284,7 @@ public class VTScrollPane extends JScrollPane implements MouseListener {
      * @return String of line numbers
      */
     public String getLineNumbers(int nLines) {
-        Logs.info(this.getClass().getName(), "Total lines = " + nLines);
+        Logs.d(this.getClass().getName(), "Total lines = " + nLines);
         StringBuilder text = new StringBuilder("0" + System.getProperty("line.separator"));
         for(int i = 1; i < nLines + 1; i++){
             text.append(i).append(System.getProperty("line.separator"));
@@ -342,15 +357,25 @@ public class VTScrollPane extends JScrollPane implements MouseListener {
         return lineInd;
     }
 
-    //------------------------------------------------------------------------------
+    public void setInstantInfo(Logger.InstantInfo instInfo) {
+        mInstantInfo = instInfo;
+    }
+
+    /**
+     * Get the InstantInfo instance (to continue filling in other classes)
+     * @return Logger.InstantInfo
+     */
+    public Logger.InstantInfo getInstantInfo() {
+        return mInstantInfo;
+    }
+
+    // MouseListener ========================================================================================
     @Override
     public void mouseClicked(MouseEvent e) {
-        Logs.d(NAME, "Mouse Clicked", 0);
     }
 
     @Override
     public void mousePressed(MouseEvent e) {
-        Logs.d(NAME, "Mouse Pressed", 0);
     }
 
     @Override
@@ -360,17 +385,22 @@ public class VTScrollPane extends JScrollPane implements MouseListener {
 
     @Override
     public void mouseEntered(MouseEvent e) {
-        mIsCursorIn = true;
-        Logs.d(NAME, "Mouse Entered", 0);
+        mCursorIn = true;
+        if (!mEntered) {
+            mInstantInfo.firstEntry = Utils.nowInMillis();
+            mEntered = true;
+        } else {
+            mInstantInfo.lastEntry = Utils.nowInMillis();
+        }
+
     }
 
     @Override
     public void mouseExited(MouseEvent e) {
-        mIsCursorIn = false;
-        Logs.d(NAME, "Mouse Exited", 0);
+        mCursorIn = false;
     }
 
-    //-------------------------------------------------------------------------------------------------
+    // Custom ScrollBar ========================================================================================
 
     /***
      * Custom class for scroll bars

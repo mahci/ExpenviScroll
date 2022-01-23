@@ -1,6 +1,8 @@
 package gui;
 
 import control.Controller;
+import control.Logger;
+import control.Server;
 import experiment.Block;
 import experiment.Experiment;
 import experiment.Trial;
@@ -20,6 +22,7 @@ import static experiment.Experiment.*;
 import static tools.Consts.*;
 import static tools.Consts.SOUNDS.HIT_SOUND;
 import static tools.Consts.SOUNDS.MISS_SOUND;
+import static tools.Consts.STRINGS.END_EXPERIMENT_MESSAGE;
 
 public class ExperimentPanel extends JLayeredPane {
 
@@ -56,11 +59,21 @@ public class ExperimentPanel extends JLayeredPane {
     private TechConfigPanel mConfigPanel;
 
     // Experiment
-    private int mTechBlocksInd; // 0, 1
-    private int mBlockInd, mBlockNum; // Block num = block ind + 1
-    private int mTrialInd, mTrialNum; // Trial num = trial ind + 1
+    private int mTechTaskInd; // 0, 1
+    private int mBlockInd; // Block num = block ind + 1
+    private int mTrialInd; // Trial num = trial ind + 1
     private int mTechInd;
     private List<TECHNIQUE> mTechs;
+
+    // Logging
+    private Logger.GeneralInfo mGenInfo = new Logger.GeneralInfo();
+    private Logger.TrialInfo mTrialInfo = new Logger.TrialInfo();
+    private Logger.TimeInfo mTimeInfo = new Logger.TimeInfo();
+    private long mExpStTime;
+    private long mTrialStTime;
+    private long mBlockStTime;
+    private long mTechTaskStTime;
+    private long mTechStTime;
 
     private boolean isPaneSet;
     private int targetColNum, randColNum;
@@ -76,33 +89,67 @@ public class ExperimentPanel extends JLayeredPane {
     private long mStartTime;
 
     // -------------------------------------------------------------------------------------------
-    private final Action mStartExperiment = new AbstractAction() {
+    private final Action START_EXP_ACTION = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
             mTechs = mExperiment.getListOfTechniques();
 
-            mTechBlocksInd = 0;
+            mTechTaskInd = 0;
             mBlockInd = 0;
             mTrialInd = 0;
             mTechInd = 0;
 
-            mBlocks = mExperiment.getTechBlocks(mTechBlocksInd);
+            mBlocks = mExperiment.getChunklocks(mTechTaskInd);
             mBlock = mBlocks.get(mBlockInd);
             mTrial = mBlock.getTrial(mTrialInd);
 
+            // Sync the info to the Moose
+            Server.get().send(new Memo(STRINGS.LOG, STRINGS.PID, mExperiment.getPId()));
+            Server.get().send(new Memo(STRINGS.LOG, STRINGS.BLOCK_TRIAL,
+                    mBlockInd + 1, mTrialInd + 1)); // Block/trial *num*
+            Server.get().send(new Memo(STRINGS.LOG, STRINGS.TSK, mTrial.getTask()));
+            Server.get().send(new Memo(STRINGS.CONFIG, STRINGS.TECHNIQUE, mTechs.get(mTechInd)));
+
+            // Log
+            mGenInfo.tech = mTechs.get(mTechInd);
+            mGenInfo.blockNum = mBlockInd + 1;
+            mGenInfo.trialNum = mTrialInd + 1;
+            mExpStTime = Utils.nowInMillis();
+            mBlockStTime = Utils.nowInMillis();
+
+            // Show trials
             remove(0);
             showTrial();
 
-            getActionMap().put("SPACE", mEndTrialAction);
+            // Change the SPACE action
+            getActionMap().put("SPACE", END_TRIAL_ACTION);
         }
     };
 
-    private final Action mEndTrialAction = new AbstractAction() {
+    private final Action END_TRIAL_ACTION = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
             final String TAG = ExperimentPanel.NAME + "mEndTrialAction";
 
-            // Was the trial a success?
+            final boolean trialResult = checkSuccess();
+
+            // Log InstantInfo
+            Logger.InstantInfo scrollInstInfo;
+            if (mTrial.getTask() == TASK.VERTICAL) scrollInstInfo = mVTScrollPane.getInstantInfo();
+            else scrollInstInfo = mTDScrollPane.getInstantInfo();
+            scrollInstInfo.trialEnd = Utils.nowInMillis();
+            Logger.get().logInstantInfo(mGenInfo, scrollInstInfo);
+
+            // Log TrialInfo
+            mTrialInfo.trial = mTrial;
+            mTrialInfo.result = trialResult ? 1 : 0;
+            Logger.get().logTrialInfo(mGenInfo, mTrialInfo);
+
+            // Record Trial time
+            mTimeInfo = new Logger.TimeInfo();
+            mTimeInfo.trialTime = Utils.nowInMillis() - mTrialStTime;
+
+            // Was the trial a success or a fail?
             if (checkSuccess()){
                 playSound(HIT_SOUND);
             }
@@ -113,33 +160,90 @@ public class ExperimentPanel extends JLayeredPane {
                 mBlock.dupeShuffleTrial(mTrialInd);
             }
 
-            final long trialTime = System.currentTimeMillis() - mStartTime;
-            Logs.d(TAG, "", "Trial Time = " + (trialTime / 1000.0));
+//            remove(0);
 
-            remove(0);
+            removeAll();
+            mTechInd = -1;
+            repaint();
+            showTechEndDialog();
 
-            if (mTrialInd < mBlock.getNTrials() - 1) { // Still trials left
+            if (mTrialInd < mBlock.getNTrials() - 1) { // Trial finished
+                // Log trial TimeInfo
+                Logger.get().logTimeInfo(mGenInfo, mTimeInfo);
+
+                // Next trial
                 mTrialInd++;
                 mTrial = mBlock.getTrial(mTrialInd);
+
+                // Sync the info to the Moose
+                Server.get().send(new Memo(STRINGS.LOG, STRINGS.BLOCK_TRIAL,
+                        mBlockInd + 1, mTrialInd + 1)); // Block/trial *num*
+
                 showTrial();
-            } else if (mBlockInd < mBlocks.size() - 1) { // Next block
+
+            } else if (mBlockInd < mBlocks.size() - 1) { // Block finished
+                // Add block time and log TimeInfo
+                mTimeInfo.blockTime = Utils.nowInMillis() - mBlockStTime;
+                Logger.get().logTimeInfo(mGenInfo, mTimeInfo);
+
+                // Next block
                 mBlockInd++;
                 mTrialInd = 0;
                 mBlock = mBlocks.get(mBlockInd);
                 mTrial = mBlock.getTrial(mTrialInd);
+
+                // Log
+                mBlockStTime = Utils.nowInMillis();
+
+                // Sync the info to the Moose
+                Server.get().send(new Memo(STRINGS.LOG, STRINGS.BLOCK_TRIAL,
+                        mBlockInd + 1, mTrialInd + 1)); // Block/trial *num*
+
                 showTrial();
-            } else if (mTechBlocksInd < 1) { // Next block set (in this technique)
-                mTechBlocksInd++;
+
+            } else if (mTechTaskInd < 1) { // Next block set (in this technique)
+                // Add block, techTask time and log TimeInfo
+                mTimeInfo.blockTime = Utils.nowInMillis() - mBlockStTime;
+                mTimeInfo.techTaskTime = (int) ((Utils.nowInMillis() - mTechTaskStTime) / 1000);
+                Logger.get().logTimeInfo(mGenInfo, mTimeInfo);
+
+                // Next techTask
+                mTechTaskInd++;
                 mBlockInd = 0;
                 mTrialInd = 0;
-                mBlocks = mExperiment.getTechBlocks(mTechBlocksInd);
+                mBlocks = mExperiment.getChunklocks(mTechTaskInd);
                 mBlock = mBlocks.get(mBlockInd);
                 mTrial = mBlock.getTrial(mTrialInd);
+
+                // Log
+                mBlockStTime = Utils.nowInMillis();
+                mTechTaskStTime = Utils.nowInMillis();
+
+                // Sync the info to the Moose
+                Server.get().send(new Memo(
+                        STRINGS.LOG, STRINGS.TECHNIQUE,
+                        mTechs.get(mTechInd), mTechTaskInd + 1)); // Technique/techBlock
+                Server.get().send(new Memo(STRINGS.LOG, STRINGS.BLOCK_TRIAL,
+                        mBlockInd + 1, mTrialInd + 1)); // Block/trial *num*
+
                 showTrial();
             } else { // Technique is finished
+                // Add block, techTask, technique time and log TimeInfo
+                mTimeInfo.blockTime = Utils.nowInMillis() - mBlockStTime;
+                mTimeInfo.techTaskTime = (int) ((Utils.nowInMillis() - mTechTaskStTime) / 1000);
+                mTimeInfo.techTime = (int) ((Utils.nowInMillis() - mTechStTime) / 1000);
+                Logger.get().logTimeInfo(mGenInfo, mTimeInfo);
+
                 remove(0);
 
-                // Start with the next technique
+                if (mTechInd < 2) { // More techniques to show
+                    JOptionPane.showMessageDialog(
+                            null,
+                            STRINGS.END_TECH_MESSAGES[mTechInd]);
+                } else { // Experiment is finished
+
+                }
+
             }
         }
     };
@@ -179,10 +283,8 @@ public class ExperimentPanel extends JLayeredPane {
     private ConfigAction mDecDenom = new ConfigAction(STRINGS.DENOM, false);
 
     // -------------------------------------------------------------------------------------------
-
     /**
      * Create the panel
-     *
      * @param exp Experiment to show
      */
     public ExperimentPanel(Experiment exp) {
@@ -191,7 +293,7 @@ public class ExperimentPanel extends JLayeredPane {
 
         // Set initial key actions
         mapKeys();
-        getActionMap().put("SPACE", mStartExperiment);
+        getActionMap().put("SPACE", START_EXP_ACTION);
         getActionMap().put("SLASH", mNextTechnique);
         getActionMap().put("Q", mIncSensitivity);
         getActionMap().put("A", mDecSensitivity);
@@ -200,8 +302,9 @@ public class ExperimentPanel extends JLayeredPane {
         getActionMap().put("E", mIncDenom);
         getActionMap().put("D", mDecDenom);
 
-        // Set the experiment
+        // Set the experiment and log
         mExperiment = exp;
+        Logger.get().logParticipant(exp.getPId());
 
         // Add the start label
         mLabel = new JLabel(STRINGS.WELCOME_MESSAGE, JLabel.CENTER);
@@ -252,6 +355,11 @@ public class ExperimentPanel extends JLayeredPane {
     private void showTrial() {
         String TAG = NAME + "showTrial";
 
+        // Start logging
+        final Logger.InstantInfo instantInfo = new Logger.InstantInfo();
+        instantInfo.trialShow = Utils.nowInMillis();
+        mTrialStTime = Utils.nowInMillis();
+
         // If panes aren't created, create them (only once)
         if (mVTScrollPane == null || mTDScrollPane == null) createPanes();
 
@@ -260,8 +368,11 @@ public class ExperimentPanel extends JLayeredPane {
         mHzFrameRect = new Rectangle();
 
         // Show the trial
-        switch (mTrial.getScrollMode()) {
+        switch (mTrial.getTask()) {
             case VERTICAL -> {
+                // Pass InstantInfo to VT to continue logging
+                mVTScrollPane.setInstantInfo(instantInfo);
+
                 // Position
                 mPaneDim = mVTScrollPane.getPreferredSize();
                 mPanePos = getRandPosition(mPaneDim);
@@ -292,6 +403,10 @@ public class ExperimentPanel extends JLayeredPane {
 
             // Two-Dim
             case TWO_DIM -> {
+                // Pass InstantInfo to 2D to continue logging
+                mTDScrollPane.setInstantInfo(instantInfo);
+
+                // Position
                 mPaneDim = mTDScrollPane.getPreferredSize();
                 mPanePos = getRandPosition(mPaneDim);
                 mTDScrollPane.setBounds(
@@ -300,11 +415,9 @@ public class ExperimentPanel extends JLayeredPane {
                 );
                 mLasPanePos = mPanePos;
 
-                // Random target and scroll position
+                // Select and highligght the target
                 Pair targetInd = randTdInd();
                 mTDScrollPane.highlight(targetInd, mTrial.getFrame());
-//                mTDScrollPane.highlight(new Pair(60, 100), mTrial.getFrame());
-//                mTDScrollPane.centerCell(new Pair(150, 100));
 
                 add(mTDScrollPane, 0);
 
@@ -358,7 +471,7 @@ public class ExperimentPanel extends JLayeredPane {
      */
     private boolean checkSuccess() {
         boolean result = false;
-        switch (mTrial.getScrollMode()) {
+        switch (mTrial.getTask()) {
         case VERTICAL -> {
             final int vtScrollVal = mVTScrollPane.getVerticalScrollBar().getValue();
             result = mVTScrollPane.isInsideFrames(vtScrollVal);
@@ -478,7 +591,7 @@ public class ExperimentPanel extends JLayeredPane {
         Logs.d(TAG, "Scrolling", vtScrollAmt, hzScrollAmt);
 
         if (mTrial != null) {
-            switch (mTrial.getScrollMode()) {
+            switch (mTrial.getTask()) {
                 case VERTICAL -> mVTScrollPane.scroll(vtScrollAmt);
                 case TWO_DIM -> mTDScrollPane.scroll(vtScrollAmt, hzScrollAmt);
             }
@@ -486,6 +599,52 @@ public class ExperimentPanel extends JLayeredPane {
 
     }
 
+    /**
+     * Send the trial num, block num, etc. to the Moose (for logging)
+     */
+    public void syncStatus() {
+        Memo techMemo = new Memo(
+                STRINGS.LOG, STRINGS.TECHNIQUE,
+                mTechs.get(mTechInd), mTechTaskInd);
+        Server.get().send(techMemo);
+    }
+
+    /**
+     * Show the technique end dialog
+     */
+    public void showTechEndDialog() {
+        JDialog dialog = new JDialog((JFrame)null, "Child", true);
+        dialog.setSize(800, 500);
+        dialog.setLocationRelativeTo(this);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setSize(800, 500);
+        panel.add(Box.createRigidArea(new Dimension(800, 100)));
+
+        JLabel label = new JLabel(END_EXPERIMENT_MESSAGE);
+        label.setFont(new Font("Sans", Font.BOLD, 20));
+        label.setAlignmentX(Component.CENTER_ALIGNMENT);
+        panel.add(label);
+
+        panel.add(Box.createRigidArea(new Dimension(0, 200)));
+
+        JButton button = new JButton("Continue");
+        button.setMaximumSize(new Dimension(300, 50));
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dialog.dispose();
+            }
+        });
+        button.setAlignmentX(Component.CENTER_ALIGNMENT);
+        button.setFocusable(false);
+        panel.add(button);
+
+        dialog.add(panel);
+        dialog.setUndecorated(true);
+        dialog.setVisible(true);
+    }
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -494,19 +653,21 @@ public class ExperimentPanel extends JLayeredPane {
 
         Graphics2D g2d = (Graphics2D) g;
 
-        g2d.setColor(Consts.COLORS.CELL_HIGHLIGHT);
-        if (mVtFrameRect.width != 0) {
-            g2d.fillRect(
-                    mVtFrameRect.x, mVtFrameRect.y,
-                    mVtFrameRect.width, mVtFrameRect.height
-            );
-        }
+        if (mTechInd != -1) { // If there is technique to show
+            g2d.setColor(Consts.COLORS.CELL_HIGHLIGHT);
+            if (mVtFrameRect.width != 0) {
+                g2d.fillRect(
+                        mVtFrameRect.x, mVtFrameRect.y,
+                        mVtFrameRect.width, mVtFrameRect.height
+                );
+            }
 
-        if (mHzFrameRect.width != 0) {
-            g2d.fillRect(
-                    mHzFrameRect.x, mHzFrameRect.y,
-                    mHzFrameRect.width, mHzFrameRect.height
-            );
+            if (mHzFrameRect.width != 0) {
+                g2d.fillRect(
+                        mHzFrameRect.x, mHzFrameRect.y,
+                        mHzFrameRect.width, mHzFrameRect.height
+                );
+            }
         }
 
     }

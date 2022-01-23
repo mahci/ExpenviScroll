@@ -13,7 +13,7 @@ public class Logs {
     private static List<String> toLogList = new ArrayList<>();
 
     static {
-        toLogList.add("Server");
+//        toLogList.add("Server");
         toLogList.add("ExperimentPanel");
 //        toLogList.add("Controller");
 //        toLogList.add("MyScrollBarUI");
@@ -22,7 +22,7 @@ public class Logs {
 //        toLogList.add("Experiment");
 //        toLogList.add("Round");
 //        toLogList.add("TechConfigPanel");
-        toLogList.add("MainFrame");
+//        toLogList.add("MainFrame");
     }
 
     public static void d(String tag, Object... params) {
@@ -33,16 +33,6 @@ public class Logs {
             }
             System.out.println(tag + " >> " + sb);
         }
-    }
-
-    public static void error(String tag, String mssg) {
-        String cName = tag.split("/")[0];
-        if (toLogList.contains(cName)) System.out.println(tag + " >> " + mssg);
-    }
-
-    public static void info(String tag, String mssg) {
-        String cName = tag.split("/")[0];
-        if (toLogList.contains(cName)) System.out.println(tag + " >> " + mssg);
     }
 
 //    public static void d(String tag, String... params) {

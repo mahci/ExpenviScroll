@@ -14,8 +14,8 @@ public class Memo {
 
     /**
      * Constructor
-     * @param act Action Mostly "SCROLL"
-     * @param md Mode DRAG or RT
+     * @param act Action (e.g. SCROLL)
+     * @param md Mode (e.g. DRAG)
      * @param v1 String value1
      * @param v2 String value2
      */
@@ -28,12 +28,53 @@ public class Memo {
 
     /**
      * Constructor
-     * @param act Action Mostly "SCROLL"
-     * @param md Mode DRAG or RT
+     * @param act Action (e.g. SCROLL)
+     * @param md Mode (e.g. DRAG)
      * @param v1 Double value Movement along X
      * @param v2 Double value Movement along Y
      */
     public Memo(String act, String md, double v1, double v2) {
+        action = act;
+        mode = md;
+        value1 = String.valueOf(v1);
+        value2 = String.valueOf(v2);
+    }
+
+    /**
+     * Constructor
+     * @param act Action (e.g. SCROLL)
+     * @param md Mode (e.g. DRAG)
+     * @param v1 Int value 1
+     */
+    public Memo(String act, String md, Object v1) {
+        action = act;
+        mode = md;
+        value1 = String.valueOf(v1);
+        value2 = "-";
+    }
+
+    /**
+     * Constructor
+     * @param act Action (e.g. SCROLL)
+     * @param md Mode (e.g. DRAG)
+     * @param v1 Int value 1
+     * @param v2 Int value 2
+     */
+    public Memo(String act, String md, int v1, int v2) {
+        action = act;
+        mode = md;
+        value1 = String.valueOf(v2);
+        value2 = "";
+    }
+
+    /**
+     * Constructor
+     * @param act Action (e.g. SCROLL)
+     * @param md Mode (e.g. DRAG)
+     * @param v1 Int value 1
+     * @param v2 Int value 2
+     */
+    public Memo(String act, String md, Object v1, Object v2) {
         action = act;
         mode = md;
         value1 = String.valueOf(v1);
@@ -136,7 +177,7 @@ public class Memo {
                 result.value1 = parts[2];
                 result.value2 = parts[3];
             } else {
-                Logs.info(TAG, "Problem in parsing the memo!");
+                Logs.d(TAG, "Problem in parsing the memo!");
             }
         }
 

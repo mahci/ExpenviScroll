@@ -44,9 +44,9 @@ public class TechConfigPanel extends JPanel implements ItemListener {
         mDragSensitivitySp = new MyConfigSpinner(dragSensitivityModel);
 
         final SpinnerModel dragGainModel = new SpinnerNumberModel(
-                20.0,
-                10.0,
-                1000.0,
+                5.0,
+                5.0,
+                100.0,
                 5.0);
         mDragGainSp = new MyConfigSpinner(dragGainModel);
 

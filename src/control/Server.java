@@ -34,12 +34,12 @@ public class Server {
         @Override
         public void run() {
             try {
-                Logs.info(TAG, "Waiting for connections...");
+                Logs.d(TAG, "Waiting for connections...");
                 if (serverSocket == null) serverSocket = new ServerSocket(PORT);
                 socket = serverSocket.accept();
 
                 // When reached here, Moose is connected
-                Logs.info(TAG, "Moose connected!");
+                Logs.d(TAG, "Moose connected!");
 
                 // Create streams
                 inBR = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -69,7 +69,7 @@ public class Server {
             if (message != null && outPW != null) {
                 outPW.println(message);
                 outPW.flush();
-                Logs.info(TAG, message.toString());
+                Logs.d(TAG, message.toString());
             }
         }
     }
@@ -82,9 +82,9 @@ public class Server {
         public void run() {
             while (!Thread.currentThread().isInterrupted() && inBR != null) {
                 try {
-                    Logs.info(TAG, "Reading messages...");
+                    Logs.d(TAG, "Reading messages...");
                     String message = inBR.readLine();
-                    Logs.info(TAG, "Message: " + message);
+                    Logs.d(TAG, "Message: " + message);
                     if (message != null) {
                         Memo memo = Memo.valueOf(message);
 
@@ -92,7 +92,7 @@ public class Server {
                         if (memo.getAction().equals(SCROLL)) Controller.get().perform(memo);
 
                     } else {
-                        Logs.info(TAG, "Moose disconnected.");
+                        Logs.d(TAG, "Moose disconnected.");
                         start();
                         return;
                     }

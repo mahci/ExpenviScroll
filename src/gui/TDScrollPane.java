@@ -1,5 +1,6 @@
 package gui;
 
+import control.Logger;
 import experiment.Experiment;
 import tools.*;
 
@@ -34,8 +35,13 @@ public class TDScrollPane extends JScrollPane implements MouseListener {
     private MinMax mTargetVtMinMax = new MinMax();
     private MinMax mTargetHzMinMax = new MinMax();
 
-    private boolean mIsCursorIn;
+    private boolean mCursorIn;
     private boolean mIsMouseHorizontal;
+
+    // For logging
+    private Logger.InstantInfo mInstantInfo = new Logger.InstantInfo();
+    private boolean mEntered;
+    private boolean mScrolled;
 
     //-------------------------------------------------------------------------------------------------
 
@@ -262,7 +268,7 @@ public class TDScrollPane extends JScrollPane implements MouseListener {
     public void scroll(int vtScrollAmt, int hzScrollAmt) {
         final String TAG = NAME + "scroll";
         // Scroll only if cursor is inside
-        if (mIsCursorIn) {
+        if (mCursorIn) {
             final Dimension vpDim = bodyTable.getPreferredSize();
             final int vtExtent = getVerticalScrollBar().getModel().getExtent();
             final int hzExtent = getHorizontalScrollBar().getModel().getExtent();
@@ -287,6 +293,14 @@ public class TDScrollPane extends JScrollPane implements MouseListener {
             }
 
             repaint();
+
+            // Log
+            if (!mScrolled) {
+                mInstantInfo.firstScroll = Utils.nowInMillis();
+                mScrolled = true;
+            } else {
+                mInstantInfo.lastScroll = Utils.nowInMillis();
+            }
         }
     }
 
@@ -330,10 +344,25 @@ public class TDScrollPane extends JScrollPane implements MouseListener {
         return mTargetVtMinMax.isWithin(vtScrollVal) && mTargetHzMinMax.isWithin(hzScrollVal);
     }
 
-    // Interface impl. ---------------------------------------------------------------------------------------
+    /**
+     * Set the InstantInfo
+     * @param instInfo InstantInfo
+     */
+    public void setInstantInfo(Logger.InstantInfo instInfo) {
+        mInstantInfo = instInfo;
+    }
+
+    /**
+     * Get the InstantInfo instance (to continue filling in other classes)
+     * @return Logger.InstantInfo
+     */
+    public Logger.InstantInfo getInstantInfo() {
+        return mInstantInfo;
+    }
+
+    // MouseListener ========================================================================================
     @Override
     public void mouseClicked(MouseEvent e) {
-        Logs.d(NAME, "Mouse Clicked", 0);
     }
 
     @Override
@@ -348,18 +377,21 @@ public class TDScrollPane extends JScrollPane implements MouseListener {
 
     @Override
     public void mouseEntered(MouseEvent e) {
-        mIsCursorIn = true;
-        Logs.d(NAME, "Mouse Entered", 0);
+        mCursorIn = true;
+        if (!mEntered) {
+            mInstantInfo.firstEntry = Utils.nowInMillis();
+            mEntered = true;
+        } else {
+            mInstantInfo.lastEntry = Utils.nowInMillis();
+        }
     }
 
     @Override
     public void mouseExited(MouseEvent e) {
-        mIsCursorIn = false;
-        Logs.d(NAME, "Mouse Exited", 0);
+        mCursorIn = false;
     }
 
-    //-------------------------------------------------------------------------------------------------
-
+    // Custom ScrollBar ========================================================================================
     /**
      * Renderer class for highlighting a single cell
      */

@@ -85,6 +85,10 @@ public class Consts {
         public final static String TSK = "TSK";
         public final static String P_INIT = "P";
 
+        public final static String DEMO_TITLE =
+                "Welcome to the scrolling experiment!";
+        public final static String DEMO_NEXT =
+                "First, let's have a demo >";
         public final static String WELCOME_MESSAGE =
                 "Welcome! Please press SPACE to begin the experiment.";
         public static String[] END_TECH_MESSAGES = new String[2];

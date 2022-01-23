@@ -86,12 +86,12 @@ public class ExperimentPanel extends JLayeredPane {
     private Point mLasPanePos = new Point();
     private Dimension mPaneDim = new Dimension();
     private boolean isVt;
-    private long mStartTime;
 
     // -------------------------------------------------------------------------------------------
     private final Action START_EXP_ACTION = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
+            Logs.d(ExperimentPanel.NAME, "START_EXP_ACTION");
             mTechs = mExperiment.getListOfTechniques();
 
             mTechTaskInd = 0;
@@ -326,7 +326,7 @@ public class ExperimentPanel extends JLayeredPane {
         // Create tehcnique label
         mTechLabel = new JLabel("", JLabel.CENTER);
         mTechLabel.setFont(new Font("Sans", Font.PLAIN, 18));
-        mTechLabel.setBounds(100, 30, 200, 100);
+        mTechLabel.setBounds(50, 30, 200, 100);
         add(mTechLabel, 2);
     }
 

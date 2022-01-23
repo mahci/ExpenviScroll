@@ -10,7 +10,7 @@ public class Main {
     private static MainFrame mFrame;
 
     public static void main(String[] args) {
-        mFrame = new MainFrame();
+        MainFrame.get().showDemo();
         Server.get().start();
     }
 

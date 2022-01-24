@@ -97,7 +97,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         @Override
         public void actionPerformed(ActionEvent e) {
             Logs.d(ExperimentPanel.NAME, "START_EXP_ACTION");
-            mTechs = mExperiment.getListOfTechniques();
+            mTechs = mExperiment.getPcTechniques();
 
             mTechTaskInd = 0;
             mBlockInd = 0;
@@ -178,18 +178,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
             } else if (mTechTaskInd < 1) { // More techTasks in the technique
                 nextTechTask(true);
             } else if (mTechInd < 2) { // Technique is finished
-
-                // Add block, techTask, technique time and log TimeInfo
-                mTimeInfo.blockTime = Utils.nowInMillis() - mBlockStTime;
-                mTimeInfo.techTaskTime = (int) ((Utils.nowInMillis() - mTechTaskStTime) / 1000);
-                mTimeInfo.techTime = (int) ((Utils.nowInMillis() - mTechStTime) / 1000);
-                Logger.get().logTimeInfo(mGenInfo, mTimeInfo);
-
-                inBetweenTechs = true;
-                repaint();
-
-                showTechEndDialog();
-
+                endTech(true);
             } else { // Experiment is finished
                 // FILL!
             }
@@ -345,7 +334,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         // Create levellabel (don't show yet)
         mLevelLabel = new JLabel("", JLabel.CENTER);
         mLevelLabel.setFont(new Font("Sans", Font.PLAIN, 18));
-        mLevelLabel.setBounds(2300, 30, 200, 100);
+        mLevelLabel.setBounds(2200, 30, 400, 100);
         add(mLevelLabel, 1);
 
         // Create tehcnique label
@@ -379,7 +368,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
      */
     private void showTrial() {
         String TAG = NAME + "showTrial";
-
+        Logs.d(TAG, mTrial);
         // Start logging
         final Logger.InstantInfo instantInfo = new Logger.InstantInfo();
         instantInfo.trialShow = Utils.nowInMillis();
@@ -483,11 +472,14 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         paintTrial = true;
 
         // Show level label
-        mLevelLabel.setText("Trial: " + (mTrialInd + 1) + " | Block: " + (mBlockInd + 1));
+        mLevelLabel.setText("Trial: " + (mTrialInd + 1) + "/" + mBlock.getNTrials() +
+                "  --  Block: " + (mBlockInd + 1) + "/12");
         mTechLabel.setText("Technique: " + mTechs.get(mTechInd));
 
         revalidate();
         repaint();
+
+        Logs.d(TAG, "----------------------------------------");
     }
 
     /**
@@ -580,19 +572,19 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         // Correction based on direction
         switch (mTrial.getDirection()) {
             case NE -> {
-                vtInd.move(0, -mTrial.getVtDist());
+                vtInd.move(0, -mTrial.getTdDist());
                 hzInd.move(mTrial.getTdDist(), 0);
             }
             case NW -> {
-                vtInd.move(0, -mTrial.getVtDist());
+                vtInd.move(0, -mTrial.getTdDist());
                 hzInd.move(0, -mTrial.getTdDist());
             }
             case SE -> {
-                vtInd.move(mTrial.getVtDist(), 0);
+                vtInd.move(mTrial.getTdDist(), 0);
                 hzInd.move(mTrial.getTdDist(), 0);
             }
             case SW -> {
-                vtInd.move(mTrial.getVtDist(), 0);
+                vtInd.move(mTrial.getTdDist(), 0);
                 hzInd.move(0, -mTrial.getTdDist());
             }
         }
@@ -737,6 +729,43 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
     }
 
     /**
+     * The current technique is ended
+     * @param toLog To log?
+     */
+    private void endTech(boolean toLog) {
+        if (toLog) {
+            // Add block, techTask, technique time and log TimeInfo
+            mTimeInfo.blockTime = Utils.nowInMillis() - mBlockStTime;
+            mTimeInfo.techTaskTime = (int) ((Utils.nowInMillis() - mTechTaskStTime) / 1000);
+            mTimeInfo.techTime = (int) ((Utils.nowInMillis() - mTechStTime) / 1000);
+            Logger.get().logTimeInfo(mGenInfo, mTimeInfo);
+        }
+
+        inBetweenTechs = true;
+        repaint();
+
+        showTechEndDialog();
+    }
+
+    /**
+     * The current technique is ended
+     * @param toLog To log?
+     */
+    private void endExp(boolean toLog) {
+        if (toLog) {
+            // Add block, techTask, technique time and log TimeInfo
+            mTimeInfo.blockTime = Utils.nowInMillis() - mBlockStTime;
+            mTimeInfo.techTaskTime = (int) ((Utils.nowInMillis() - mTechTaskStTime) / 1000);
+            mTimeInfo.techTime = (int) ((Utils.nowInMillis() - mTechStTime) / 1000);
+            mTimeInfo.experimentTime = (int) ((Utils.nowInMillis() - mExpStTime) / 1000);
+            Logger.get().logTimeInfo(mGenInfo, mTimeInfo);
+        }
+
+        removeAll();
+        showExpEndDialog();
+    }
+
+    /**
      * Go to the next block
      * @param toLog Whether to log it or not
      */
@@ -798,7 +827,47 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
             @Override
             public void actionPerformed(ActionEvent e) {
                 dialog.dispose();
+                inBetweenTechs = false;
                 nextTech(true);
+            }
+        });
+        button.setAlignmentX(Component.CENTER_ALIGNMENT);
+        button.setFocusable(false);
+        panel.add(button);
+
+        dialog.add(panel);
+        dialog.setUndecorated(true);
+        dialog.setVisible(true);
+    }
+
+    /**
+     * Show the technique end dialog
+     */
+    public void showExpEndDialog() {
+        JDialog dialog = new JDialog((JFrame)null, "Child", true);
+        dialog.setSize(1000, 500);
+        dialog.setLocationRelativeTo(this);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setSize(800, 500);
+        panel.setBackground(Color.decode("#7986CB"));
+        panel.add(Box.createRigidArea(new Dimension(800, 100)));
+
+        JLabel label = new JLabel(END_EXPERIMENT_MESSAGE);
+        label.setFont(new Font("Sans", Font.BOLD, 30));
+        label.setAlignmentX(Component.CENTER_ALIGNMENT);
+        panel.add(label);
+
+        panel.add(Box.createRigidArea(new Dimension(0, 200)));
+
+        JButton button = new JButton("Continue");
+        button.setMaximumSize(new Dimension(300, 50));
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dialog.dispose();
+                System.exit(0);
             }
         });
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -867,6 +936,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         KS_E = KeyStroke.getKeyStroke(KeyEvent.VK_E, 0, true);
         KS_D = KeyStroke.getKeyStroke(KeyEvent.VK_D, 0, true);
         KS_RA = KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0, true);
+        KS_DA = KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0, true);
 
         getInputMap().put(KS_SPACE, "SPACE");
         getInputMap().put(KS_SLASH, "SLASH");
@@ -877,6 +947,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         getInputMap().put(KS_E, "E");
         getInputMap().put(KS_D, "D");
         getInputMap().put(KS_RA, "RA");
+        getInputMap().put(KS_DA, "DA");
     }
 
     // MouseMotionListenr ---------------------------------------------------------------------------------

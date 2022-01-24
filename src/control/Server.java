@@ -89,7 +89,7 @@ public class Server {
                         Memo memo = Memo.valueOf(message);
 
                         // If it was scrolling, send to Controller to perform
-                        if (memo.getAction().equals(SCROLL)) Controller.get().perform(memo);
+                        if (memo.getAction().equals(SCROLL)) Controller.get().scroll(memo);
 
                     } else {
                         Logs.d(TAG, "Moose disconnected.");

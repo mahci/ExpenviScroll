@@ -103,7 +103,7 @@ public class DemoPanel extends JPanel {
         setLayout(null);
 
         mExperiment = exp;
-        mTechs = exp.getListOfTechniques();
+        mTechs = exp.getPcTechniques();
         mTechInd = 0;
 
         // Map keys
@@ -136,6 +136,10 @@ public class DemoPanel extends JPanel {
                 // Map the actions
                 getActionMap().put("SPACE", RAND_TRIAL_ACTION);
                 getActionMap().put("SLASH", SWITCH_TECH_ACTION);
+
+                // Sync the the first technique
+                Experiment.setActiveTechnique(mTechs.get(mTechInd));
+
             }
         });
         mNextButton.setFocusable(false);

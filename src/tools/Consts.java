@@ -96,8 +96,8 @@ public class Consts {
 
         public final static String EXP_START_MESSAGE =
                 "To begin the experiment, press SPACE.";
-        public static String[] END_TECH_MESSAGES = new String[2];
-        public static String END_EXPERIMENT_MESSAGE =
+        public final static String[] END_TECH_MESSAGES = new String[2];
+        public final static String END_EXPERIMENT_MESSAGE =
                 "All finished! Thank you for participating in this experiment!";
 
         static {

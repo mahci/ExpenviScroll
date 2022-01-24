@@ -27,7 +27,7 @@ public class MainFrame extends JFrame {
         setDisplayConfig();
 
         // Create and show an experiment
-        final int pid = 125;
+        final int pid = 121;
         mExperiment = new Experiment(pid);
     }
 

@@ -141,7 +141,7 @@ public class Experiment {
      * Get the order of the techniques to experiment
      * @return List of techniques (n = 3)
      */
-    public List<TECHNIQUE> getListOfTechniques() {
+    public List<TECHNIQUE> getPcTechniques() {
         return mPcTechs;
     }
 

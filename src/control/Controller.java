@@ -117,7 +117,7 @@ public class Controller {
      * Perform the action (can be scrolling or stopping a scroll)
      * @param memo Memo containing info
      */
-    public void perform(Memo memo) {
+    public void scroll(Memo memo) {
         String TAG = NAME + "perform";
         Logs.d(TAG, "Received", memo.toString());
 

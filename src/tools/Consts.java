@@ -95,7 +95,7 @@ public class Consts {
                 "<html>When ready, press <B>BLUE + RED</B> keys to start the next block</html>";
 
         public final static String EXP_START_MESSAGE =
-                "To beging the experiment, press SPACE.";
+                "To begin the experiment, press SPACE.";
         public static String[] END_TECH_MESSAGES = new String[2];
         public static String END_EXPERIMENT_MESSAGE =
                 "All finished! Thank you for participating in this experiment!";

@@ -63,8 +63,8 @@ public class Memo {
     public Memo(String act, String md, int v1, int v2) {
         action = act;
         mode = md;
-        value1 = String.valueOf(v2);
-        value2 = "";
+        value1 = String.valueOf(v1);
+        value2 = String.valueOf(v2);
     }
 
     /**

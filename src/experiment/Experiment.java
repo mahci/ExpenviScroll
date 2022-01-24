@@ -2,6 +2,7 @@ package experiment;
 
 import control.Server;
 import tools.DimensionD;
+import tools.Logs;
 import tools.Memo;
 import tools.Utils;
 
@@ -152,14 +153,8 @@ public class Experiment {
     public List<Block> getTechTaskBlocks(int techTaskInd) {
         final List<Block> result = new ArrayList<>();
         final TASK task = mPcTasks.get(techTaskInd);
-        if (task.equals(TASK.VERTICAL)) {
-            for (int i = 0; i < N_BLOCKS.get(task); i++) {
-                result.add(new Block(task, VT_DISTANCES, TD_DISTANCES, FRAMES));
-            }
-        } else {
-            for (int i = 0; i < N_BLOCKS.get(task); i++) {
-                result.add(new Block(task, VT_DISTANCES, TD_DISTANCES, FRAMES));
-            }
+        for (int i = 0; i < N_BLOCKS.get(task); i++) {
+            result.add(new Block(task, VT_DISTANCES, TD_DISTANCES, FRAMES));
         }
 
         return result;
@@ -202,7 +197,6 @@ public class Experiment {
 
         final Memo memo = new Memo(CONFIG, TECHNIQUE, mActiveTechnique.ordinal(), 0);
         Server.get().send(memo);
-
     }
 
 

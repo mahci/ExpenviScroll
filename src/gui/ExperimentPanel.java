@@ -23,6 +23,7 @@ import static tools.Consts.*;
 import static tools.Consts.SOUNDS.HIT_SOUND;
 import static tools.Consts.SOUNDS.MISS_SOUND;
 import static tools.Consts.STRINGS.END_EXPERIMENT_MESSAGE;
+import static tools.Consts.STRINGS.END_TECH_MESSAGES;
 
 public class ExperimentPanel extends JLayeredPane implements MouseMotionListener {
 
@@ -42,6 +43,8 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
     private KeyStroke KS_S;
     private KeyStroke KS_E;
     private KeyStroke KS_D;
+    private KeyStroke KS_RA; // Right arrow
+    private KeyStroke KS_DA; // Down arrow
 
     // Experiment and trial
     private Experiment mExperiment;
@@ -65,6 +68,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
     private int mTechInd;
     private List<TECHNIQUE> mTechs;
     private boolean inBreak;
+    private boolean inBetweenTechs;
 
     // Logging
     private Logger.GeneralInfo mGenInfo = new Logger.GeneralInfo();
@@ -104,17 +108,22 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
             mBlock = mBlocks.get(mBlockInd);
             mTrial = mBlock.getTrial(mTrialInd);
 
+            // Set the active technique
+            Experiment.setActiveTechnique(mTechs.get(mTechInd));
+            mTechLabel.setText("Technique: " + mTechs.get(mTechInd));
+
             // Sync the info to the Moose
             Server.get().send(new Memo(STRINGS.LOG, STRINGS.PID, mExperiment.getPId()));
             Server.get().send(new Memo(STRINGS.LOG, STRINGS.BLOCK_TRIAL,
                     mBlockInd + 1, mTrialInd + 1)); // Block/trial *num*
             Server.get().send(new Memo(STRINGS.LOG, STRINGS.TSK, mTrial.getTask()));
-            Server.get().send(new Memo(STRINGS.CONFIG, STRINGS.TECHNIQUE, mTechs.get(mTechInd)));
 
             // Log
             mGenInfo.tech = mTechs.get(mTechInd);
             mGenInfo.blockNum = mBlockInd + 1;
             mGenInfo.trialNum = mTrialInd + 1;
+            mGenInfo.trial = mTrial;
+
             mExpStTime = Utils.nowInMillis();
             mBlockStTime = Utils.nowInMillis();
 
@@ -142,7 +151,6 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
             Logger.get().logInstantInfo(mGenInfo, scrollInstInfo);
 
             // Log TrialInfo
-            mTrialInfo.trial = mTrial;
             mTrialInfo.result = trialResult ? 1 : 0;
             Logger.get().logTrialInfo(mGenInfo, mTrialInfo);
 
@@ -163,73 +171,13 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
 
             remove(0);
 
-            if (mTrialInd < mBlock.getNTrials() - 1) { // Trial finished
-                // Log trial TimeInfo
-                Logger.get().logTimeInfo(mGenInfo, mTimeInfo);
-
-                // Next trial
-                mTrialInd++;
-                mTrial = mBlock.getTrial(mTrialInd);
-
-                // Sync the info to the Moose
-                Server.get().send(new Memo(STRINGS.LOG, STRINGS.BLOCK_TRIAL,
-                        mBlockInd + 1, mTrialInd + 1)); // Block/trial *num*
-
-                showTrial();
-
-            } else if (mBlockInd < mBlocks.size() - 1) { // Block finished
-                // Add block time and log TimeInfo
-                mTimeInfo.blockTime = Utils.nowInMillis() - mBlockStTime;
-                Logger.get().logTimeInfo(mGenInfo, mTimeInfo);
-
-                // Next block
-                mBlockInd++;
-                mTrialInd = 0;
-                mBlock = mBlocks.get(mBlockInd);
-                mTrial = mBlock.getTrial(mTrialInd);
-
-                // Log
-                mBlockStTime = Utils.nowInMillis();
-
-                // Sync the info to the Moose
-                Server.get().send(new Memo(STRINGS.LOG, STRINGS.BLOCK_TRIAL,
-                        mBlockInd + 1, mTrialInd + 1)); // Block/trial *num*
-
-                showTrial();
-
-            } else if (mTechTaskInd < 1) { // TechTask finished
-                // Add block, techTask time to TimeInfo
-                mTimeInfo.blockTime = Utils.nowInMillis() - mBlockStTime;
-                mTimeInfo.techTaskTime = (int) ((Utils.nowInMillis() - mTechTaskStTime) / 1000);
-
-                // Time for the break
-                inBreak = true;
-                MainFrame.get().showDialog(new BreakDialog());
-
-                // ... back from the break
-                inBreak = false;
-
-                // Next techTask
-                mTechTaskInd++;
-                mBlockInd = 0;
-                mTrialInd = 0;
-                mBlocks = mExperiment.getTechTaskBlocks(mTechTaskInd);
-                mBlock = mBlocks.get(mBlockInd);
-                mTrial = mBlock.getTrial(mTrialInd);
-
-                // Log
-                mBlockStTime = Utils.nowInMillis();
-                mTechTaskStTime = Utils.nowInMillis();
-
-                // Sync the info to the Moose
-                Server.get().send(new Memo(
-                        STRINGS.LOG, STRINGS.TECHNIQUE,
-                        mTechs.get(mTechInd), mTechTaskInd + 1)); // Technique/techBlock
-                Server.get().send(new Memo(STRINGS.LOG, STRINGS.BLOCK_TRIAL,
-                        mBlockInd + 1, mTrialInd + 1)); // Block/trial *num*
-
-                showTrial();
-            } else { // Technique is finished
+            if (mTrialInd < mBlock.getNTrials() - 1) { // More trials in the block
+                nextTrial(true);
+            } else if (mBlockInd < mBlocks.size() - 1) { // More blocks in the techTask
+                nextBlock(true);
+            } else if (mTechTaskInd < 1) { // More techTasks in the technique
+                nextTechTask(true);
+            } else if (mTechInd < 2) { // Technique is finished
 
                 // Add block, techTask, technique time and log TimeInfo
                 mTimeInfo.blockTime = Utils.nowInMillis() - mBlockStTime;
@@ -237,13 +185,72 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
                 mTimeInfo.techTime = (int) ((Utils.nowInMillis() - mTechStTime) / 1000);
                 Logger.get().logTimeInfo(mGenInfo, mTimeInfo);
 
-                if (mTechInd < 2) { // Still techniques remaining
-                    remove(0);
-                    showTechEndDialog();
-                } else {
-                    // Finish the experiment!
-                }
+                inBetweenTechs = true;
+                repaint();
 
+                showTechEndDialog();
+
+            } else { // Experiment is finished
+                // FILL!
+            }
+        }
+    };
+
+    // Jump to the next trial (without check)
+    private final Action ADVANCE_TRIAL_ACTION = new AbstractAction() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            remove(0);
+
+            if (mTrialInd < mBlock.getNTrials() - 1) { // More trials in the block
+                nextTrial(false);
+            } else if (mBlockInd < mBlocks.size() - 1) { // More blocks in the techTask
+                nextBlock(false);
+            } else if (mTechTaskInd < 1) { // More techTasks in the technique
+                nextTechTask(false);
+            } else if (mTechInd < 2) { // Technique is finished
+
+                // Add block, techTask, technique time and log TimeInfo
+                mTimeInfo.blockTime = Utils.nowInMillis() - mBlockStTime;
+                mTimeInfo.techTaskTime = (int) ((Utils.nowInMillis() - mTechTaskStTime) / 1000);
+                mTimeInfo.techTime = (int) ((Utils.nowInMillis() - mTechStTime) / 1000);
+                Logger.get().logTimeInfo(mGenInfo, mTimeInfo);
+
+                inBetweenTechs = true;
+                repaint();
+
+                showTechEndDialog();
+
+            } else { // Experiment is finished
+                // FILL!
+            }
+        }
+    };
+
+    // Jump to the next block
+    private final Action ADVANCE_BLOCK_ACTION = new AbstractAction() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            remove(0);
+
+            if (mBlockInd < mBlocks.size() - 1) {
+                nextBlock(false);
+            } else if (mTechTaskInd < 1) { // More techTasks in the technique
+                nextTechTask(false);
+            } else if (mTechInd < 2) { // Technique is finished
+
+                // Add block, techTask, technique time and log TimeInfo
+                mTimeInfo.blockTime = Utils.nowInMillis() - mBlockStTime;
+                mTimeInfo.techTaskTime = (int) ((Utils.nowInMillis() - mTechTaskStTime) / 1000);
+                mTimeInfo.techTime = (int) ((Utils.nowInMillis() - mTechStTime) / 1000);
+                Logger.get().logTimeInfo(mGenInfo, mTimeInfo);
+
+                inBetweenTechs = true;
+                repaint();
+
+                showTechEndDialog();
+            } else { // Experiment is finished
+                // FILL!
             }
         }
     };
@@ -274,6 +281,22 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         }
     };
 
+    private final Action SWITCH_TECH_ACTION = new AbstractAction() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (mTechInd < 2) mTechInd++;
+            else mTechInd = 0;
+
+            // Update label
+            mTechLabel.setText("Technique: " + mTechs.get(mTechInd));
+
+            // Sync Moose
+            Experiment.setActiveTechnique(mTechs.get(mTechInd));
+        }
+    };
+
+
+
     private ConfigAction mNextTechnique = new ConfigAction(STRINGS.TECHNIQUE, true);
     private ConfigAction mIncSensitivity = new ConfigAction(STRINGS.SENSITIVITY, true);
     private ConfigAction mDecSensitivity = new ConfigAction(STRINGS.SENSITIVITY, false);
@@ -294,13 +317,15 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         // Set initial key actions
         mapKeys();
         getActionMap().put("SPACE", START_EXP_ACTION);
-        getActionMap().put("SLASH", mNextTechnique);
+        getActionMap().put("SLASH", SWITCH_TECH_ACTION);
         getActionMap().put("Q", mIncSensitivity);
         getActionMap().put("A", mDecSensitivity);
         getActionMap().put("W", mIncGain);
         getActionMap().put("S", mDecGain);
         getActionMap().put("E", mIncDenom);
         getActionMap().put("D", mDecDenom);
+        getActionMap().put("RA", ADVANCE_BLOCK_ACTION);
+        getActionMap().put("DA", ADVANCE_TRIAL_ACTION);
 
         // Set the experiment and log
         mExperiment = exp;
@@ -321,7 +346,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         mLevelLabel = new JLabel("", JLabel.CENTER);
         mLevelLabel.setFont(new Font("Sans", Font.PLAIN, 18));
         mLevelLabel.setBounds(2300, 30, 200, 100);
-        add(mLevelLabel, 2);
+        add(mLevelLabel, 1);
 
         // Create tehcnique label
         mTechLabel = new JLabel("", JLabel.CENTER);
@@ -586,8 +611,6 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
     public void scroll(int vtScrollAmt, int hzScrollAmt) {
         String TAG = NAME + "scroll";
 
-        boolean isScrolled = false;
-
         Logs.d(TAG, "Scrolling", vtScrollAmt, hzScrollAmt);
 
         if (mTrial != null) {
@@ -596,7 +619,6 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
                 case TWO_DIM -> mTDScrollPane.scroll(vtScrollAmt, hzScrollAmt);
             }
         }
-
     }
 
     /**
@@ -610,6 +632,146 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
     }
 
     /**
+     * Go to the next trial
+     * @param toLog Whether to log it or not
+     */
+    private void nextTrial(boolean toLog) {
+        final String TAG = NAME + "nextTrial";
+
+        if (toLog) {
+            Logs.d(TAG, mGenInfo);
+            // Log trial TimeInfo
+            Logger.get().logTimeInfo(mGenInfo, mTimeInfo);
+        }
+
+        // Next trial
+        mTrialInd++;
+        mTrial = mBlock.getTrial(mTrialInd);
+        mGenInfo.trial = mTrial;
+
+        if (toLog) {
+            // Sync the info to the Moose
+            Server.get().send(new Memo(STRINGS.LOG, STRINGS.BLOCK_TRIAL,
+                    mBlockInd + 1, mTrialInd + 1)); // Block/trial *num*
+        }
+
+        showTrial();
+    }
+
+    /**
+     * Go to the next block
+     * @param toLog Whether to log it or not
+     */
+    private void nextBlock(boolean toLog) {
+        if (toLog) {
+            // Add block time and log TimeInfo
+            mTimeInfo.blockTime = Utils.nowInMillis() - mBlockStTime;
+            Logger.get().logTimeInfo(mGenInfo, mTimeInfo);
+        }
+
+        // Next block
+        mBlockInd++;
+        mTrialInd = 0;
+        mBlock = mBlocks.get(mBlockInd);
+        mTrial = mBlock.getTrial(mTrialInd);
+
+        mGenInfo.blockNum = mBlockInd + 1;
+        mGenInfo.trial = mTrial;
+
+        // Log
+        mBlockStTime = Utils.nowInMillis();
+
+        if (toLog) {
+            // Sync the info to the Moose
+            Server.get().send(new Memo(STRINGS.LOG, STRINGS.BLOCK_TRIAL,
+                    mBlockInd + 1, mTrialInd + 1)); // Block/trial *num*
+        }
+
+        showTrial();
+    }
+
+    /**
+     * Go to the next block
+     * @param toLog Whether to log it or not
+     */
+    private void nextTechTask(boolean toLog) {
+        if (toLog) {
+            // Add block, techTask time to TimeInfo
+            mTimeInfo.blockTime = Utils.nowInMillis() - mBlockStTime;
+            mTimeInfo.techTaskTime = (int) ((Utils.nowInMillis() - mTechTaskStTime) / 1000);
+        }
+
+        // Time for the break
+        inBreak = true;
+        repaint();
+        MainFrame.get().showDialog(new BreakDialog());
+
+        // ... back from the break
+        inBreak = false;
+
+        // Next techTask
+        mTechTaskInd++;
+        mBlockInd = 0;
+        mTrialInd = 0;
+        mBlocks = mExperiment.getTechTaskBlocks(mTechTaskInd);
+        mBlock = mBlocks.get(mBlockInd);
+        mTrial = mBlock.getTrial(mTrialInd);
+
+        mGenInfo.blockNum = mBlockInd + 1;
+        mGenInfo.trial = mTrial;
+
+        // Log start times
+        mBlockStTime = Utils.nowInMillis();
+        mTechTaskStTime = Utils.nowInMillis();
+
+        if (toLog) {
+            // Sync the info to the Moose
+            Server.get().send(new Memo(
+                    STRINGS.LOG, STRINGS.TECHNIQUE,
+                    mTechs.get(mTechInd), mTechTaskInd + 1)); // Technique/techBlock
+            Server.get().send(new Memo(STRINGS.LOG, STRINGS.BLOCK_TRIAL,
+                    mBlockInd + 1, mTrialInd + 1)); // Block/trial *num*
+        }
+
+        showTrial();
+    }
+
+    /**
+     * Go to the next block
+     * @param toLog Whether to log it or not
+     */
+    private void nextTech(boolean toLog) {
+
+        if (toLog) {
+            // Sync the info to the Moose // FILL!
+        }
+
+        // Go to the next technique
+        mTechInd++;
+        mTechTaskInd = 0;
+        mBlockInd = 0;
+        mTrialInd = 0;
+        mBlocks = mExperiment.getTechTaskBlocks(mTechTaskInd);
+        mBlock = mBlocks.get(mBlockInd);
+        mTrial = mBlock.getTrial(mTrialInd);
+
+        mGenInfo.tech = mTechs.get(mTechInd);
+        mGenInfo.blockNum = mBlockInd + 1;
+        mGenInfo.trial = mTrial;
+
+        // Set the active technique
+        Experiment.setActiveTechnique(mTechs.get(mTechInd));
+        mTechLabel.setText("Technique: " + mTechs.get(mTechInd));
+
+        // Log start times
+        mBlockStTime = Utils.nowInMillis();
+        mTechTaskStTime = Utils.nowInMillis();
+        mTechStTime = Utils.nowInMillis();
+
+        showTrial();
+    }
+
+    /**
      * Show the technique end dialog
      */
     public void showTechEndDialog() {
@@ -620,10 +782,11 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setSize(800, 500);
+        panel.setBackground(Color.decode("#90caf9"));
         panel.add(Box.createRigidArea(new Dimension(800, 100)));
 
-        JLabel label = new JLabel(END_EXPERIMENT_MESSAGE);
-        label.setFont(new Font("Sans", Font.BOLD, 20));
+        JLabel label = new JLabel(END_TECH_MESSAGES[mTechInd]);
+        label.setFont(new Font("Sans", Font.BOLD, 30));
         label.setAlignmentX(Component.CENTER_ALIGNMENT);
         panel.add(label);
 
@@ -635,29 +798,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
             @Override
             public void actionPerformed(ActionEvent e) {
                 dialog.dispose();
-
-                // Sync the info to the Moose
-                Server.get().send(new Memo(
-                        STRINGS.LOG, STRINGS.TECHNIQUE,
-                        mTechs.get(mTechInd), mTechTaskInd + 1)); // Technique/techBlock
-                Server.get().send(new Memo(STRINGS.LOG, STRINGS.BLOCK_TRIAL,
-                        mBlockInd + 1, mTrialInd + 1)); // Block/trial *num*
-
-                // Go to the next technique
-                mTechInd++;
-                mTechTaskInd = 0;
-                mBlockInd = 0;
-                mTrialInd = 0;
-                mBlocks = mExperiment.getTechTaskBlocks(mTechTaskInd);
-                mBlock = mBlocks.get(mBlockInd);
-                mTrial = mBlock.getTrial(mTrialInd);
-
-                // Log
-                mBlockStTime = Utils.nowInMillis();
-                mTechTaskStTime = Utils.nowInMillis();
-                mTechStTime = Utils.nowInMillis();
-
-                showTrial();
+                nextTech(true);
             }
         });
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -676,7 +817,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
 
         Graphics2D g2d = (Graphics2D) g;
 
-        if (mTechInd != -1 && !inBreak) { // If there is technique to show
+        if (!inBetweenTechs && !inBreak) { // If there is technique to show
             g2d.setColor(Consts.COLORS.CELL_HIGHLIGHT);
             if (mVtFrameRect.width != 0) {
                 g2d.fillRect(
@@ -725,6 +866,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         KS_S = KeyStroke.getKeyStroke(KeyEvent.VK_S, 0, true);
         KS_E = KeyStroke.getKeyStroke(KeyEvent.VK_E, 0, true);
         KS_D = KeyStroke.getKeyStroke(KeyEvent.VK_D, 0, true);
+        KS_RA = KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0, true);
 
         getInputMap().put(KS_SPACE, "SPACE");
         getInputMap().put(KS_SLASH, "SLASH");
@@ -734,6 +876,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         getInputMap().put(KS_S, "S");
         getInputMap().put(KS_E, "E");
         getInputMap().put(KS_D, "D");
+        getInputMap().put(KS_RA, "RA");
     }
 
     // MouseMotionListenr ---------------------------------------------------------------------------------

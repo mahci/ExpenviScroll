@@ -22,6 +22,15 @@ public class Trial {
         return task.ordinal() + SP +
                 direction.ordinal() + SP +
                 vtDist + SP +
+                tdDist + SP +
                 frame;
+    }
+
+    public static String getLogHeader() {
+        return "task" + SP +
+                "direction" + SP +
+                "vt_dist" + SP +
+                "td_dist" + SP +
+                "frame";
     }
 }

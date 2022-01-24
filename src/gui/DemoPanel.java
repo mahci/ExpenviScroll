@@ -18,6 +18,8 @@ import java.util.Objects;
 
 import static experiment.Experiment.*;
 import static experiment.Experiment.VT_SCROLL_THUMB_H_mm;
+import static tools.Consts.SOUNDS.HIT_SOUND;
+import static tools.Consts.SOUNDS.MISS_SOUND;
 import static tools.Consts.STRINGS.*;
 
 public class DemoPanel extends JPanel {
@@ -30,6 +32,7 @@ public class DemoPanel extends JPanel {
     // Keystrokes
     private KeyStroke KS_SPACE;
     private KeyStroke KS_ENTER;
+    private KeyStroke KS_SLASH;
 
     // Experiment
     private Experiment mExperiment;
@@ -64,8 +67,32 @@ public class DemoPanel extends JPanel {
     private final Action RAND_TRIAL_ACTION = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
+
+            // Was the trial a success or a fail?
+            if (checkSuccess()){
+                playSound(HIT_SOUND);
+            }
+            else { // Miss
+                playSound(MISS_SOUND);
+            }
+
             remove(1);
             randomTrial();
+        }
+    };
+
+    private final Action SWITCH_TECH_ACTION = new AbstractAction() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (mTechInd < 2) mTechInd++;
+            else mTechInd = 0;
+            Logs.d(DemoPanel.NAME, "Ordinal= " + mTechs.get(mTechInd).ordinal());
+            // Update label
+            mTechLabel.setText("Technique: " + mTechs.get(mTechInd));
+
+            // Sync Moose
+            Experiment.setActiveTechnique(mTechs.get(mTechInd));
+
         }
     };
 
@@ -81,6 +108,7 @@ public class DemoPanel extends JPanel {
 
         // Map keys
         mapKeys();
+        getActionMap().put("ENTER", END_DEMO_ACTION);
 
         // Show elements
         final int labelY = 400;
@@ -107,7 +135,7 @@ public class DemoPanel extends JPanel {
 
                 // Map the actions
                 getActionMap().put("SPACE", RAND_TRIAL_ACTION);
-                getActionMap().put("ENTER", END_DEMO_ACTION);
+                getActionMap().put("SLASH", SWITCH_TECH_ACTION);
             }
         });
         mNextButton.setFocusable(false);
@@ -169,7 +197,7 @@ public class DemoPanel extends JPanel {
 
                 // Position
                 mPaneDim = mVTScrollPane.getPreferredSize();
-                mPanePos = getRandPosition(mPaneDim);
+                mPanePos = randPosition(mPaneDim);
                 mVTScrollPane.setBounds(mPanePos.x, mPanePos.y, mPaneDim.width, mPaneDim.height);
                 mLasPanePos = mPanePos;
 
@@ -200,7 +228,7 @@ public class DemoPanel extends JPanel {
 
                 // Position
                 mPaneDim = mTDScrollPane.getPreferredSize();
-                mPanePos = getRandPosition(mPaneDim);
+                mPanePos = randPosition(mPaneDim);
                 mTDScrollPane.setBounds(
                         mPanePos.x, mPanePos.y,
                         mPaneDim.width, mPaneDim.height
@@ -231,7 +259,7 @@ public class DemoPanel extends JPanel {
                 final Pair centerInd = new Pair();
                 final int targetRow = targetInd.getFirst();
                 final int targetCol = targetInd.getSecond();
-                final int vtDist = mTrial.getVtDist();
+                final int vtDist = mTrial.getTdDist();
                 final int hzDist = mTrial.getTdDist();
                 Logs.d(TAG, "Target", targetInd.toString());
                 switch (mTrial.getDirection()) {
@@ -252,12 +280,51 @@ public class DemoPanel extends JPanel {
     }
 
     /**
+     * Scroll the scrollPanes for a certain amount
+     * @param vtScrollAmt Vertical scroll amount
+     * @param hzScrollAmt Horizontal scroll amount
+     */
+    public void scroll(int vtScrollAmt, int hzScrollAmt) {
+        String TAG = NAME + "scroll";
+
+        Logs.d(TAG, "Scrolling", vtScrollAmt, hzScrollAmt);
+
+        if (mTrial != null) {
+            switch (mTrial.getTask()) {
+                case VERTICAL -> mVTScrollPane.scroll(vtScrollAmt);
+                case TWO_DIM -> mTDScrollPane.scroll(vtScrollAmt, hzScrollAmt);
+            }
+        }
+    }
+
+    /**
+     * Check whehter the trial was a hit
+     * @return True (Hit) / false (Miss)
+     */
+    private boolean checkSuccess() {
+        boolean result = false;
+        switch (mTrial.getTask()) {
+            case VERTICAL -> {
+                final int vtScrollVal = mVTScrollPane.getVerticalScrollBar().getValue();
+                result = mVTScrollPane.isInsideFrames(vtScrollVal);
+            }
+            case TWO_DIM -> {
+                final int vtScrollVal = mTDScrollPane.getVerticalScrollBar().getValue();
+                final int hzScrollVal = mTDScrollPane.getHorizontalScrollBar().getValue();
+                result = mTDScrollPane.isInsideFrames(vtScrollVal, hzScrollVal);
+            }
+        }
+
+        return result;
+    }
+
+    /**
      * Generate a random position for a pane
      * Based on the size and dimensions of the displace area
      * @param paneDim Dimension of the pane
      * @return A random position
      */
-    private Point getRandPosition(Dimension paneDim) {
+    private Point randPosition(Dimension paneDim) {
         String TAG = NAME + "randPosition";
 
         final int lrMargin = Utils.mm2px(LR_MARGIN_mm);
@@ -383,9 +450,11 @@ public class DemoPanel extends JPanel {
     private void mapKeys() {
         KS_SPACE = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0, true);
         KS_ENTER = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true);
+        KS_SLASH = KeyStroke.getKeyStroke(KeyEvent.VK_SLASH, 0, true);
 
         getInputMap().put(KS_SPACE, "SPACE");
         getInputMap().put(KS_ENTER, "ENTER");
+        getInputMap().put(KS_SLASH, "SLASH");
     }
 
 

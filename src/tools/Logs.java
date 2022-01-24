@@ -20,7 +20,7 @@ public class Logs {
 //        toLogList.add("MyScrollBarUI");
 //        toLogList.add("VTScrollPane");
 //        toLogList.add("TDScrollPane");
-//        toLogList.add("Experiment");
+        toLogList.add("Experiment");
 //        toLogList.add("Round");
 //        toLogList.add("TechConfigPanel");
 //        toLogList.add("MainFrame");

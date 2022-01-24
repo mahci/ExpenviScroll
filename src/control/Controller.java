@@ -64,6 +64,25 @@ public class Controller {
         }
     }
 
+    // For scrolling constantly!
+    private class ScrollRunnable implements Runnable {
+
+        private final int vtScrollAmt; // Movement delta / 1 ms
+        private final int hzScrollAmt; // Movement delta / 1 ms
+
+        private ScrollRunnable(int vtScrollAmt, int hzScrollAmt) {
+            this.vtScrollAmt = vtScrollAmt;
+            this.hzScrollAmt = hzScrollAmt;
+        }
+
+        @Override
+        public void run() {
+            String TAG = NAME + "ConstantScrollRunnable";
+            Logs.d(TAG, toScroll);
+            MainFrame.scroll(vtScrollAmt, hzScrollAmt);
+            Thread.currentThread().interrupt();
+        }
+    }
 
 
     //----------------------------------------------------------------
@@ -108,9 +127,15 @@ public class Controller {
         final Experiment.TECHNIQUE technique = Experiment.TECHNIQUE.valueOf(memo.getMode());
         Logs.d(TAG, technique);
         switch (technique) {
-            case DRAG, FLICK -> {
+            case DRAG -> {
+                scrollThread = new Thread(new ScrollRunnable(vtScrollAmt, hzScrollAmt));
+                scrollThread.start();
+            }
+
+            case FLICK -> {
                 MainFrame.scroll(vtScrollAmt, hzScrollAmt);
             }
+
             case RATE_BASED -> {
                 // Stop prev. scrolling if new command has come
                 stopScroll();

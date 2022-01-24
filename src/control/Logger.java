@@ -197,19 +197,21 @@ public class Logger {
         public TECHNIQUE tech;
         public int blockNum;
         public int trialNum;
+        public Trial trial;
 
         public static String getLogHeader() {
             return "technique" + SP +
-                    "task" + SP +
                     "block_num" + SP +
-                    "trial_num";
+                    "trial_num" + SP +
+                    Trial.getLogHeader();
         }
 
         @Override
         public String toString() {
             return tech + SP +
                     blockNum + SP +
-                    trialNum + SP;
+                    trialNum + SP +
+                    trial.toLogString();
         }
     }
 
@@ -217,17 +219,13 @@ public class Logger {
      * All times in ms
      */
     public static class TrialInfo {
-        public Trial trial;
         public int searchTime; // From the first scroll until the target appeared the last time
         public int fineTuneTime; // From the last appearance of target to the last scroll
         public int scrollTime; // searchTime + fineTuneTime
         public int result; // 1 (Hit) or 0(Miss)
 
         public static String getLogHeader() {
-            return "direction" + SP +
-                    "distance" + SP +
-                    "frame_size" + SP +
-                    "search_time" + SP +
+            return "search_time" + SP +
                     "fine_tune_time" + SP +
                     "scroll_time" + SP +
                     "result";
@@ -235,8 +233,7 @@ public class Logger {
 
         @Override
         public String toString() {
-            return trial.toLogString() + SP +
-                    searchTime + SP +
+            return searchTime + SP +
                     fineTuneTime + SP +
                     scrollTime + SP +
                     result;

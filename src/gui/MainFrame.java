@@ -27,7 +27,7 @@ public class MainFrame extends JFrame {
         setDisplayConfig();
 
         // Create and show an experiment
-        final int pid = 123;
+        final int pid = 125;
         mExperiment = new Experiment(pid);
     }
 
@@ -95,11 +95,8 @@ public class MainFrame extends JFrame {
     }
 
     public static void scroll(int vtScrollAmt, int hzScrollAmt) {
-        mExperimentPanel.scroll(vtScrollAmt, hzScrollAmt);
-    }
-
-    public static void stopScroll() {
-        mExperimentPanel.repaint();
+        if (mExperimentPanel != null) mExperimentPanel.scroll(vtScrollAmt, hzScrollAmt);
+        else if (mDemoPanel != null) mDemoPanel.scroll(vtScrollAmt, hzScrollAmt);
     }
 
 }

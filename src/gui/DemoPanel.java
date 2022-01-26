@@ -86,13 +86,14 @@ public class DemoPanel extends JPanel {
         public void actionPerformed(ActionEvent e) {
             if (mTechInd < 2) mTechInd++;
             else mTechInd = 0;
-            Logs.d(DemoPanel.NAME, "Ordinal= " + mTechs.get(mTechInd).ordinal());
+
             // Update label
             mTechLabel.setText("Technique: " + mTechs.get(mTechInd));
 
             // Sync Moose
             Experiment.setActiveTechnique(mTechs.get(mTechInd));
-
+            if (mVTScrollPane != null) mVTScrollPane.changeTechnique(mTechs.get(mTechInd));
+            if (mTDScrollPane != null) mTDScrollPane.changeTechnique(mTechs.get(mTechInd));
         }
     };
 
@@ -139,6 +140,8 @@ public class DemoPanel extends JPanel {
 
                 // Sync the the first technique
                 Experiment.setActiveTechnique(mTechs.get(mTechInd));
+                if (mVTScrollPane != null) mVTScrollPane.changeTechnique(mTechs.get(mTechInd));
+                if (mTDScrollPane != null) mTDScrollPane.changeTechnique(mTechs.get(mTechInd));
 
             }
         });

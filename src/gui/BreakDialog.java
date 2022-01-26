@@ -45,7 +45,7 @@ public class BreakDialog extends JDialog implements KeyListener {
         // Close on Shift + \
         if (e.isShiftDown() && e.getKeyCode() == KeyEvent.VK_BACK_SLASH) {
             // Set the start of homing
-            Logger.get().startHomingTime();
+            Logger.get().settHomingStTime();
 
             setVisible(false);
         }

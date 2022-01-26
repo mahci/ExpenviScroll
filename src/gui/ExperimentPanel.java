@@ -51,6 +51,15 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
     private List<Block> mBlocks;
     private Block mBlock;
     private Trial mTrial;
+    private int mTechTaskInd; // 0, 1
+    private int mBlockInd; // Block num = block ind + 1
+    private int mTrialInd; // Trial num = trial ind + 1
+    private int mTechInd;
+    private List<TECHNIQUE> mTechs;
+    private int mNTrialsInBlock; // Not counting the repeated trials
+    private boolean inBreak;
+    private boolean inBetweenTechs;
+
 
     // Elements
     private VTScrollPane mVTScrollPane;
@@ -61,14 +70,6 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
     private JLabel mTechLabel;
     private TechConfigPanel mConfigPanel;
 
-    // Experiment
-    private int mTechTaskInd; // 0, 1
-    private int mBlockInd; // Block num = block ind + 1
-    private int mTrialInd; // Trial num = trial ind + 1
-    private int mTechInd;
-    private List<TECHNIQUE> mTechs;
-    private boolean inBreak;
-    private boolean inBetweenTechs;
 
     // Logging
     private Logger.GeneralInfo mGenInfo = new Logger.GeneralInfo();
@@ -106,6 +107,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
 
             mBlocks = mExperiment.getTechTaskBlocks(mTechTaskInd);
             mBlock = mBlocks.get(mBlockInd);
+            mNTrialsInBlock = mBlock.getNTrials();
             mTrial = mBlock.getTrial(mTrialInd);
 
             // Set the active technique
@@ -180,7 +182,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
             } else if (mTechInd < 2) { // Technique is finished
                 endTech(true);
             } else { // Experiment is finished
-                // FILL!
+                endExp(true);
             }
         }
     };
@@ -211,7 +213,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
                 showTechEndDialog();
 
             } else { // Experiment is finished
-                // FILL!
+                endExp(false);
             }
         }
     };
@@ -239,7 +241,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
 
                 showTechEndDialog();
             } else { // Experiment is finished
-                // FILL!
+                endExp(true);
             }
         }
     };
@@ -281,6 +283,8 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
 
             // Sync Moose
             Experiment.setActiveTechnique(mTechs.get(mTechInd));
+            if (mVTScrollPane != null) mVTScrollPane.changeTechnique(mTechs.get(mTechInd));
+            if (mTDScrollPane != null) mTDScrollPane.changeTechnique(mTechs.get(mTechInd));
         }
     };
 
@@ -360,6 +364,10 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
                 .setText("lorem.txt")
                 .setScrollBar(VT_SCROLL_BAR_W_mm, VT_SCROLL_THUMB_H_mm)
                 .create();
+
+        // Set the current technique in panes
+        if (mVTScrollPane != null) mVTScrollPane.changeTechnique(mTechs.get(mTechInd));
+        if (mTDScrollPane != null) mTDScrollPane.changeTechnique(mTechs.get(mTechInd));
 
     }
 
@@ -472,7 +480,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         paintTrial = true;
 
         // Show level label
-        mLevelLabel.setText("Trial: " + (mTrialInd + 1) + "/" + mBlock.getNTrials() +
+        mLevelLabel.setText("Trial: " + (mTrialInd + 1) + "/" + mNTrialsInBlock +
                 "  --  Block: " + (mBlockInd + 1) + "/12");
         mTechLabel.setText("Technique: " + mTechs.get(mTechInd));
 
@@ -536,14 +544,12 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
      * @return A random line index
      */
     private int randVtLineInd() {
-        String TAG = NAME + "randVtScrollValue";
-        int offset = (mVTScrollPane.getNVisibleLines() - mTrial.getFrame()) / 2;
+        String TAG = NAME + "randVtLineInd";
 
-//        int minInd = offset + 1;
-//        int maxInd = vtScrollPane.getNLines() - offset;
         // General min/max
         int minInd = mVTScrollPane.getNVisibleLines(); // No highlight at the top
         int maxInd = (mVTScrollPane.getNLines() - 1) - mVTScrollPane.getNVisibleLines();
+        Logs.d(TAG, "NLines, NVisibleLines", mVTScrollPane.getNLines(), mVTScrollPane.getNVisibleLines());
         // Correction based on direction
         if (mTrial.getDirection() == DIRECTION.N) {
             maxInd -= mTrial.getVtDist();
@@ -665,6 +671,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         mBlockInd++;
         mTrialInd = 0;
         mBlock = mBlocks.get(mBlockInd);
+        mNTrialsInBlock = mBlock.getNTrials();
         mTrial = mBlock.getTrial(mTrialInd);
 
         mGenInfo.blockNum = mBlockInd + 1;
@@ -707,6 +714,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         mTrialInd = 0;
         mBlocks = mExperiment.getTechTaskBlocks(mTechTaskInd);
         mBlock = mBlocks.get(mBlockInd);
+        mNTrialsInBlock = mBlock.getNTrials();
         mTrial = mBlock.getTrial(mTrialInd);
 
         mGenInfo.blockNum = mBlockInd + 1;
@@ -748,24 +756,6 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
     }
 
     /**
-     * The current technique is ended
-     * @param toLog To log?
-     */
-    private void endExp(boolean toLog) {
-        if (toLog) {
-            // Add block, techTask, technique time and log TimeInfo
-            mTimeInfo.blockTime = Utils.nowInMillis() - mBlockStTime;
-            mTimeInfo.techTaskTime = (int) ((Utils.nowInMillis() - mTechTaskStTime) / 1000);
-            mTimeInfo.techTime = (int) ((Utils.nowInMillis() - mTechStTime) / 1000);
-            mTimeInfo.experimentTime = (int) ((Utils.nowInMillis() - mExpStTime) / 1000);
-            Logger.get().logTimeInfo(mGenInfo, mTimeInfo);
-        }
-
-        removeAll();
-        showExpEndDialog();
-    }
-
-    /**
      * Go to the next block
      * @param toLog Whether to log it or not
      */
@@ -791,6 +781,8 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         // Set the active technique
         Experiment.setActiveTechnique(mTechs.get(mTechInd));
         mTechLabel.setText("Technique: " + mTechs.get(mTechInd));
+        if (mVTScrollPane != null) mVTScrollPane.changeTechnique(mTechs.get(mTechInd));
+        if (mTDScrollPane != null) mTDScrollPane.changeTechnique(mTechs.get(mTechInd));
 
         // Log start times
         mBlockStTime = Utils.nowInMillis();
@@ -798,6 +790,27 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         mTechStTime = Utils.nowInMillis();
 
         showTrial();
+    }
+
+    /**
+     * The current technique is ended
+     * @param toLog To log?
+     */
+    private void endExp(boolean toLog) {
+        if (toLog) {
+            // Add block, techTask, technique time and log TimeInfo
+            mTimeInfo.blockTime = Utils.nowInMillis() - mBlockStTime;
+            mTimeInfo.techTaskTime = (int) ((Utils.nowInMillis() - mTechTaskStTime) / 1000);
+            mTimeInfo.techTime = (int) ((Utils.nowInMillis() - mTechStTime) / 1000);
+            mTimeInfo.experimentTime = (int) ((Utils.nowInMillis() - mExpStTime) / 1000);
+            Logger.get().logTimeInfo(mGenInfo, mTimeInfo);
+
+            // Close all logs
+            Logger.get().closeLogs();
+        }
+
+        removeAll();
+        showExpEndDialog();
     }
 
     /**
@@ -861,7 +874,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
 
         panel.add(Box.createRigidArea(new Dimension(0, 200)));
 
-        JButton button = new JButton("Continue");
+        JButton button = new JButton("Close");
         button.setMaximumSize(new Dimension(300, 50));
         button.addActionListener(new ActionListener() {
             @Override

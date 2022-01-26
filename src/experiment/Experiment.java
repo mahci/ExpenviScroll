@@ -79,19 +79,25 @@ public class Experiment {
     }
 
     public enum TASK {
-        VERTICAL(1), TWO_DIM(2);
-        private final int n;
-        TASK(int i) { n = i; }
+        VERTICAL, TWO_DIM;
+        private static final TASK[] values = values();
+        public static TASK get(int ord) {
+            if (ord < values.length) return values[ord];
+            else return values[0];
+        }
     }
 
     public enum TECHNIQUE {
-        DRAG(1), RATE_BASED(2), FLICK(3), MOUSE(4);
-        private final int n;
-        TECHNIQUE(int i) { n = i; }
+        DRAG, RATE_BASED, FLICK, MOUSE;
+        private static final TECHNIQUE[] values = values();
+        public static TECHNIQUE get(int ord) {
+            if (ord < values.length) return values[ord];
+            else return values[0];
+        }
     }
 
     //-- Variables
-    private int[] VT_DISTANCES = new int[]{50, 700}; // in lines/cells
+    private int[] VT_DISTANCES = new int[]{50, 200}; // in lines/cells
     private int[] TD_DISTANCES = new int[]{50, 200};
     private int[] FRAMES = new int[]{3, 5}; // in lines/cells
     private List<TECHNIQUE> TECH_ORDERS = Arrays.asList(
@@ -129,7 +135,7 @@ public class Experiment {
         mPId = pid;
 
         // Set up the order of tasks and techniques for the participant
-        if (pid <= 6) mPcTasks = Arrays.asList(TASK.VERTICAL, TASK.TWO_DIM);
+        if (pid % 2 == 0) mPcTasks = Arrays.asList(TASK.VERTICAL, TASK.TWO_DIM);
         else mPcTasks = Arrays.asList(TASK.TWO_DIM, TASK.VERTICAL);
 
         final int stTechInd = ((mPId - 1) % 6) * 3;

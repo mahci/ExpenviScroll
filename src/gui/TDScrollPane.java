@@ -12,7 +12,7 @@ import java.awt.event.*;
 
 import static tools.Consts.*;
 
-public class TDScrollPane extends JScrollPane implements MouseListener {
+public class TDScrollPane extends JScrollPane implements MouseListener, MouseWheelListener {
     private final static String NAME = "TDScrollPane/";
 
     private JTable bodyTable;                   // Inside table
@@ -227,6 +227,18 @@ public class TDScrollPane extends JScrollPane implements MouseListener {
     }
 
     /**
+     * Set some flags according to the technique
+     * @param tech New technique
+     */
+    public void changeTechnique(Experiment.TECHNIQUE tech) {
+        if (tech == Experiment.TECHNIQUE.MOUSE) {
+            setWheelScrollingEnabled(true);
+        } else {
+            setWheelScrollingEnabled(false);
+        }
+    }
+
+    /**
      * Highlight one cell
      * @param rcInd Row,Col index
      * @param frameSizeCells Size of fram in cells
@@ -389,6 +401,19 @@ public class TDScrollPane extends JScrollPane implements MouseListener {
     @Override
     public void mouseExited(MouseEvent e) {
         mCursorIn = false;
+    }
+
+    @Override
+    public void mouseWheelMoved(MouseWheelEvent e) {
+        if (isWheelScrollingEnabled() && mCursorIn) {
+            // Log
+            if (!mScrolled) {
+                mInstantInfo.firstScroll = Utils.nowInMillis();
+                mScrolled = true;
+            } else {
+                mInstantInfo.lastScroll = Utils.nowInMillis();
+            }
+        }
     }
 
     // Custom ScrollBar ========================================================================================

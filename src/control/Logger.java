@@ -159,16 +159,34 @@ public class Logger {
         }
     }
 
-    public void startHomingTime() {
+    /**
+     * Close all log files
+     */
+    public void closeLogs() {
+        if (mTrialsLogFile != null) mTrialsLogFile.close();
+        if (mInstantLogFile != null) mInstantLogFile.close();
+        if (mTimesLogFile != null) mTimesLogFile.close();
+        if (mEventsLogFile != null) mEventsLogFile.close();
+    }
+
+    /**
+     * Start the start of homing time
+     */
+    public void settHomingStTime() {
         mHomingStTime = Utils.nowInMillis();
     }
 
+    /**
+     * Get the start of himing time
+     * @return Homing start time
+     */
     public long getHomingStTime() {
         final long result = mHomingStTime;
         mHomingStTime = 0; // reset the time
 
         return result;
     }
+
 
     /**
      * Create a directory

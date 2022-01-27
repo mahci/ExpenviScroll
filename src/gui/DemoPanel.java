@@ -18,9 +18,9 @@ import java.util.Objects;
 
 import static experiment.Experiment.*;
 import static experiment.Experiment.VT_SCROLL_THUMB_H_mm;
-import static tools.Consts.SOUNDS.HIT_SOUND;
-import static tools.Consts.SOUNDS.MISS_SOUND;
+import static tools.Consts.SOUNDS.*;
 import static tools.Consts.STRINGS.*;
+import static tools.Consts.*;
 
 public class DemoPanel extends JPanel {
     private final static String NAME = "DemoPanel/";
@@ -101,7 +101,9 @@ public class DemoPanel extends JPanel {
 
     public DemoPanel(Experiment exp) {
         final String TAG = NAME;
+
         setLayout(null);
+        setBackground(COLORS.PANEL_BG);
 
         mExperiment = exp;
         mTechs = exp.getPcTechniques();

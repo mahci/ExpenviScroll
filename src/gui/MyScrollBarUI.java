@@ -18,19 +18,37 @@ public class MyScrollBarUI extends BasicScrollBarUI {
 
     private int highlightMin, highlightMax; // Min/max value of hightlight area
 
-    public MyScrollBarUI(Color bdColor, Color trColor, Color thColor, int offs) {
-        borderColor = bdColor;
-        trackColor = trColor;
-        thumbColor = thColor;
+    /**
+     * Create the scroll bar
+     * @param borderClr Border color
+     * @param trackClr Track color
+     * @param thumbClr Thumb color
+     * @param offs Offset
+     */
+    public MyScrollBarUI(Color borderClr, Color trackClr, Color thumbClr, int offs) {
+        borderColor = borderClr;
+        trackColor = trackClr;
+        thumbColor = thumbClr;
         offset = offs;
     }
 
-    public void setHighlight(Color hlColor, int hlMin, int hlMax) {
+    /**
+     * Highligh
+     * @param hlColor Highlight color
+     * @param hlMin Highlight min value
+     * @param hlMax Highlight max value
+     */
+    public void setIndicator(Color hlColor, int hlMin, int hlMax) {
         highlightColor = hlColor;
         highlightMin = hlMin;
         highlightMax = hlMax;
     }
 
+    /**
+     * Set the frame
+     * @param hlColor Highlight color
+     * @param hlMinMax Min/max of the frame
+     */
     public void setHighlightFrame(Color hlColor, MinMax hlMinMax) {
         highlightColor = hlColor;
         highlightMin = hlMinMax.getMin();

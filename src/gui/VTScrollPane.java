@@ -5,7 +5,6 @@ import experiment.Experiment;
 import tools.*;
 
 import javax.swing.*;
-import javax.swing.plaf.basic.BasicScrollBarUI;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter.DefaultHighlightPainter;
 import javax.swing.text.SimpleAttributeSet;
@@ -63,6 +62,8 @@ public class VTScrollPane extends JScrollPane implements MouseListener, MouseWhe
     public VTScrollPane(Dimension d) {
         mDim = d;
         setPreferredSize(mDim);
+
+        setBorder(BorderFactory.createLineBorder(COLORS.VIEW_BORDER));
     }
 
     /**
@@ -161,9 +162,9 @@ public class VTScrollPane extends JScrollPane implements MouseListener, MouseWhe
 
         // Verticall scroll bar
         mScrollBarUI = new MyScrollBarUI(
-                Color.BLACK,
+                COLORS.VIEW_BORDER,
                 COLORS.SCROLLBAR_TRACK,
-                Color.BLACK,
+                COLORS.SCROLLBAR_THUMB,
                 6);
         getVerticalScrollBar().setUI(mScrollBarUI);
         getVerticalScrollBar().setPreferredSize(scBarDim);
@@ -204,21 +205,21 @@ public class VTScrollPane extends JScrollPane implements MouseListener, MouseWhe
     }
 
     /**
-     * Highlight a line indicated by lineInd
-     * @param lineInd Index of the line (starting from 1)
+     * Highlight a line indicated by targetLineInd
+     * @param targetLineInd Index of the line (starting from 1)
      * @param frameSizeLines Size of the frame (in lines)
      */
-    public void highlight(int lineInd, int frameSizeLines) {
+    public void highlight(int targetLineInd, int frameSizeLines) {
         String TAG = NAME + "highlight";
 
         // Highlight line
         try {
             int stIndex = 0;
-            for (int li = 0; li < lineInd; li++) {
+            for (int li = 0; li < targetLineInd; li++) {
                 stIndex += mLCharCountInLines.get(li) + 1; // prev. lines + \n
             }
-            int endIndex = stIndex + mLCharCountInLines.get(lineInd); // highlight the whole line
-            Logs.d(TAG, mLCharCountInLines.size(), lineInd, frameSizeLines, stIndex, endIndex);
+            int endIndex = stIndex + mLCharCountInLines.get(targetLineInd); // highlight the whole line
+            Logs.d(TAG, mLCharCountInLines.size(), targetLineInd, frameSizeLines, stIndex, endIndex);
             DefaultHighlightPainter highlighter = new DefaultHighlightPainter(COLORS.CELL_HIGHLIGHT);
             mBodyTextPane.getHighlighter().removeAllHighlights();
             mBodyTextPane.getHighlighter().addHighlight(stIndex, endIndex, highlighter);
@@ -231,10 +232,12 @@ public class VTScrollPane extends JScrollPane implements MouseListener, MouseWhe
         int nVisibleLines = getNVisibleLines();
         int frOffset = (nVisibleLines - frameSizeLines) / 2;
         int lineH = getLineHeight();
-        mTargetMinMax.setMin((lineInd - (frameSizeLines - 1) - frOffset) * lineH);
-        mTargetMinMax.setMax((lineInd - frOffset) * lineH);
-        mScrollBarUI.setHighlight(
-                COLORS.SCROLLBAR_HIGHLIGHT,
+
+        mTargetMinMax.setMin((targetLineInd - (frameSizeLines - 1) - frOffset) * lineH);
+        mTargetMinMax.setMax((targetLineInd - frOffset) * lineH);
+
+        mScrollBarUI.setIndicator(
+                COLORS.CELL_HIGHLIGHT,
                 mTargetMinMax.getMin(),
                 mTargetMinMax.getMax());
         getVerticalScrollBar().setUI(mScrollBarUI);
@@ -443,64 +446,6 @@ public class VTScrollPane extends JScrollPane implements MouseListener, MouseWhe
             } else {
                 mInstantInfo.lastScroll = Utils.nowInMillis();
             }
-        }
-    }
-
-    // Custom ScrollBar ========================================================================================
-
-    /***
-     * Custom class for scroll bars
-     */
-    private class CustomScrollBarUI extends BasicScrollBarUI {
-
-        @Override
-        protected void paintTrack(Graphics g, JComponent c, Rectangle trackBounds) {
-            g.setColor(new Color(244, 244, 244));
-            g.fillRect(trackBounds.x, trackBounds.y, trackBounds.width, trackBounds.height);
-            g.setColor(Color.BLACK);
-            g.drawRect(trackBounds.x, trackBounds.y, trackBounds.width, trackBounds.height);
-
-            // Highlight scroll bar rect
-            double ratio = trackBounds.height / (getVerticalScrollBar().getMaximum() * 1.0);
-            int hlY = (int) (mTargetMinMax.getMin() * ratio);
-            int hlH = (int) (mTargetMinMax.getRange() * ratio) + getThumbBounds().height;
-            g.setColor(Consts.COLORS.SCROLLBAR_HIGHLIGHT);
-            g.fillRect(trackBounds.x, hlY, trackBounds.width, hlH);
-        }
-
-        @Override
-        protected void paintThumb(Graphics g, JComponent c, Rectangle thumbBounds) {
-            // Set anti-alias
-            Graphics2D graphics2D = (Graphics2D) g;
-            graphics2D.setColor(Color.BLACK);
-            graphics2D.setRenderingHint(
-                    RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON);
-
-
-            graphics2D.fillRoundRect(
-                    thumbBounds.x + 4, thumbBounds.y,
-                    thumbBounds.width - 6, thumbBounds.height,
-                    5, 5);
-        }
-
-        @Override
-        protected JButton createIncreaseButton(int orientation) {
-            return createZeroButton();
-        }
-
-        @Override
-        protected JButton createDecreaseButton(int orientation) {
-            return createZeroButton();
-        }
-
-        protected JButton createZeroButton() {
-            JButton button = new JButton("zero button");
-            Dimension zeroDim = new Dimension(0,0);
-            button.setPreferredSize(zeroDim);
-            button.setMinimumSize(zeroDim);
-            button.setMaximumSize(zeroDim);
-            return button;
         }
     }
 

@@ -19,12 +19,15 @@ public class Consts {
 
     // Colors
     public static class COLORS {
+        public final static Color PANEL_BG = Color.decode("#F5F5F5");
+        public final static Color VIEW_BORDER = Color.decode("#E7E7E7");
+        public final static Color SCROLLBAR_TRACK = Color.decode("#FAFAFA");
+        public final static Color SCROLLBAR_THUMB = Color.decode("#C2C2C2");
         public final static Color LINE_NUM_BG = new Color(221, 221, 221);
         public final static Color CELL_HIGHLIGHT = new Color(100, 192, 245);
         public final static Color SCROLLBAR_HIGHLIGHT = new Color(199, 225, 240);
         public final static Color TABLE_GRID = Color.GRAY;
         public final static Color TABLE_TEXT = Color.DARK_GRAY;
-        public final static Color SCROLLBAR_TRACK = new Color(240, 240, 240);
     }
 
     // Fonts and character attributes

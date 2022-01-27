@@ -26,6 +26,8 @@ public class MainFrame extends JFrame {
     public MainFrame() {
         setDisplayConfig();
 
+        setBackground(Color.WHITE);
+
         // Create and show an experiment
         final int pid = 121;
         mExperiment = new Experiment(pid);
@@ -34,6 +36,10 @@ public class MainFrame extends JFrame {
     public static MainFrame get() {
         if (self == null) self = new MainFrame();
         return self;
+    }
+
+    public void start() {
+        showDemo();
     }
 
     public void showDemo() {

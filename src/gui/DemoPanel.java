@@ -390,19 +390,19 @@ public class DemoPanel extends JPanel {
         // Correction based on direction
         switch (mTrial.getDirection()) {
             case NE -> {
-                vtInd.move(0, -mTrial.getVtDist());
+                vtInd.move(0, -mTrial.getTdDist());
                 hzInd.move(mTrial.getTdDist(), 0);
             }
             case NW -> {
-                vtInd.move(0, -mTrial.getVtDist());
+                vtInd.move(0, -mTrial.getTdDist());
                 hzInd.move(0, -mTrial.getTdDist());
             }
             case SE -> {
-                vtInd.move(mTrial.getVtDist(), 0);
+                vtInd.move(mTrial.getTdDist(), 0);
                 hzInd.move(mTrial.getTdDist(), 0);
             }
             case SW -> {
-                vtInd.move(mTrial.getVtDist(), 0);
+                vtInd.move(mTrial.getTdDist(), 0);
                 hzInd.move(0, -mTrial.getTdDist());
             }
         }

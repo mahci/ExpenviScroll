@@ -13,14 +13,14 @@ public class Logs {
     private static List<String> toLogList = new ArrayList<>();
 
     static {
-        toLogList.add("Server");
+//        toLogList.add("Server");
         toLogList.add("ExperimentPanel");
 //        toLogList.add("DemoPanel");
-        toLogList.add("Controller");
+//        toLogList.add("Controller");
 //        toLogList.add("MyScrollBarUI");
-        toLogList.add("VTScrollPane");
+//        toLogList.add("VTScrollPane");
 //        toLogList.add("TDScrollPane");
-        toLogList.add("Experiment");
+//        toLogList.add("Experiment");
 //        toLogList.add("Round");
 //        toLogList.add("TechConfigPanel");
 //        toLogList.add("MainFrame");

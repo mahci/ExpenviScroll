@@ -74,6 +74,10 @@ public class MainFrame extends JFrame {
         dialog.setVisible(true);
     }
 
+    public void showMessage(String mssg) {
+        JOptionPane.showMessageDialog(this, mssg);
+    }
+
     /**
      * Set the config for showing panels
      */

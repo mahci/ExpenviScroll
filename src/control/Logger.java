@@ -2,6 +2,7 @@ package control;
 
 import experiment.Trial;
 import gui.Main;
+import gui.MainFrame;
 import tools.Logs;
 import tools.Utils;
 
@@ -20,20 +21,21 @@ public class Logger {
     // -------------------------------------------------------------------------------------------
     private static Logger self;
 
-    private static String mLogFolderPath; // Main folder for logs
+    private static Path mLogDirectory; // Main folder for logs
+    private static Path mPcLogDirectory; // Folder log path of the participant
 
     // Different log files
-    private String mTrialsLogPath;
-    private PrintWriter mTrialsLogFile;
+    private Path mTrialsFilePath;
+    private PrintWriter mTrialsFilePW;
 
-    private String mInstantsLogPath;
-    private PrintWriter mInstantLogFile;
+    private Path mInstantsLogPath;
+    private PrintWriter mInstantFilePW;
 
-    private String mTimesLogPath;
-    private PrintWriter mTimesLogFile;
+    private Path mTimesFilePath;
+    private PrintWriter mTimesFilePW;
 
-    private String mEventsLogPath;
-    private PrintWriter mEventsLogFile;
+    private Path mEventsFilePath;
+    private PrintWriter mEventsFilePW;
 
     private String mExpLogId;
 
@@ -53,10 +55,18 @@ public class Logger {
      * Private constructor
      */
     private Logger() {
-        // Create logging folder
+        // Create log directory
         final Path parentPatn = Paths.get("").toAbsolutePath().getParent();
-        mLogFolderPath = parentPatn.toAbsolutePath() + "/Expenvi-Scroll-Logs/";
-        createFolder(mLogFolderPath);
+        mLogDirectory = parentPatn.resolve("Expenvi-Scroll-Logs");
+
+        if (!Files.isDirectory(mLogDirectory)) {
+            try {
+                Files.createDirectory(mLogDirectory);
+            } catch (IOException ioe) {
+                MainFrame.get().showMessage("Problem in creating log directory!");
+                ioe.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -66,28 +76,39 @@ public class Logger {
     public void logParticipant(int pId) {
         final String TAG = NAME + "logParticipant";
 
-        mExpLogId = P_INIT + pId + "_" + Utils.nowDateTime(); // Experiment Id
+        final String pcLogId = P_INIT + pId;
+        final String pcExpLogId = pcLogId + "_" + Utils.nowDateTime(); // Experiment Id
+
+        // Create a folder for the participant (if not already created)
+        mPcLogDirectory = mLogDirectory.resolve(pcLogId);
+        if (!Files.isDirectory(mPcLogDirectory)) {
+            try {
+                Files.createDirectory(mPcLogDirectory);
+            } catch (IOException ioe) {
+                MainFrame.get().showMessage("Problem in creating log directory for participant: " + pId);
+                ioe.printStackTrace();
+            }
+        }
 
         // Create log files for the participant
-        final String logFileInit = mLogFolderPath + mExpLogId;
-        mTrialsLogPath = logFileInit+ "_" + "TRIALS.txt";
-        mInstantsLogPath = logFileInit + "_" + "INSTANTS.txt";
-        mTimesLogPath = logFileInit + "_" + "TIMES.txt";
-        mEventsLogPath = logFileInit+ "_" + "EVENTS.txt";
+        mTrialsFilePath = mPcLogDirectory.resolve(pcExpLogId + "_" + "TRIALS.txt");
+        mInstantsLogPath = mPcLogDirectory.resolve(pcExpLogId + "_" + "INSTANTS.txt");
+        mTimesFilePath = mPcLogDirectory.resolve(pcExpLogId + "_" + "TIMES.txt");
+        mEventsFilePath = mPcLogDirectory.resolve(pcExpLogId + "_" + "EVENTS.txt");
 
         // Write columns in log files
         try {
-            mTrialsLogFile = new PrintWriter(new FileWriter(mTrialsLogPath));
-            mTrialsLogFile.println(GeneralInfo.getLogHeader() + SP + TrialInfo.getLogHeader());
-            mTrialsLogFile.flush();
+            mTrialsFilePW = new PrintWriter(mTrialsFilePath.toFile());
+            mTrialsFilePW.println(GeneralInfo.getLogHeader() + SP + TrialInfo.getLogHeader());
+            mTrialsFilePW.flush();
 
-            mInstantLogFile = new PrintWriter(new FileWriter(mInstantsLogPath));
-            mInstantLogFile.println(GeneralInfo.getLogHeader() + SP + InstantInfo.getLogHeader());
-            mInstantLogFile.flush();
+            mInstantFilePW = new PrintWriter(mInstantsLogPath.toFile());
+            mInstantFilePW.println(GeneralInfo.getLogHeader() + SP + InstantInfo.getLogHeader());
+            mInstantFilePW.flush();
 
-            mTimesLogFile = new PrintWriter(new FileWriter(mTimesLogPath));
-            mTimesLogFile.println(GeneralInfo.getLogHeader() + SP + TimeInfo.getLogHeader());
-            mTimesLogFile.flush();
+            mTimesFilePW = new PrintWriter(mTimesFilePath.toFile());
+            mTimesFilePW.println(GeneralInfo.getLogHeader() + SP + TimeInfo.getLogHeader());
+            mTimesFilePW.flush();
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -105,12 +126,12 @@ public class Logger {
         final String TAG = NAME + "logTrialInfo";
 
         try {
-            if (mTrialsLogFile == null) { // Open only if not opened before
-                mTrialsLogFile = new PrintWriter(new FileWriter(mTrialsLogPath, true));
+            if (mTrialsFilePW == null) { // Open only if not opened before
+                mTrialsFilePW = new PrintWriter(mTrialsFilePath.toFile());
             }
 
-            mTrialsLogFile.println(genInfo + SP + trialInfo);
-            mTrialsLogFile.flush();
+            mTrialsFilePW.println(genInfo + SP + trialInfo);
+            mTrialsFilePW.flush();
 
         } catch (NullPointerException | IOException e) {
             Main.showDialog("Problem in logging instant!");
@@ -126,12 +147,12 @@ public class Logger {
         final String TAG = NAME + "logInstant";
 
         try {
-            if (mInstantLogFile == null) { // Open only if not opened before
-                mInstantLogFile = new PrintWriter(new FileWriter(mInstantsLogPath, true));
+            if (mInstantFilePW == null) { // Open only if not opened before
+                mInstantFilePW = new PrintWriter(mInstantsLogPath.toFile());
             }
 
-            mInstantLogFile.println(genInfo + SP + instInfo);
-            mInstantLogFile.flush();
+            mInstantFilePW.println(genInfo + SP + instInfo);
+            mInstantFilePW.flush();
 
         } catch (NullPointerException | IOException e) {
             Main.showDialog("Problem in logging instant!");
@@ -147,12 +168,12 @@ public class Logger {
         final String TAG = NAME + "logInstant";
 
         try {
-            if (mTimesLogFile == null) { // Open only if not opened before
-                mTimesLogFile = new PrintWriter(new FileWriter(mTimesLogPath, true));
+            if (mTimesFilePW == null) { // Open only if not opened before
+                mTimesFilePW = new PrintWriter(mTimesFilePath.toFile());
             }
 
-            mTimesLogFile.println(genInfo + SP + timeInfo);
-            mTimesLogFile.flush();
+            mTimesFilePW.println(genInfo + SP + timeInfo);
+            mTimesFilePW.flush();
 
         } catch (NullPointerException | IOException e) {
             Main.showDialog("Problem in logging instant!");
@@ -163,10 +184,10 @@ public class Logger {
      * Close all log files
      */
     public void closeLogs() {
-        if (mTrialsLogFile != null) mTrialsLogFile.close();
-        if (mInstantLogFile != null) mInstantLogFile.close();
-        if (mTimesLogFile != null) mTimesLogFile.close();
-        if (mEventsLogFile != null) mEventsLogFile.close();
+        if (mTrialsFilePW != null) mTrialsFilePW.close();
+        if (mInstantFilePW != null) mInstantFilePW.close();
+        if (mTimesFilePW != null) mTimesFilePW.close();
+        if (mEventsFilePW != null) mEventsFilePW.close();
     }
 
     /**
@@ -187,25 +208,6 @@ public class Logger {
         return result;
     }
 
-
-    /**
-     * Create a directory
-     * @param path Directory path
-     */
-    private int createFolder(String path) {
-        final String TAG = NAME + "createDir";
-
-        Path dir = Paths.get(path);
-        try {
-            // Create the directory only if not existed
-            if (!Files.isDirectory(dir)) Files.createDirectory(dir);
-            return 0;
-        } catch (IOException e) {
-            Logs.d(TAG, "Problem in creating dir: " + path);
-            e.printStackTrace();
-            return 1;
-        }
-    }
 
     // -------------------------------------------------------------------------------------------
     /***

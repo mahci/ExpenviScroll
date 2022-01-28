@@ -23,6 +23,7 @@ public class Consts {
         public final static Color VIEW_BORDER = Color.decode("#E7E7E7");
         public final static Color SCROLLBAR_TRACK = Color.decode("#FAFAFA");
         public final static Color SCROLLBAR_THUMB = Color.decode("#C2C2C2");
+        public final static Color SCROLLBAR_INDIC = Color.decode("#1B5E20");
         public final static Color LINE_NUM_BG = new Color(221, 221, 221);
         public final static Color CELL_HIGHLIGHT = new Color(100, 192, 245);
         public final static Color SCROLLBAR_HIGHLIGHT = new Color(199, 225, 240);

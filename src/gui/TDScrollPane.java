@@ -72,6 +72,8 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
         paneDim = new Dimension(paneSize, paneSize);
 
         setPreferredSize(paneDim);
+
+        setBorder(BorderFactory.createLineBorder(COLORS.VIEW_BORDER));
     }
 
     /**
@@ -193,9 +195,9 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
 //        UIManager.put("ScrollBar.maximumThumbSize", vSBThumbDim);
 
         vtScrollBarUI = new MyScrollBarUI(
-                Color.BLACK,
+                COLORS.VIEW_BORDER,
                 COLORS.SCROLLBAR_TRACK,
-                Color.BLACK,
+                COLORS.SCROLLBAR_THUMB,
                 6);
         getVerticalScrollBar().setUI(vtScrollBarUI);
         getVerticalScrollBar().setPreferredSize(vSBDim);
@@ -207,9 +209,9 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
 //        UIManager.put("ScrollBar.maximumThumbSize", hSBThumbDim);
 
         hzScrollBarUI = new MyScrollBarUI(
-                Color.BLACK,
+                COLORS.VIEW_BORDER,
                 COLORS.SCROLLBAR_TRACK,
-                Color.BLACK,
+                COLORS.SCROLLBAR_THUMB,
                 6); // IMPORTANT to create a new CSBUI
         getHorizontalScrollBar().setUI(hzScrollBarUI);
         getHorizontalScrollBar().setPreferredSize(hSBDim);
@@ -240,14 +242,14 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
 
     /**
      * Highlight one cell
-     * @param rcInd Row,Col index
+     * @param targetRCInd Row,Col index
      * @param frameSizeCells Size of fram in cells
      */
-    public TDScrollPane highlight(Pair rcInd, int frameSizeCells) {
+    public TDScrollPane highlight(Pair targetRCInd, int frameSizeCells) {
         String TAG = NAME + "highlight";
 
-        final int rInd = rcInd.getFirst();
-        final int cInd = rcInd.getSecond();
+        final int rInd = targetRCInd.getFirst();
+        final int cInd = targetRCInd.getSecond();
 
         // Highlight the cell
         HighlightTableRenderer hlRenderer = new HighlightTableRenderer(rInd, cInd);
@@ -260,12 +262,20 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
         mTargetVtMinMax.setMin((rInd - (frameSizeCells - 1) - frOffset) * cellSize);
         mTargetVtMinMax.setMax((rInd - frOffset) * cellSize);
         vtScrollBarUI.setHighlightFrame(COLORS.SCROLLBAR_HIGHLIGHT, mTargetVtMinMax);
+
+        final int nVisibleRows = Experiment.TD_N_VIS_ROWS;
+        final int targetVtPos = (rInd - nVisibleRows + 1) * cellSize;
+
+        vtScrollBarUI.setVtIndicator(COLORS.SCROLLBAR_INDIC, targetVtPos);
         getVerticalScrollBar().setUI(vtScrollBarUI);
 
         // Horizontal
-        mTargetHzMinMax.setMin((cInd - (frameSizeCells - 1) - frOffset) * cellSize);
-        mTargetHzMinMax.setMax((cInd - frOffset) * cellSize);
-        hzScrollBarUI.setHighlightFrame(COLORS.SCROLLBAR_HIGHLIGHT, mTargetHzMinMax);
+//        mTargetHzMinMax.setMin((cInd - (frameSizeCells - 1) - frOffset) * cellSize);
+//        mTargetHzMinMax.setMax((cInd - frOffset) * cellSize);
+//        hzScrollBarUI.setHighlightFrame(COLORS.SCROLLBAR_HIGHLIGHT, mTargetHzMinMax);
+
+        final int targetHzPos = (cInd - nVisibleRows + 1) * cellSize;
+        hzScrollBarUI.setHzIndicator(COLORS.SCROLLBAR_INDIC, targetHzPos);
         getHorizontalScrollBar().setUI(hzScrollBarUI);
 
         isHighlighted = true;

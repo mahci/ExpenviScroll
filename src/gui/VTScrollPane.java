@@ -240,6 +240,10 @@ public class VTScrollPane extends JScrollPane implements MouseListener, MouseWhe
                 COLORS.CELL_HIGHLIGHT,
                 mTargetMinMax.getMin(),
                 mTargetMinMax.getMax());
+
+        final int targetPos = (targetLineInd - nVisibleLines) * lineH;
+        mScrollBarUI.setVtIndicator(COLORS.SCROLLBAR_INDIC, targetPos);
+
         getVerticalScrollBar().setUI(mScrollBarUI);
         Logs.d(TAG, "Indicator", nVisibleLines, frameSizeLines, frOffset, lineH,
                 mTargetMinMax.getMin(), mTargetMinMax.getMax());

@@ -1,7 +1,7 @@
 package gui;
 
-import tools.Logs;
 import tools.MinMax;
+import tools.Pair;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicScrollBarUI;
@@ -10,13 +10,16 @@ import java.awt.*;
 public class MyScrollBarUI extends BasicScrollBarUI {
     private String NAME = "MyScrollBarUI/";
 
-    private Color borderColor;
-    private Color trackColor;
-    private Color thumbColor;
-    private Color highlightColor;
-    private int offset; // dist. to the sides of thumb
+    private Color mBorderClr;
+    private Color mTrackClr;
+    private Color mThumbClr;
+    private Color mIndicatorClr;
+    private int mThumbSideOffset; // dist. to the sides of thumb
 
     private int highlightMin, highlightMax; // Min/max value of hightlight area
+
+    private int mVtIndicVal;
+    private int mHzIndicVal;
 
     /**
      * Create the scroll bar
@@ -26,10 +29,10 @@ public class MyScrollBarUI extends BasicScrollBarUI {
      * @param offs Offset
      */
     public MyScrollBarUI(Color borderClr, Color trackClr, Color thumbClr, int offs) {
-        borderColor = borderClr;
-        trackColor = trackClr;
-        thumbColor = thumbClr;
-        offset = offs;
+        mBorderClr = borderClr;
+        mTrackClr = trackClr;
+        mThumbClr = thumbClr;
+        mThumbSideOffset = offs;
     }
 
     /**
@@ -39,9 +42,19 @@ public class MyScrollBarUI extends BasicScrollBarUI {
      * @param hlMax Highlight max value
      */
     public void setIndicator(Color hlColor, int hlMin, int hlMax) {
-        highlightColor = hlColor;
+        mIndicatorClr = hlColor;
         highlightMin = hlMin;
         highlightMax = hlMax;
+    }
+
+    public void setVtIndicator(Color clr, int val) {
+        mIndicatorClr = clr;
+        mVtIndicVal = val;
+    }
+
+    public void setHzIndicator(Color clr, int val) {
+        mIndicatorClr = clr;
+        mHzIndicVal = val;
     }
 
     /**
@@ -50,7 +63,7 @@ public class MyScrollBarUI extends BasicScrollBarUI {
      * @param hlMinMax Min/max of the frame
      */
     public void setHighlightFrame(Color hlColor, MinMax hlMinMax) {
-        highlightColor = hlColor;
+        mIndicatorClr = hlColor;
         highlightMin = hlMinMax.getMin();
         highlightMax = hlMinMax.getMax();
     }
@@ -60,27 +73,31 @@ public class MyScrollBarUI extends BasicScrollBarUI {
         String TAG = NAME + "paintTrack";
 
         // Track
-        g.setColor(trackColor);
+        g.setColor(mTrackClr);
         g.fillRect(trackBounds.x, trackBounds.y, trackBounds.width, trackBounds.height);
         // Border
-        g.setColor(borderColor);
+        g.setColor(mBorderClr);
         g.drawRect(trackBounds.x, trackBounds.y, trackBounds.width, trackBounds.height);
 
         // Highlight the rectangle on the track (if there's highlight)
-        if (highlightColor != null) {
+        if (mIndicatorClr != null) {
             if (scrollbar.getOrientation() == HORIZONTAL) {
                 double ratio = trackBounds.width / (scrollbar.getMaximum() * 1.0);
                 int hlX = (int) (highlightMin * ratio);
                 int hlXMax = (int) (highlightMax * ratio);
                 int hlW = hlXMax - hlX + thumbRect.width;
-                g.setColor(highlightColor);
+                hlX = (int) (mHzIndicVal * ratio) + thumbRect.width - 1; // -1 for length 3
+                hlW = 3;
+                g.setColor(mIndicatorClr);
                 g.fillRect(hlX, trackBounds.y + 1, hlW, trackBounds.height);
             } else { // VERTICAL
                 double ratio = trackBounds.height / (scrollbar.getMaximum() * 1.0);
                 int hlYMin = (int) (highlightMin * ratio);
                 int hlYMax = (int) (highlightMax * ratio);
-                int hlH = hlYMax - hlYMin + thumbRect.height;
-                g.setColor(highlightColor);
+//                int hlH = hlYMax - hlYMin + thumbRect.height;
+                hlYMin = (int) (mVtIndicVal * ratio) + thumbRect.height - 1;
+                int hlH = 3;
+                g.setColor(mIndicatorClr);
                 g.fillRect(trackBounds.x + 1, hlYMin, trackBounds.width, hlH);
             }
 
@@ -91,7 +108,7 @@ public class MyScrollBarUI extends BasicScrollBarUI {
     protected void paintThumb(Graphics g, JComponent c, Rectangle thumbBounds) {
         Graphics2D graphics2D = (Graphics2D) g;
 
-        graphics2D.setColor(thumbColor);
+        graphics2D.setColor(mThumbClr);
         graphics2D.setRenderingHint(
                 RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON);
@@ -99,14 +116,14 @@ public class MyScrollBarUI extends BasicScrollBarUI {
         if (scrollbar.getOrientation() == HORIZONTAL) {
             graphics2D.fillRoundRect(
                     thumbBounds.x,
-                    thumbBounds.y + (offset / 2),
-                    thumbBounds.width, thumbBounds.height - offset,
+                    thumbBounds.y + (mThumbSideOffset / 2),
+                    thumbBounds.width, thumbBounds.height - mThumbSideOffset,
                     5, 5);
         } else { // VERTICAL
             graphics2D.fillRoundRect(
-                    thumbBounds.x + (offset / 2),
+                    thumbBounds.x + (mThumbSideOffset / 2),
                     thumbBounds.y,
-                    thumbBounds.width - offset, thumbBounds.height,
+                    thumbBounds.width - mThumbSideOffset, thumbBounds.height,
                     5, 5);
         }
 

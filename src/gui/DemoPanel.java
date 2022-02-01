@@ -167,7 +167,8 @@ public class DemoPanel extends JPanel {
                 .setText("lorem.txt")
                 .setScrollBar(VT_SCROLL_BAR_W_mm, VT_SCROLL_THUMB_H_mm)
                 .create();
-
+        Logs.d(TAG, mVTScrollPane.getLineHeight(), Utils.px2mm(mVTScrollPane.getLineHeight()));
+        Logs.d(TAG, mTDScrollPane.getCellSize(), Utils.px2mm(mTDScrollPane.getCellSize()));
     }
 
     /**

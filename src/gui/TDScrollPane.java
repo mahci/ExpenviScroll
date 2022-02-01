@@ -367,6 +367,14 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
     }
 
     /**
+     * Return cell size in px
+     * @return Cell size (W = H) in px
+     */
+    public int getCellSize() {
+        return cellSize;
+    }
+
+    /**
      * Set the InstantInfo
      * @param instInfo InstantInfo
      */

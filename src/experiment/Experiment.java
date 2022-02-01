@@ -97,7 +97,7 @@ public class Experiment {
     }
 
     //-- Variables
-    private int[] VT_DISTANCES = new int[]{50, 700}; // in lines/cells
+    private int[] VT_DISTANCES = new int[]{50, 200, 600}; // in lines/cells
     private int[] TD_DISTANCES = new int[]{50, 200};
     private int[] FRAMES = new int[]{3, 5}; // in lines/cells
     private List<TECHNIQUE> TECH_ORDERS = Arrays.asList(

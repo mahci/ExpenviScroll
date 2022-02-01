@@ -18,8 +18,8 @@ public class Logs {
         toLogList.add("DemoPanel");
 //        toLogList.add("Controller");
 //        toLogList.add("MyScrollBarUI");
-//        toLogList.add("VTScrollPane");
-//        toLogList.add("TDScrollPane");
+        toLogList.add("VTScrollPane");
+        toLogList.add("TDScrollPane");
 //        toLogList.add("Experiment");
 //        toLogList.add("Round");
 //        toLogList.add("TechConfigPanel");

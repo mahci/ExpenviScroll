@@ -19,8 +19,8 @@ public class Trial {
     private int frame;
 
     public String toLogString() {
-        return task.ordinal() + SP +
-                direction.ordinal() + SP +
+        return task + SP +
+                direction + SP +
                 vtDist + SP +
                 tdDist + SP +
                 frame;

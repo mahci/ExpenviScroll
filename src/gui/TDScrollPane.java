@@ -225,6 +225,8 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
 
     public TDScrollPane create() {
         getViewport().getView().addMouseListener(this);
+        addMouseWheelListener(this);
+        setWheelScrollingEnabled(true);
         return this;
     }
 
@@ -247,6 +249,7 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
      */
     public TDScrollPane highlight(Pair targetRCInd, int frameSizeCells) {
         String TAG = NAME + "highlight";
+        final int nVisibleRows = Experiment.TD_N_VIS_ROWS;
 
         final int rInd = targetRCInd.getFirst();
         final int cInd = targetRCInd.getSecond();
@@ -261,17 +264,15 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
         // Vertical
         mTargetVtMinMax.setMin((rInd - (frameSizeCells - 1) - frOffset) * cellSize);
         mTargetVtMinMax.setMax((rInd - frOffset) * cellSize);
-        vtScrollBarUI.setHighlightFrame(COLORS.SCROLLBAR_HIGHLIGHT, mTargetVtMinMax);
+//        vtScrollBarUI.setHighlightFrame(COLORS.SCROLLBAR_HIGHLIGHT, mTargetVtMinMax);
 
-        final int nVisibleRows = Experiment.TD_N_VIS_ROWS;
         final int targetVtPos = (rInd - nVisibleRows + 1) * cellSize;
-
         vtScrollBarUI.setVtIndicator(COLORS.SCROLLBAR_INDIC, targetVtPos);
         getVerticalScrollBar().setUI(vtScrollBarUI);
 
         // Horizontal
-//        mTargetHzMinMax.setMin((cInd - (frameSizeCells - 1) - frOffset) * cellSize);
-//        mTargetHzMinMax.setMax((cInd - frOffset) * cellSize);
+        mTargetHzMinMax.setMin((cInd - (frameSizeCells - 1) - frOffset) * cellSize);
+        mTargetHzMinMax.setMax((cInd - frOffset) * cellSize);
 //        hzScrollBarUI.setHighlightFrame(COLORS.SCROLLBAR_HIGHLIGHT, mTargetHzMinMax);
 
         final int targetHzPos = (cInd - nVisibleRows + 1) * cellSize;
@@ -356,6 +357,28 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
     }
 
     /**
+     * Check whether a vt value is inside the vertical fram
+     * @param vtScrollVal Vertical value
+     * @return True/false
+     */
+    public boolean isVtInsideFrame(int vtScrollVal) {
+        final String TAG = NAME + "isVtInsideFrame";
+        Logs.d(TAG, mTargetVtMinMax, vtScrollVal);
+        return mTargetVtMinMax.isWithin(vtScrollVal);
+    }
+
+    /**
+     * Check whether a hz value is inside the vertical fram
+     * @param hzScrollVal Horizontal value
+     * @return True/false
+     */
+    public boolean isHzInsideFrame(int hzScrollVal) {
+        final String TAG = NAME + "isHzInsideFrame";
+        Logs.d(TAG, mTargetHzMinMax, hzScrollVal);
+        return mTargetHzMinMax.isWithin(hzScrollVal);
+    }
+
+    /**
      * Check if the vt,hz scroll values are inside the frames
      * @param vtScrollVal VT scroll value
      * @param hzScrollVal HZ scroll value
@@ -363,7 +386,7 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
      */
     public boolean isInsideFrames(int vtScrollVal, int hzScrollVal) {
         final String TAG = NAME + "isInsideFrames";
-        return mTargetVtMinMax.isWithin(vtScrollVal) && mTargetHzMinMax.isWithin(hzScrollVal);
+        return isVtInsideFrame(vtScrollVal) && isHzInsideFrame(hzScrollVal);
     }
 
     /**
@@ -387,6 +410,7 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
      * @return Logger.InstantInfo
      */
     public Logger.InstantInfo getInstantInfo() {
+        mScrolled = false;
         return mInstantInfo;
     }
 
@@ -423,7 +447,9 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
 
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
+        Logs.d(TDScrollPane.NAME, mScrolled);
         if (isWheelScrollingEnabled() && mCursorIn) {
+            Logs.d(TDScrollPane.NAME, mScrolled);
             // Log
             if (!mScrolled) {
                 mInstantInfo.firstScroll = Utils.nowInMillis();

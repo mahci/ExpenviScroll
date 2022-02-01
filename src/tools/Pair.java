@@ -15,4 +15,8 @@ public class Pair {
         first = f;
         second = s;
     }
+
+    public boolean areBoth(int value) {
+        return (first == value) && (second == value);
+    }
 }

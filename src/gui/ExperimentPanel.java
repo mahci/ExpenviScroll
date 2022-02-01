@@ -146,8 +146,9 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         public void actionPerformed(ActionEvent e) {
             final String TAG = ExperimentPanel.NAME + "mEndTrialAction";
 
-            final boolean trialResult = checkSuccess();
-
+            final Pair trialResult = checkHit();
+            Logs.d(TAG, trialResult);
+            Logs.d(TAG, checkSuccess());
             // Log InstantInfo
             Logger.InstantInfo scrollInstInfo;
             if (mTrial.getTask() == TASK.VERTICAL) scrollInstInfo = mVTScrollPane.getInstantInfo();
@@ -156,7 +157,12 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
             Logger.get().logInstantInfo(mGenInfo, scrollInstInfo);
 
             // Log TrialInfo
-            mTrialInfo.result = trialResult ? 1 : 0;
+            mTrialInfo.scrollTime = (int) (scrollInstInfo.lastScroll - scrollInstInfo.firstScroll);
+            mTrialInfo.trialTime = (int) (Utils.nowInMillis() - scrollInstInfo.firstScroll);
+            mTrialInfo.finishTime = (int) (Utils.nowInMillis() - scrollInstInfo.lastScroll);
+            Logs.d(TAG, Utils.nowInMillis(), scrollInstInfo.firstScroll, scrollInstInfo.lastScroll);
+            mTrialInfo.vtResult = trialResult.getFirst();
+            mTrialInfo.hzResult = trialResult.getSecond();
             Logger.get().logTrialInfo(mGenInfo, mTrialInfo);
 
             // Record Trial time
@@ -164,7 +170,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
             mTimeInfo.trialTime = Utils.nowInMillis() - mTrialStTime;
 
             // Was the trial a success or a fail?
-            if (checkSuccess()){
+            if (trialResult.areBoth(1)){
                 playSound(HIT_SOUND);
             }
             else { // Miss
@@ -221,6 +227,8 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
 
                 endExp();
             }
+
+            Logs.d(TAG, "-------------------------------------------------------------");
         }
     };
 
@@ -539,8 +547,6 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
 
         revalidate();
         repaint();
-
-        Logs.d(TAG, "----------------------------------------");
     }
 
     /**
@@ -562,6 +568,27 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         }
 
         return result;
+    }
+
+    /**
+     * Check if a trial was a hit (1) or a miss (0)
+     * @return Pair of int for each dimension
+     */
+    private Pair checkHit() {
+        int vtResult = 0; int hzResult = 0;
+
+        if (mTrial.getTask() == TASK.VERTICAL) {
+            final int vtScrollVal = mVTScrollPane.getVerticalScrollBar().getValue();
+            vtResult = (mVTScrollPane.isInsideFrames(vtScrollVal)) ? 1 : 0;
+            hzResult = 1;
+        } else {
+            final int vtScrollVal = mTDScrollPane.getVerticalScrollBar().getValue();
+            final int hzScrollVal = mTDScrollPane.getHorizontalScrollBar().getValue();
+            vtResult = (mTDScrollPane.isVtInsideFrame(vtScrollVal)) ? 1 : 0;
+            hzResult = (mTDScrollPane.isHzInsideFrame(hzScrollVal)) ? 1 : 0;
+        }
+
+        return new Pair(vtResult, hzResult);
     }
 
     /**

@@ -239,16 +239,22 @@ public class Logger {
      * All times in ms
      */
     public static class TrialInfo {
-        public int searchTime; // From the first scroll until the target appeared the last time
-        public int fineTuneTime; // From the last appearance of target to the last scroll
-        public int scrollTime; // searchTime + fineTuneTime
-        public int result; // 1 (Hit) or 0(Miss)
+        public int searchTime;      // From the first scroll until the last appearance of the target
+        public int fineTuneTime;    // From the last appearance of target to the last scroll
+        public int scrollTime;      // SearchTime + fineTuneTime (first scroll -> last scroll)
+        public int trialTime;       // First scroll -> SPACE
+        public int finishTime;      // Last scroll -> SPACE
+        public int vtResult;        // Vertical: 1 (Hit) or 0 (Miss)
+        public int hzResult;        // Horizontal: 1 (Hit) or 0 (Miss)
 
         public static String getLogHeader() {
             return "search_time" + SP +
                     "fine_tune_time" + SP +
                     "scroll_time" + SP +
-                    "result";
+                    "trial_time" + SP +
+                    "finish_time" + SP +
+                    "vt_result" + SP +
+                    "hz_result";
         }
 
         @Override
@@ -256,7 +262,10 @@ public class Logger {
             return searchTime + SP +
                     fineTuneTime + SP +
                     scrollTime + SP +
-                    result;
+                    trialTime + SP +
+                    finishTime + SP +
+                    vtResult + SP +
+                    hzResult;
         }
     }
 

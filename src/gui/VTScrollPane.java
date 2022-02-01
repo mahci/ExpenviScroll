@@ -406,6 +406,7 @@ public class VTScrollPane extends JScrollPane implements MouseListener, MouseWhe
      * @return Logger.InstantInfo
      */
     public Logger.InstantInfo getInstantInfo() {
+        mScrolled = false;
         return mInstantInfo;
     }
 
@@ -442,7 +443,9 @@ public class VTScrollPane extends JScrollPane implements MouseListener, MouseWhe
 
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
+        Logs.d(VTScrollPane.NAME, mScrolled);
         if (isWheelScrollingEnabled() && mCursorIn) {
+            Logs.d(VTScrollPane.NAME, mScrolled);
             // Log
             if (!mScrolled) {
                 mInstantInfo.firstScroll = Utils.nowInMillis();

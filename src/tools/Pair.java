@@ -19,4 +19,26 @@ public class Pair {
     public boolean areBoth(int value) {
         return (first == value) && (second == value);
     }
+
+    /**
+     * Basically AND
+     * @return
+     */
+    public int fXs() {
+        return first * second;
+    }
+
+    /**
+     * Increase first
+     */
+    public void incF() {
+        first++;
+    }
+
+    /**
+     * Increase first
+     */
+    public void incS() {
+        second++;
+    }
 }

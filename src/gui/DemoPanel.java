@@ -9,6 +9,7 @@ import java.applet.Applet;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +34,7 @@ public class DemoPanel extends JPanel {
     private KeyStroke KS_SPACE;
     private KeyStroke KS_ENTER;
     private KeyStroke KS_SLASH;
+    private KeyStroke KS_SHIFT;
 
     // Experiment
     private Experiment mExperiment;
@@ -55,7 +57,7 @@ public class DemoPanel extends JPanel {
     private Point mPanePos = new Point();
     private Point mLasPanePos = new Point();
     private Dimension mPaneDim = new Dimension();
-    private boolean isVT = true;
+    private boolean isVT = false;
 
     private final Action END_DEMO_ACTION = new AbstractAction() {
         @Override
@@ -69,7 +71,7 @@ public class DemoPanel extends JPanel {
         public void actionPerformed(ActionEvent e) {
 
             // Was the trial a success or a fail?
-            if (checkSuccess()){
+            if (checkHit().fXs() == 1){
                 playSound(HIT_SOUND);
             }
             else { // Miss
@@ -94,6 +96,13 @@ public class DemoPanel extends JPanel {
             Experiment.setActiveTechnique(mTechs.get(mTechInd));
             if (mVTScrollPane != null) mVTScrollPane.changeTechnique(mTechs.get(mTechInd));
             if (mTDScrollPane != null) mTDScrollPane.changeTechnique(mTechs.get(mTechInd));
+        }
+    };
+
+    private final Action SHIFT_KEY_ACTION = new AbstractAction() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Logs.d(DemoPanel.NAME, "Shift key released");
         }
     };
 
@@ -139,6 +148,7 @@ public class DemoPanel extends JPanel {
                 // Map the actions
                 getActionMap().put("SPACE", RAND_TRIAL_ACTION);
                 getActionMap().put("SLASH", SWITCH_TECH_ACTION);
+                getActionMap().put("SHIFT", SHIFT_KEY_ACTION);
 
                 // Sync the the first technique
                 Experiment.setActiveTechnique(mTechs.get(mTechInd));
@@ -308,24 +318,16 @@ public class DemoPanel extends JPanel {
     }
 
     /**
-     * Check whehter the trial was a hit
-     * @return True (Hit) / false (Miss)
+     * Check if each axes of a trial was a hit (1) or a miss (0)
+     * Vertical -> hzResult = 1
+     * @return Pair of int for each dimension
      */
-    private boolean checkSuccess() {
-        boolean result = false;
-        switch (mTrial.getTask()) {
-            case VERTICAL -> {
-                final int vtScrollVal = mVTScrollPane.getVerticalScrollBar().getValue();
-                result = mVTScrollPane.isInsideFrames(vtScrollVal);
-            }
-            case TWO_DIM -> {
-                final int vtScrollVal = mTDScrollPane.getVerticalScrollBar().getValue();
-                final int hzScrollVal = mTDScrollPane.getHorizontalScrollBar().getValue();
-                result = mTDScrollPane.isInsideFrames(vtScrollVal, hzScrollVal);
-            }
+    private Pair checkHit() {
+        if (mTrial.getTask() == TASK.VERTICAL) {
+            return new Pair(mVTScrollPane.isTargetInFrame(), 1);
+        } else {
+            return mTDScrollPane.isTargetInFrames();
         }
-
-        return result;
     }
 
     /**
@@ -461,10 +463,14 @@ public class DemoPanel extends JPanel {
         KS_SPACE = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0, true);
         KS_ENTER = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true);
         KS_SLASH = KeyStroke.getKeyStroke(KeyEvent.VK_SLASH, 0, true);
+        KS_SHIFT = KeyStroke.getKeyStroke(KeyEvent.VK_SHIFT, 0, true);
 
         getInputMap().put(KS_SPACE, "SPACE");
         getInputMap().put(KS_ENTER, "ENTER");
         getInputMap().put(KS_SLASH, "SLASH");
+        getInputMap().put(KS_SHIFT, "SHIFT");
+
+
     }
 
 

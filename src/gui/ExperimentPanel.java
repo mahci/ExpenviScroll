@@ -24,6 +24,7 @@ import static tools.Consts.SOUNDS.HIT_SOUND;
 import static tools.Consts.SOUNDS.MISS_SOUND;
 import static tools.Consts.STRINGS.END_EXPERIMENT_MESSAGE;
 import static tools.Consts.STRINGS.END_TECH_MESSAGES;
+import static control.Logger.*;
 
 public class ExperimentPanel extends JLayeredPane implements MouseMotionListener {
 
@@ -38,6 +39,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
     private KeyStroke KS_SPACE;
     private KeyStroke KS_SLASH;
     private KeyStroke KS_ENTER;
+    private KeyStroke KS_SHIFT;
     private KeyStroke KS_Q;
     private KeyStroke KS_A;
     private KeyStroke KS_W;
@@ -73,9 +75,8 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
     private JLabel mShortBreakLabel;
 
     // Logging
-    private Logger.GeneralInfo mGenInfo = new Logger.GeneralInfo();
-    private Logger.TrialInfo mTrialInfo = new Logger.TrialInfo();
-    private Logger.TimeInfo mTimeInfo = new Logger.TimeInfo();
+    private GeneralInfo mGenInfo;
+    private TimeInfo mTimeInfo = new Logger.TimeInfo();
     private long mExpStTime;
     private long mTrialStTime;
     private long mBlockStTime;
@@ -122,21 +123,23 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
                     mBlockInd + 1, mTrialInd + 1)); // Block/trial *num*
             Server.get().send(new Memo(STRINGS.LOG, STRINGS.TSK, mTrial.getTask()));
 
-            // Log
-            mGenInfo.tech = mTechs.get(mTechInd);
-            mGenInfo.blockNum = mBlockInd + 1;
-            mGenInfo.trialNum = mTrialInd + 1;
-            mGenInfo.trial = mTrial;
+            // Set GenInfo
+            mGenInfo = new GeneralInfo(
+                    mTechs.get(mTechInd),
+                    mBlockInd + 1,
+                    mTrialInd + 1,
+                    mTrial);
 
+            // Set start times
             mExpStTime = Utils.nowInMillis();
             mBlockStTime = Utils.nowInMillis();
 
-            // Show trials
-            remove(0);
-            showTrial();
-
             // Change the SPACE action
             getActionMap().put("SPACE", END_TRIAL);
+
+            // Show trial
+            remove(0);
+            showTrial();
         }
     };
 
@@ -147,39 +150,49 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
             final String TAG = ExperimentPanel.NAME + "mEndTrialAction";
 
             final Pair trialResult = checkHit();
-            Logs.d(TAG, trialResult);
-            Logs.d(TAG, checkSuccess());
+
+            // Get log info from panes
+            InstantInfo instInfo = new InstantInfo();
+            int nTargetAppear;
+            if (mTrial.getTask() == TASK.VERTICAL) {
+                instInfo = mVTScrollPane.getInstantInfo();
+                nTargetAppear = mVTScrollPane.getNTargetAppear();
+            } else {
+                instInfo = mTDScrollPane.getInstantInfo();
+                nTargetAppear = mTDScrollPane.getNTargetAppear();
+            }
+
             // Log InstantInfo
-            Logger.InstantInfo scrollInstInfo;
-            if (mTrial.getTask() == TASK.VERTICAL) scrollInstInfo = mVTScrollPane.getInstantInfo();
-            else scrollInstInfo = mTDScrollPane.getInstantInfo();
-            scrollInstInfo.trialEnd = Utils.nowInMillis();
-            Logger.get().logInstantInfo(mGenInfo, scrollInstInfo);
+            instInfo.trialEnd = Utils.nowInMillis();
+            Logger.get().logInstantInfo(mGenInfo, instInfo);
 
             // Log TrialInfo
-            mTrialInfo.scrollTime = (int) (scrollInstInfo.lastScroll - scrollInstInfo.firstScroll);
-            mTrialInfo.trialTime = (int) (Utils.nowInMillis() - scrollInstInfo.firstScroll);
-            mTrialInfo.finishTime = (int) (Utils.nowInMillis() - scrollInstInfo.lastScroll);
-            Logs.d(TAG, Utils.nowInMillis(), scrollInstInfo.firstScroll, scrollInstInfo.lastScroll);
-            mTrialInfo.vtResult = trialResult.getFirst();
-            mTrialInfo.hzResult = trialResult.getSecond();
-            Logger.get().logTrialInfo(mGenInfo, mTrialInfo);
+            TrialInfo trialInfo = new TrialInfo(
+                    (int) (instInfo.targetLastAppear - instInfo.firstScroll),
+                    (int) (instInfo.lastScroll - instInfo.targetLastAppear),
+                    (int) (instInfo.lastScroll - instInfo.firstScroll),
+                    (int) (Utils.nowInMillis() - instInfo.firstScroll),
+                    (int) (Utils.nowInMillis() - instInfo.lastScroll),
+                    nTargetAppear,
+                    trialResult.getFirst(),
+                    trialResult.getSecond(),
+                    trialResult.fXs());
+            Logger.get().logTrialInfo(mGenInfo, trialInfo);
 
             // Record Trial time
             mTimeInfo = new Logger.TimeInfo();
             mTimeInfo.trialTime = Utils.nowInMillis() - mTrialStTime;
 
             // Was the trial a success or a fail?
-            if (trialResult.areBoth(1)){
+            if (trialResult.fXs() == 1) {
                 playSound(HIT_SOUND);
             }
             else { // Miss
                 playSound(MISS_SOUND);
-
-                // Shuffle the trial into the rest of trials
-                mBlock.dupeShuffleTrial(mTrialInd);
+                mBlock.dupeShuffleTrial(mTrialInd); // Shuffle the trial into the rest of trials
             }
 
+            // Moving forward...
             remove(0);
 
             if (mTrialInd < mBlock.getNTrials() - 1) { // More trials in the block
@@ -227,6 +240,10 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
 
                 endExp();
             }
+
+            // Reset the panes values
+            mTDScrollPane.reset();
+            mVTScrollPane.reset();
 
             Logs.d(TAG, "-------------------------------------------------------------");
         }
@@ -307,8 +324,8 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
     private final Action ENABLE_SCROLLING = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
-            hzScrollPane.setWheelScrollingEnabled(enabled);
-            Logs.infoAll(NAME, "Scrolling enabled");
+//            hzScrollPane.setWheelScrollingEnabled(enabled);
+            Logs.d(ExperimentPanel.NAME, "ENABLE_SCROLLING");
         }
     };
 
@@ -360,7 +377,8 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         String TAG = NAME;
         setLayout(null);
 
-        // Set initial key actions
+        // Set mouse listener and key bindings
+        addMouseMotionListener(this);
         mapKeys();
         getActionMap().put("SPACE", START_EXP_ACTION);
         getActionMap().put("SLASH", SWITCH_TECH_ACTION);
@@ -435,7 +453,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
      */
     private void showTrial() {
         String TAG = NAME + "showTrial";
-        Logs.d(TAG, mTrial);
+
         // Start logging
         final Logger.InstantInfo instantInfo = new Logger.InstantInfo();
         instantInfo.trialShow = Utils.nowInMillis();
@@ -451,7 +469,8 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         // Show the trial
         switch (mTrial.getTask()) {
             case VERTICAL -> {
-                // Pass InstantInfo to VT to continue logging
+                // Pass GeneralInfo and InstantInfo for logging
+                mVTScrollPane.setGenInfo(mGenInfo);
                 mVTScrollPane.setInstantInfo(instantInfo);
 
                 // Position
@@ -484,7 +503,8 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
 
             // Two-Dim
             case TWO_DIM -> {
-                // Pass InstantInfo to 2D to continue logging
+                // Pass GeneralInfo and InstantInfo for logging
+                mTDScrollPane.setGenInfo(mGenInfo);
                 mTDScrollPane.setInstantInfo(instantInfo);
 
                 // Position
@@ -550,45 +570,24 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
     }
 
     /**
-     * Check whehter the trial was a hit
-     * @return True (Hit) / false (Miss)
-     */
-    private boolean checkSuccess() {
-        boolean result = false;
-        switch (mTrial.getTask()) {
-        case VERTICAL -> {
-            final int vtScrollVal = mVTScrollPane.getVerticalScrollBar().getValue();
-            result = mVTScrollPane.isInsideFrames(vtScrollVal);
-        }
-        case TWO_DIM -> {
-            final int vtScrollVal = mTDScrollPane.getVerticalScrollBar().getValue();
-            final int hzScrollVal = mTDScrollPane.getHorizontalScrollBar().getValue();
-            result = mTDScrollPane.isInsideFrames(vtScrollVal, hzScrollVal);
-        }
-        }
-
-        return result;
-    }
-
-    /**
-     * Check if a trial was a hit (1) or a miss (0)
+     * Check if each axes of a trial was a hit (1) or a miss (0)
+     * Vertical -> hzResult = 1
      * @return Pair of int for each dimension
      */
     private Pair checkHit() {
-        int vtResult = 0; int hzResult = 0;
-
         if (mTrial.getTask() == TASK.VERTICAL) {
-            final int vtScrollVal = mVTScrollPane.getVerticalScrollBar().getValue();
-            vtResult = (mVTScrollPane.isInsideFrames(vtScrollVal)) ? 1 : 0;
-            hzResult = 1;
+            return new Pair(mVTScrollPane.isTargetInFrame(), 1);
         } else {
-            final int vtScrollVal = mTDScrollPane.getVerticalScrollBar().getValue();
-            final int hzScrollVal = mTDScrollPane.getHorizontalScrollBar().getValue();
-            vtResult = (mTDScrollPane.isVtInsideFrame(vtScrollVal)) ? 1 : 0;
-            hzResult = (mTDScrollPane.isHzInsideFrame(hzScrollVal)) ? 1 : 0;
+            return mTDScrollPane.isTargetInFrames();
         }
+    }
 
-        return new Pair(vtResult, hzResult);
+    /**
+     * Get the active pane
+     * @return mVTScrollPane or mTDScrollPane
+     */
+    private JScrollPane getActivePane() {
+        return (mTrial.getTask() == TASK.VERTICAL) ? mVTScrollPane : mTDScrollPane;
     }
 
     /**
@@ -989,6 +988,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         KS_SPACE = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0, true);
         KS_SLASH = KeyStroke.getKeyStroke(KeyEvent.VK_SLASH, 0, true);
         KS_ENTER = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true);
+
         KS_Q = KeyStroke.getKeyStroke(KeyEvent.VK_Q, 0, true);
         KS_A = KeyStroke.getKeyStroke(KeyEvent.VK_A, 0, true);
         KS_W = KeyStroke.getKeyStroke(KeyEvent.VK_W, 0, true);
@@ -1001,6 +1001,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         getInputMap().put(KS_SPACE, "SPACE");
         getInputMap().put(KS_SLASH, "SLASH");
         getInputMap().put(KS_ENTER, "ENTER");
+        getInputMap().put(KS_SHIFT, "SHIFT");
         getInputMap().put(KS_Q, "Q");
         getInputMap().put(KS_A, "A");
         getInputMap().put(KS_W, "W");
@@ -1019,6 +1020,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
 
     @Override
     public void mouseMoved(MouseEvent e) {
+        // Homing time
         final long homingStTime = Logger.get().getHomingStTime();
         if (homingStTime != 0) { // Mocing the mouse after the break
             mTimeInfo.homingTime = Utils.nowInMillis() - homingStTime;

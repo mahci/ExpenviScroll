@@ -165,6 +165,15 @@ public class Utils {
     }
 
     /**
+     * True -> 1, False -> 0
+     * @param b Boolean
+     * @return Int
+     */
+    public static int bool2Int(boolean b) {
+        return b ? 1 : 0;
+    }
+
+    /**
      * Get the current time up to the seconds
      * @return LocalTime
      */

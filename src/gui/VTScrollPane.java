@@ -23,6 +23,7 @@ import java.util.ArrayList;
 
 import static tools.Consts.*;
 import static experiment.Experiment.*;
+import static control.Logger.*;
 
 public class VTScrollPane extends JScrollPane implements MouseListener, MouseWheelListener {
     private final static String NAME = "VTScrollPane/";
@@ -33,20 +34,28 @@ public class VTScrollPane extends JScrollPane implements MouseListener, MouseWhe
 
     private final Dimension mDim; // in px
     private ArrayList<Integer> mLCharCountInLines = new ArrayList<>();
+    private int mNumLines;
 
+    // Elements
     private JTextPane mLinesTextPane;
     private JTextPane mBodyTextPane;
     private MyScrollBarUI mScrollBarUI;
 
+    // Target
     private MinMax mTargetMinMax = new MinMax();
-    private int mNumLines;
+    private MinMax mTargetFullVisScVals = new MinMax(); // Vt scroll values for target fully visible
+    private MinMax mTargetPartVisScVals = new MinMax(); // Vt scroll values for target partially visible
 
+    // Status
     private boolean mCursorIn;
+    private boolean mTargetVisible;
+    private int mLastScrollVal;  // Keep the last scroll value {to calculate the diff}
 
     // For logging
-    private Logger.InstantInfo mInstantInfo = new Logger.InstantInfo();
-    private boolean mEntered;
-    private boolean mScrolled;
+    private GeneralInfo mGenInfo = new GeneralInfo();
+    private InstantInfo mInstantInfo = new InstantInfo();
+    private ScrollInfo mScrollInfo = new ScrollInfo();
+    private int mNTargetAppear;
 
     //-------------------------------------------------------------------------------------------------
 
@@ -247,6 +256,10 @@ public class VTScrollPane extends JScrollPane implements MouseListener, MouseWhe
         getVerticalScrollBar().setUI(mScrollBarUI);
         Logs.d(TAG, "Indicator", nVisibleLines, frameSizeLines, frOffset, lineH,
                 mTargetMinMax.getMin(), mTargetMinMax.getMax());
+
+        //-- Set the scroll values once
+        mTargetFullVisScVals.setMin((targetLineInd - nVisibleLines + 1) * lineH);
+        mTargetFullVisScVals.setMax(targetLineInd * lineH);
     }
 
     /**
@@ -255,8 +268,8 @@ public class VTScrollPane extends JScrollPane implements MouseListener, MouseWhe
      */
     public void scroll(int scrollAmt) {
         final String TAG = NAME + "scroll";
+
         // Scroll only if cursor is inside
-        Logs.d(TAG, mCursorIn);
         if (mCursorIn) {
             Dimension vpDim = getViewport().getView().getSize(); // Can be also Preferred
             int extent = getVerticalScrollBar().getModel().getExtent();
@@ -270,12 +283,7 @@ public class VTScrollPane extends JScrollPane implements MouseListener, MouseWhe
             repaint();
 
             // Log
-            if (!mScrolled) {
-                mInstantInfo.firstScroll = Utils.nowInMillis();
-                mScrolled = true;
-            } else {
-                mInstantInfo.lastScroll = Utils.nowInMillis();
-            }
+            logScroll();
         }
 
     }
@@ -371,13 +379,30 @@ public class VTScrollPane extends JScrollPane implements MouseListener, MouseWhe
     }
 
     /**
-     * Check if a value is inside the frame
-     * @param scrollVal Scroll value
+     * Check if the Target is inside the frame
+     * @return 1: inside, 0: outside
+     */
+    public int isTargetInFrame() {
+        final int vtScrollVal = getVerticalScrollBar().getValue();
+        return mTargetMinMax.isWithin(vtScrollVal) ? 1 : 0;
+    }
+
+    /**
+     * Check if the target is visible (has entered the viewport)
+     * @param fully Check for fully visible (true) or partially (false)
      * @return True/false
      */
-    public boolean isInsideFrames(int scrollVal) {
-        final String TAG = NAME + "isInsideFrames";
-        return mTargetMinMax.isWithin(scrollVal);
+    public boolean isTargetVisible(boolean fully) {
+        String TAG = NAME + "isTargetVisible";
+
+        final int vtScrollVal = getVerticalScrollBar().getValue();
+
+        if (fully) {
+            return mTargetFullVisScVals.isWithin(vtScrollVal);
+        } else {
+            return mTargetPartVisScVals.isWithin(vtScrollVal);
+        }
+
     }
 
     /**
@@ -397,6 +422,18 @@ public class VTScrollPane extends JScrollPane implements MouseListener, MouseWhe
         return lineInd;
     }
 
+    /**
+     * Set the GeneralInfo
+     * @param genInfo GeneralInfo
+     */
+    public void setGenInfo(GeneralInfo genInfo) {
+        mGenInfo = genInfo;
+    }
+
+    /**
+     * Set the InstantInfo (to continue filling)
+     * @param instInfo Logger.InstantInfo
+     */
     public void setInstantInfo(Logger.InstantInfo instInfo) {
         mInstantInfo = instInfo;
     }
@@ -406,8 +443,49 @@ public class VTScrollPane extends JScrollPane implements MouseListener, MouseWhe
      * @return Logger.InstantInfo
      */
     public Logger.InstantInfo getInstantInfo() {
-        mScrolled = false;
         return mInstantInfo;
+    }
+
+    /**
+     * Get the number of Target appearances
+     * @return number of Target appearances
+     */
+    public int getNTargetAppear() {
+        return mNTargetAppear;
+    }
+
+    /**
+     * Log scrolling data (so not to repeat it in mouse/scroll)
+     */
+    private void logScroll() {
+        final String TAG = NAME + "logScroll";
+
+        final long nowMillis = Utils.nowInMillis();
+
+        if (mInstantInfo.firstScroll == 0) mInstantInfo.firstScroll = nowMillis;
+        else mInstantInfo.lastScroll = nowMillis;
+
+        if (isTargetVisible(false)) { // Target becomes visible
+            if (!mTargetVisible) { // Target wasn't already visible
+                mNTargetAppear++;
+
+                if (mInstantInfo.targetFirstAppear == 0) mInstantInfo.targetFirstAppear = nowMillis;
+                else mInstantInfo.targetLastAppear = nowMillis;
+
+                mTargetVisible = true;
+            }
+        } else {
+            mTargetVisible = false;
+        }
+    }
+
+    /**
+     * Reset all the values saved for logging
+     */
+    public void reset() {
+        mInstantInfo = new Logger.InstantInfo();
+        mScrollInfo = new ScrollInfo();
+        mNTargetAppear = 0;
     }
 
     // MouseListener ========================================================================================
@@ -427,12 +505,8 @@ public class VTScrollPane extends JScrollPane implements MouseListener, MouseWhe
     @Override
     public void mouseEntered(MouseEvent e) {
         mCursorIn = true;
-        if (!mEntered) {
-            mInstantInfo.firstEntry = Utils.nowInMillis();
-            mEntered = true;
-        } else {
-            mInstantInfo.lastEntry = Utils.nowInMillis();
-        }
+        if (mInstantInfo.firstEntry == 0) mInstantInfo.firstEntry = Utils.nowInMillis();
+        else mInstantInfo.lastEntry = Utils.nowInMillis();
 
     }
 
@@ -443,15 +517,22 @@ public class VTScrollPane extends JScrollPane implements MouseListener, MouseWhe
 
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
-        Logs.d(VTScrollPane.NAME, mScrolled);
+
         if (isWheelScrollingEnabled() && mCursorIn) {
-            Logs.d(VTScrollPane.NAME, mScrolled);
-            // Log
-            if (!mScrolled) {
-                mInstantInfo.firstScroll = Utils.nowInMillis();
-                mScrolled = true;
-            } else {
-                mInstantInfo.lastScroll = Utils.nowInMillis();
+            logScroll();
+
+            // If during experiment
+            if (mGenInfo.trial != null) {
+                mScrollInfo.abX = e.getXOnScreen();
+                mScrollInfo.abY = e.getYOnScreen();
+                mScrollInfo.wheelRot = e.getPreciseWheelRotation();
+                mScrollInfo.vtAmt = getVerticalScrollBar().getValue() - mLastScrollVal;
+                mScrollInfo.hzAmt = 0;
+                mScrollInfo.moment = Utils.nowInMillis();
+
+                Logger.get().logScrollInfo(mGenInfo, mScrollInfo);
+
+                mLastScrollVal = getVerticalScrollBar().getValue();
             }
         }
     }

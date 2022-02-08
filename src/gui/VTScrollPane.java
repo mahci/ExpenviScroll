@@ -465,7 +465,7 @@ public class VTScrollPane extends JScrollPane implements MouseListener, MouseWhe
         if (mInstantInfo.firstScroll == 0) mInstantInfo.firstScroll = nowMillis;
         else mInstantInfo.lastScroll = nowMillis;
 
-        if (isTargetVisible(false)) { // Target becomes visible
+        if (isTargetVisible(true)) { // Target becomes visible
             if (!mTargetVisible) { // Target wasn't already visible
                 mNTargetAppear++;
 
@@ -476,6 +476,19 @@ public class VTScrollPane extends JScrollPane implements MouseListener, MouseWhe
             }
         } else {
             mTargetVisible = false;
+        }
+
+        // Only during the experiment
+        if (mGenInfo.trial != null) {
+            mScrollInfo.abX = MouseInfo.getPointerInfo().getLocation().x;
+            mScrollInfo.abY = MouseInfo.getPointerInfo().getLocation().y;
+            mScrollInfo.vtAmt = getVerticalScrollBar().getValue() - mLastScrollVal;
+            mScrollInfo.hzAmt = 0;
+            mScrollInfo.moment = Utils.nowInMillis();
+
+            Logger.get().logScrollInfo(mGenInfo, mScrollInfo);
+
+            mLastScrollVal = getVerticalScrollBar().getValue();
         }
     }
 

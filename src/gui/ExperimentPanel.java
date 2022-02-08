@@ -77,11 +77,13 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
     // Logging
     private GeneralInfo mGenInfo;
     private TimeInfo mTimeInfo = new Logger.TimeInfo();
+    private MoveInfo mMoveInfo = new Logger.MoveInfo();
     private long mExpStTime;
     private long mTrialStTime;
     private long mBlockStTime;
     private long mTechTaskStTime;
     private long mTechStTime;
+
 
     private boolean isPaneSet;
     private int targetColNum, randColNum;
@@ -118,10 +120,12 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
             mTechLabel.setText("Technique: " + mTechs.get(mTechInd));
 
             // Sync the info to the Moose
-            Server.get().send(new Memo(STRINGS.LOG, STRINGS.PID, mExperiment.getPId()));
-            Server.get().send(new Memo(STRINGS.LOG, STRINGS.BLOCK_TRIAL,
+            final String expId = mExperiment.getPId() + "_" + Utils.nowDateTime();
+            Server.get().send(new Memo(STRINGS.LOG, STRINGS.EXP_ID, expId, 0));
+            Server.get().send(new Memo(STRINGS.LOG, STRINGS.TECH + "_" + STRINGS.TSK,
+                    mTechs.get(mTechInd).ordinal(), mTrial.getTask().ordinal()));
+            Server.get().send(new Memo(STRINGS.LOG, STRINGS.BLOCK + "_" + STRINGS.TRIAL,
                     mBlockInd + 1, mTrialInd + 1)); // Block/trial *num*
-            Server.get().send(new Memo(STRINGS.LOG, STRINGS.TSK, mTrial.getTask()));
 
             // Set GenInfo
             mGenInfo = new GeneralInfo(
@@ -360,7 +364,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
     };
 
 
-    private ConfigAction mNextTechnique = new ConfigAction(STRINGS.TECHNIQUE, true);
+    private ConfigAction mNextTechnique = new ConfigAction(STRINGS.TECH, true);
     private ConfigAction mIncSensitivity = new ConfigAction(STRINGS.SENSITIVITY, true);
     private ConfigAction mDecSensitivity = new ConfigAction(STRINGS.SENSITIVITY, false);
     private ConfigAction mIncGain = new ConfigAction(STRINGS.GAIN, true);
@@ -703,7 +707,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
      */
     public void syncStatus() {
         Memo techMemo = new Memo(
-                STRINGS.LOG, STRINGS.TECHNIQUE,
+                STRINGS.LOG, STRINGS.TECH,
                 mTechs.get(mTechInd), mTechTaskInd);
         Server.get().send(techMemo);
     }
@@ -716,10 +720,13 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
 
         mTrialInd++;
         mTrial = mBlock.getTrial(mTrialInd);
+
+        // Set general info
+        mGenInfo.trialNum = mTrialInd + 1;
         mGenInfo.trial = mTrial;
 
         // Sync the info to the Moose
-        Server.get().send(new Memo(STRINGS.LOG, STRINGS.BLOCK_TRIAL,
+        Server.get().send(new Memo(STRINGS.LOG, STRINGS.BLOCK + "_" + STRINGS.TRIAL,
                 mBlockInd + 1, mTrialInd + 1)); // Block/trial *num*
 
         showTrial();
@@ -735,14 +742,18 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         mNTrialsInBlock = mBlock.getNTrials();
         mTrial = mBlock.getTrial(mTrialInd);
 
+        // Set general info
         mGenInfo.blockNum = mBlockInd + 1;
+        mGenInfo.trialNum = mTrialInd + 1;
         mGenInfo.trial = mTrial;
+
+        Logger.get().closeLogs();
 
         // Log
         mBlockStTime = Utils.nowInMillis();
 
         // Sync the info to the Moose
-        Server.get().send(new Memo(STRINGS.LOG, STRINGS.BLOCK_TRIAL,
+        Server.get().send(new Memo(STRINGS.LOG, STRINGS.BLOCK + "_" + STRINGS.TRIAL,
                 mBlockInd + 1, mTrialInd + 1)); // Block/trial *num*
 
         showTrial();
@@ -751,7 +762,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
     /**
      * Go to the next block
      */
-    private void nextTechTask() {
+    private void  nextTechTask() {
         mTechTaskInd++;
         mBlockInd = 0;
         mTrialInd = 0;
@@ -760,7 +771,9 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         mNTrialsInBlock = mBlock.getNTrials();
         mTrial = mBlock.getTrial(mTrialInd);
 
+        // Set general info
         mGenInfo.blockNum = mBlockInd + 1;
+        mGenInfo.trialNum = mTrialInd + 1;
         mGenInfo.trial = mTrial;
 
         // Log start times
@@ -768,10 +781,9 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         mTechTaskStTime = Utils.nowInMillis();
 
         // Sync the info to the Moose
-        Server.get().send(new Memo(
-                STRINGS.LOG, STRINGS.TECHNIQUE,
-                mTechs.get(mTechInd), mTechTaskInd + 1)); // Technique/techBlock
-        Server.get().send(new Memo(STRINGS.LOG, STRINGS.BLOCK_TRIAL,
+        Server.get().send(new Memo(STRINGS.LOG, STRINGS.TECH + "_" + STRINGS.TSK,
+                mTechs.get(mTechInd), mTrial.getTask()));
+        Server.get().send(new Memo(STRINGS.LOG, STRINGS.BLOCK + "_" + STRINGS.TRIAL,
                 mBlockInd + 1, mTrialInd + 1)); // Block/trial *num*
 
         showTrial();
@@ -799,9 +811,17 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         mBlock = mBlocks.get(mBlockInd);
         mTrial = mBlock.getTrial(mTrialInd);
 
+        // Set general info
         mGenInfo.tech = mTechs.get(mTechInd);
         mGenInfo.blockNum = mBlockInd + 1;
+        mGenInfo.trialNum = mTrialInd + 1;
         mGenInfo.trial = mTrial;
+
+        // Sync the info to the Moose
+        Server.get().send(new Memo(STRINGS.LOG, STRINGS.TECH + "_" + STRINGS.TSK,
+                mTechs.get(mTechInd), mTrial.getTask()));
+        Server.get().send(new Memo(STRINGS.LOG, STRINGS.BLOCK + "_" + STRINGS.TRIAL,
+                mBlockInd + 1, mTrialInd + 1)); // Block/trial *num*
 
         // Set the active technique
         Experiment.setActiveTechnique(mTechs.get(mTechInd));
@@ -823,6 +843,9 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
     private void endExp() {
         removeAll();
         showExpEndDialog();
+
+        // Send the end message to the Moose
+        Server.get().send(new Memo(STRINGS.LOG, STRINGS.END, 0, 0));
     }
 
     /**
@@ -1026,6 +1049,14 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
             mTimeInfo.homingTime = Utils.nowInMillis() - homingStTime;
             Logger.get().logTimeInfo(mGenInfo, mTimeInfo); // Log TimeInfo
         }
+
+        // Log all mouse movements
+        mMoveInfo.abX = e.getXOnScreen();
+        mMoveInfo.abY = e.getYOnScreen();
+        mMoveInfo.x = e.getX();
+        mMoveInfo.y = e.getY();
+        mMoveInfo.moment = Utils.nowInMillis();
+        Logger.get().logMoveInfo(mGenInfo, mMoveInfo);
     }
 
     //----------------------------------------------------------------------------------------------------
@@ -1042,7 +1073,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         @Override
         public void actionPerformed(ActionEvent e) {
             switch (mAction) {
-                case STRINGS.TECHNIQUE -> {
+                case STRINGS.TECH -> {
                     mConfigPanel.nextTechnique();
                     Controller.get().stopScroll();
                 }

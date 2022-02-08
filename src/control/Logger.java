@@ -23,8 +23,6 @@ public class Logger {
     // -------------------------------------------------------------------------------------------
     private static Logger self;
 
-    private boolean logging = true; // To log or not to log, that's the question!
-
     private static Path mLogDirectory; // Main folder for logs
     private static Path mPcLogDirectory; // Folder log path of the participant
 
@@ -41,10 +39,8 @@ public class Logger {
     private Path mScrollFilePath;
     private PrintWriter mScrollFilePW;
 
-    private Path mEventsFilePath;
-    private PrintWriter mEventsFilePW;
-
-    private String mExpLogId;
+    private Path mMoveFilePath;
+    private PrintWriter mMoveFilePW;
 
     private long mHomingStTime;
     // -------------------------------------------------------------------------------------------
@@ -77,14 +73,6 @@ public class Logger {
     }
 
     /**
-     * Set the state of logging
-     * @param toLog To log (true) or not (false)
-     */
-    public void setLogging(boolean toLog) {
-        logging = toLog;
-    }
-
-    /**
      * Log when a new particiapnt starts (create folder)
      * @param pId Participant's ID
      */
@@ -110,6 +98,7 @@ public class Logger {
         mInstantsLogPath = mPcLogDirectory.resolve(pcExpLogId + "_" + "INSTANTS.txt");
         mTimesFilePath = mPcLogDirectory.resolve(pcExpLogId + "_" + "TIMES.txt");
         mScrollFilePath = mPcLogDirectory.resolve(pcExpLogId + "_" + "SCROLL.txt");
+        mMoveFilePath = mPcLogDirectory.resolve(pcExpLogId + "_" + "MOVE.txt");
 
         // Write columns in log files
         try {
@@ -128,6 +117,10 @@ public class Logger {
             mScrollFilePW = new PrintWriter(mScrollFilePath.toFile());
             mScrollFilePW.println(GeneralInfo.getLogHeader() + SP + ScrollInfo.getLogHeader());
             mScrollFilePW.flush();
+
+            mMoveFilePW = new PrintWriter(mMoveFilePath.toFile());
+            mMoveFilePW.println(GeneralInfo.getLogHeader() + SP + MoveInfo.getLogHeader());
+            mMoveFilePW.flush();
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -221,13 +214,35 @@ public class Logger {
     }
 
     /**
+     * Log MoveInfo
+     * @param genInfo GeneralInfo
+     * @param moveInfo MoveInfo
+     */
+    public void logMoveInfo(GeneralInfo genInfo, MoveInfo moveInfo) {
+        final String TAG = NAME + "logScrollInfo";
+
+        try {
+            if (mMoveFilePW == null) { // Open only if not opened before
+                mMoveFilePW = new PrintWriter(mMoveFilePath.toFile());
+            }
+
+            mMoveFilePW.println(genInfo + SP + moveInfo);
+            mMoveFilePW.flush();
+
+        } catch (NullPointerException | IOException e) {
+            Main.showDialog("Problem in logging scroll!");
+        }
+    }
+
+    /**
      * Close all log files
      */
     public void closeLogs() {
         if (mTrialsFilePW != null) mTrialsFilePW.close();
         if (mInstantFilePW != null) mInstantFilePW.close();
         if (mTimesFilePW != null) mTimesFilePW.close();
-        if (mEventsFilePW != null) mEventsFilePW.close();
+        if (mScrollFilePW != null) mScrollFilePW.close();
+        if (mMoveFilePW != null) mMoveFilePW.close();
     }
 
     /**

@@ -485,7 +485,7 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
         if (mInstantInfo.firstScroll == 0) mInstantInfo.firstScroll = nowMillis;
         else mInstantInfo.lastScroll = nowMillis;
 
-        if (isTargetVisible(false)) { // Target becomes visible
+        if (isTargetVisible(true)) { // Target becomes visible
             if (!mTargetVisible) { // Target wasn't already visible
                 mNTargetAppear++;
 

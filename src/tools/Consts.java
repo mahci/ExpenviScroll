@@ -75,7 +75,7 @@ public class Consts {
 
     public static class STRINGS {
         public final static String SP = ";";
-        public final static String TECHNIQUE = "TECHNIQUE";
+        public final static String TECH = "TECH";
         public final static String SCROLL = "SCROLL";
         public final static String STOP = "STOP";
         public final static String CONFIG = "CONFIG";
@@ -84,10 +84,12 @@ public class Consts {
         public final static String DENOM = "DENOM";
         public final static String COEF = "COEF";
         public final static String LOG = "LOG";
-        public final static String PID = "PID";
-        public final static String BLOCK_TRIAL = "BLOCK_TRIAL";
+        public final static String EXP_ID = "EXPID"; // Id for an experiment
+        public final static String BLOCK = "BLOCK";
+        public final static String TRIAL = "TRIAL";
         public final static String TSK = "TSK";
         public final static String P_INIT = "P";
+        public final static String END = "END";
 
         public final static String DEMO_TITLE =
                 "Welcome to the scrolling experiment!";

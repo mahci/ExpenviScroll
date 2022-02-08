@@ -2,7 +2,6 @@ package experiment;
 
 import control.Server;
 import tools.DimensionD;
-import tools.Logs;
 import tools.Memo;
 import tools.Utils;
 
@@ -201,7 +200,7 @@ public class Experiment {
     public static void setActiveTechnique(TECHNIQUE tech) {
         mActiveTechnique = tech;
 
-        final Memo memo = new Memo(CONFIG, TECHNIQUE, mActiveTechnique.ordinal(), 0);
+        final Memo memo = new Memo(CONFIG, TECH, mActiveTechnique.ordinal(), 0);
         Server.get().send(memo);
     }
 

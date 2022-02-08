@@ -6,6 +6,7 @@ import tools.*;
 
 import javax.swing.*;
 import java.applet.Applet;
+import java.applet.AudioClip;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -50,10 +51,11 @@ public class DemoPanel extends JPanel {
     private JLabel mTitleLabel;
     private JLabel mNextLabel;
     private JButton mNextButton;
-
-    // Other
     private Rectangle mVtFrameRect = new Rectangle();
     private Rectangle mHzFrameRect = new Rectangle();
+    private AudioClip mHitSound, mMissSound;
+
+    // Other
     private Point mPanePos = new Point();
     private Point mLasPanePos = new Point();
     private Dimension mPaneDim = new Dimension();
@@ -72,10 +74,10 @@ public class DemoPanel extends JPanel {
 
             // Was the trial a success or a fail?
             if (checkHit().fXs() == 1){
-                playSound(HIT_SOUND);
+                mHitSound.play();
             }
             else { // Miss
-                playSound(MISS_SOUND);
+                mMissSound.play();
             }
 
             remove(1);
@@ -439,19 +441,22 @@ public class DemoPanel extends JPanel {
     }
 
     /**
-     * Play a sound
-     * @param resFileName Sound file
+     * Load all the sounds to play later
      */
-    private void playSound(String resFileName) {
+    private void loadSounds() {
         try {
             final ClassLoader classLoader = getClass().getClassLoader();
-            final File soundFile = new File(Objects.requireNonNull(classLoader.getResource(resFileName)).getFile());
-            final URL url = soundFile.toURI().toURL();
 
-            Applet.newAudioClip(url).play();
+            final URL hitURL = new File(Objects.requireNonNull(classLoader.getResource(HIT_SOUND))
+                    .getFile()).toURI().toURL();
+            final URL missURL = new File(Objects.requireNonNull(classLoader.getResource(MISS_SOUND))
+                    .getFile()).toURI().toURL();
+
+            mHitSound = Applet.newAudioClip(hitURL);
+            mMissSound = Applet.newAudioClip(missURL);
+
         } catch ( NullPointerException
-                | IOException e
-        ) {
+                | IOException e) {
             e.printStackTrace();
         }
     }

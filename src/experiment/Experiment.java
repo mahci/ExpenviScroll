@@ -8,6 +8,7 @@ import tools.Utils;
 import java.util.*;
 
 import static experiment.Experiment.TECHNIQUE.*;
+import static experiment.Experiment.TASK.*;
 import static tools.Consts.STRINGS.*;
 
 public class Experiment {
@@ -99,14 +100,16 @@ public class Experiment {
     private int[] VT_DISTANCES = new int[]{50, 200, 600}; // in lines/cells
     private int[] TD_DISTANCES = new int[]{50, 200};
     private int[] FRAMES = new int[]{3, 5}; // in lines/cells
-    private List<TECHNIQUE> TECH_ORDERS = Arrays.asList(
-            FLICK, DRAG, MOUSE,
-            FLICK, MOUSE, DRAG,
-            DRAG, FLICK, MOUSE,
-            DRAG, MOUSE, FLICK,
-            MOUSE, FLICK, DRAG,
-            MOUSE, DRAG, FLICK);
-    private Map<TASK, Integer> N_BLOCKS = Map.of(TASK.VERTICAL, 8, TASK.TWO_DIM, 4);
+//    private List<TECHNIQUE> TECH_ORDERS = Arrays.asList(
+//            FLICK, DRAG, MOUSE,
+//            FLICK, MOUSE, DRAG,
+//            DRAG, FLICK, MOUSE,
+//            DRAG, MOUSE, FLICK,
+//            MOUSE, FLICK, DRAG,
+//            MOUSE, DRAG, FLICK);
+    private Map<TASK, Integer> N_BLOCKS = Map.of(
+            VERTICAL, 8,
+        TWO_DIM, 4);
 
     //--- Participant's things!
     private int mPId;
@@ -134,11 +137,16 @@ public class Experiment {
         mPId = pid;
 
         // Set up the order of tasks and techniques for the participant
-        if (pid % 2 == 0) mPcTasks = Arrays.asList(TASK.VERTICAL, TASK.TWO_DIM);
-        else mPcTasks = Arrays.asList(TASK.TWO_DIM, TASK.VERTICAL);
+        if (mPId % 2 == 0) {
+            mPcTasks = Arrays.asList(VERTICAL, TWO_DIM);
+            mPcTechs = Arrays.asList(FLICK, MOUSE);
+        } else {
+            mPcTasks = Arrays.asList(TWO_DIM, VERTICAL);
+            mPcTechs = Arrays.asList(MOUSE, FLICK);
+        }
 
-        final int stTechInd = ((mPId - 1) % 6) * 3;
-        mPcTechs = TECH_ORDERS.subList(stTechInd, stTechInd + 3);
+//        final int stTechInd = ((mPId - 1) % 6) * 3;
+//        mPcTechs = TECH_ORDERS.subList(stTechInd, stTechInd + 3);
 
     }
 

@@ -98,7 +98,7 @@ public class Server {
                     }
                 } catch (IOException e) {
                     System.out.println("Error in reading from Moose");
-//                    e.prin tStackTrace();
+                    e.printStackTrace();
                 }
             }
         }

@@ -10,6 +10,7 @@ import tools.*;
 
 import javax.swing.*;
 import java.applet.Applet;
+import java.applet.AudioClip;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -58,11 +59,14 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
     private int mBlockInd; // Block num = block ind + 1
     private int mTrialInd; // Trial num = trial ind + 1
     private int mTechInd;
+    private int mNSuccessTrials; // Number of successful trials so far
     private List<TECHNIQUE> mTechs;
-    private int mNTrialsInBlock; // Not counting the repeated trials
     private boolean mInShortBreak;
     private boolean mInLongBreak;
     private boolean mInBetweenTechs;
+    private Point mPanePos = new Point();
+    private Point mLasPanePos = new Point();
+    private Dimension mPaneDim = new Dimension();
 
     // Elements
     private VTScrollPane mVTScrollPane;
@@ -71,8 +75,11 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
     private JLabel mLabel;
     private JLabel mLevelLabel;
     private JLabel mTechLabel;
-    private TechConfigPanel mConfigPanel;
     private JLabel mShortBreakLabel;
+    private TechConfigPanel mConfigPanel;
+    private Rectangle mVtFrameRect = new Rectangle();
+    private Rectangle mHzFrameRect = new Rectangle();
+    private AudioClip mHitSound, mMissSound, mTechEndSound;
 
     // Logging
     private GeneralInfo mGenInfo;
@@ -83,19 +90,6 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
     private long mBlockStTime;
     private long mTechTaskStTime;
     private long mTechStTime;
-
-
-    private boolean isPaneSet;
-    private int targetColNum, randColNum;
-    private int targetLineNum, randLineNum;
-    private boolean isScrollingEnabled = false;
-    private boolean paintTrial;
-    private Rectangle mVtFrameRect = new Rectangle();
-    private Rectangle mHzFrameRect = new Rectangle();
-    private Point mPanePos = new Point();
-    private Point mLasPanePos = new Point();
-    private Dimension mPaneDim = new Dimension();
-    private boolean isVt;
 
     // -------------------------------------------------------------------------------------------
     // Shart the experiment
@@ -109,10 +103,10 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
             mBlockInd = 0;
             mTrialInd = 0;
             mTechInd = 0;
+            mNSuccessTrials = 0;
 
             mBlocks = mExperiment.getTechTaskBlocks(mTechTaskInd);
             mBlock = mBlocks.get(mBlockInd);
-            mNTrialsInBlock = mBlock.getNTrials();
             mTrial = mBlock.getTrial(mTrialInd);
 
             // Set the active technique
@@ -189,14 +183,15 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
 
             // Was the trial a success or a fail?
             if (trialResult.fXs() == 1) {
-                playSound(HIT_SOUND);
+                mHitSound.play();
+                mNSuccessTrials++;
             }
             else { // Miss
-                playSound(MISS_SOUND);
+                mMissSound.play();
                 mBlock.dupeShuffleTrial(mTrialInd); // Shuffle the trial into the rest of trials
             }
 
-            // Moving forward...
+            // Moving along...
             remove(0);
 
             if (mTrialInd < mBlock.getNTrials() - 1) { // More trials in the block
@@ -305,34 +300,6 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         }
     };
 
-    // Random trial
-    private final Action RANDOM_TRIAL = new AbstractAction() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            remove(0);
-
-            // Get a random-generated trial from experiment and show it
-            if (isVt) {
-                mTrial = mExperiment.randVtTrial();
-                isVt = false;
-            } else {
-                mTrial = mExperiment.randTdTrial();
-                isVt = true;
-            }
-
-            showTrial();
-        }
-    };
-
-    // Enable scrolling
-    private final Action ENABLE_SCROLLING = new AbstractAction() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-//            hzScrollPane.setWheelScrollingEnabled(enabled);
-            Logs.d(ExperimentPanel.NAME, "ENABLE_SCROLLING");
-        }
-    };
-
     // Switch actions
     private final Action SWITCH_TECH_ACTION = new AbstractAction() {
         @Override
@@ -419,7 +386,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         // Create levellabel (don't show yet)
         mLevelLabel = new JLabel("", JLabel.CENTER);
         mLevelLabel.setFont(new Font("Sans", Font.PLAIN, 18));
-        mLevelLabel.setBounds(2150, 30, 400, 100);
+        mLevelLabel.setBounds(2100, 30, 400, 100);
 //        add(mLevelLabel, 1);
 
         // Create tehcnique label
@@ -427,6 +394,9 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         mTechLabel.setFont(new Font("Sans", Font.PLAIN, 18));
         mTechLabel.setBounds(50, 30, 200, 100);
 //        add(mTechLabel, 2);
+
+        // Set up the sounds
+        loadSounds();
     }
 
     /**
@@ -560,11 +530,11 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
             }
         }
 
-        paintTrial = true;
-
         // Show level label
-        mLevelLabel.setText("Trial: " + (mTrialInd + 1) + "/" + mNTrialsInBlock +
-                "  --  Block: " + (mBlockInd + 1) + "/" + mBlocks.size());
+        mLevelLabel.setText("Block: " + (mBlockInd + 1) +
+                " / " + mBlocks.size() + " --- " +
+                "Successful Trials: " + mNSuccessTrials +
+                "  / " +  mBlock.getTargetNTrials());
         mTechLabel.setText("Technique: " + mTechs.get(mTechInd));
         add(mLevelLabel, 1);
         add(mTechLabel, 1);
@@ -738,8 +708,8 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
     private void nextBlock() {
         mBlockInd++;
         mTrialInd = 0;
+        mNSuccessTrials = 0;
         mBlock = mBlocks.get(mBlockInd);
-        mNTrialsInBlock = mBlock.getNTrials();
         mTrial = mBlock.getTrial(mTrialInd);
 
         // Set general info
@@ -766,9 +736,9 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         mTechTaskInd++;
         mBlockInd = 0;
         mTrialInd = 0;
+        mNSuccessTrials = 0;
         mBlocks = mExperiment.getTechTaskBlocks(mTechTaskInd);
         mBlock = mBlocks.get(mBlockInd);
-        mNTrialsInBlock = mBlock.getNTrials();
         mTrial = mBlock.getTrial(mTrialInd);
 
         // Set general info
@@ -807,6 +777,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         mTechTaskInd = 0;
         mBlockInd = 0;
         mTrialInd = 0;
+        mNSuccessTrials = 0;
         mBlocks = mExperiment.getTechTaskBlocks(mTechTaskInd);
         mBlock = mBlocks.get(mBlockInd);
         mTrial = mBlock.getTrial(mTrialInd);
@@ -987,19 +958,22 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
     }
 
     /**
-     * Play a sound
-     * @param resFileName Sound file
+     * Load all the sounds to play later
      */
-    private void playSound(String resFileName) {
+    private void loadSounds() {
         try {
             final ClassLoader classLoader = getClass().getClassLoader();
-            final File soundFile = new File(Objects.requireNonNull(classLoader.getResource(resFileName)).getFile());
-            final URL url = soundFile.toURI().toURL();
 
-            Applet.newAudioClip(url).play();
+            final URL hitURL = new File(Objects.requireNonNull(classLoader.getResource(HIT_SOUND))
+                    .getFile()).toURI().toURL();
+            final URL missURL = new File(Objects.requireNonNull(classLoader.getResource(MISS_SOUND))
+                    .getFile()).toURI().toURL();
+
+            mHitSound = Applet.newAudioClip(hitURL);
+            mMissSound = Applet.newAudioClip(missURL);
+
         } catch ( NullPointerException
-                | IOException e
-        ) {
+                | IOException e) {
             e.printStackTrace();
         }
     }

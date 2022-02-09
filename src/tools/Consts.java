@@ -71,7 +71,7 @@ public class Consts {
     public static class SOUNDS {
         public final static String HIT_SOUND = "hit.wav";
         public final static String MISS_SOUND = "miss.wav";
-        public final static String TECH_END_SOUND = "";
+        public final static String TECH_END_SOUND = "end.wav";
     }
 
     public static class STRINGS {

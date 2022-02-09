@@ -21,8 +21,7 @@ import java.util.Objects;
 
 import static experiment.Experiment.*;
 import static tools.Consts.*;
-import static tools.Consts.SOUNDS.HIT_SOUND;
-import static tools.Consts.SOUNDS.MISS_SOUND;
+import static tools.Consts.SOUNDS.*;
 import static tools.Consts.STRINGS.END_EXPERIMENT_MESSAGE;
 import static tools.Consts.STRINGS.END_TECH_MESSAGES;
 import static control.Logger.*;
@@ -766,6 +765,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         mInBetweenTechs = true;
         repaint();
 
+        mTechEndSound.play();
         showTechEndDialog();
     }
 
@@ -968,9 +968,12 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
                     .getFile()).toURI().toURL();
             final URL missURL = new File(Objects.requireNonNull(classLoader.getResource(MISS_SOUND))
                     .getFile()).toURI().toURL();
+            final URL techEndURL = new File(Objects.requireNonNull(classLoader.getResource(TECH_END_SOUND))
+                    .getFile()).toURI().toURL();
 
             mHitSound = Applet.newAudioClip(hitURL);
             mMissSound = Applet.newAudioClip(missURL);
+            mTechEndSound = Applet.newAudioClip(techEndURL);
 
         } catch ( NullPointerException
                 | IOException e) {

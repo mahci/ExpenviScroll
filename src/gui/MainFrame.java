@@ -29,7 +29,7 @@ public class MainFrame extends JFrame {
         setBackground(Color.WHITE);
 
         // Create and show an experiment
-        final int pid = 125;
+        final int pid = 126;
         mExperiment = new Experiment(pid);
     }
 

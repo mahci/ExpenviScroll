@@ -2,6 +2,7 @@ package experiment;
 
 import control.Server;
 import tools.DimensionD;
+import tools.Logs;
 import tools.Memo;
 import tools.Utils;
 
@@ -136,17 +137,26 @@ public class Experiment {
 
         mPId = pid;
 
-        // Set up the order of tasks and techniques for the participant
-        if (mPId % 2 == 0) {
-            mPcTasks = Arrays.asList(VERTICAL, TWO_DIM);
-            mPcTechs = Arrays.asList(FLICK, MOUSE);
-        } else {
-            mPcTasks = Arrays.asList(TWO_DIM, VERTICAL);
-            mPcTechs = Arrays.asList(MOUSE, FLICK);
+        // Set up the constellation of techs and tasks
+        switch (mPId % 4) {
+            case 0 -> {
+                mPcTechs = Arrays.asList(FLICK, MOUSE);
+                mPcTasks = Arrays.asList(VERTICAL, TWO_DIM);
+            }
+            case 1 -> {
+                Logs.d(TAG, "case 1");
+                mPcTechs = Arrays.asList(FLICK, MOUSE);
+                mPcTasks = Arrays.asList(TWO_DIM, VERTICAL);
+            }
+            case 2 -> {
+                mPcTechs = Arrays.asList(MOUSE, FLICK);
+                mPcTasks = Arrays.asList(VERTICAL, TWO_DIM);
+            }
+            case 3 -> {
+                mPcTechs = Arrays.asList(MOUSE, FLICK);
+                mPcTasks = Arrays.asList(TWO_DIM, VERTICAL);
+            }
         }
-
-//        final int stTechInd = ((mPId - 1) % 6) * 3;
-//        mPcTechs = TECH_ORDERS.subList(stTechInd, stTechInd + 3);
 
     }
 
@@ -154,7 +164,7 @@ public class Experiment {
      * Get the order of the techniques to experiment
      * @return List of techniques (n = 3)
      */
-    public List<TECHNIQUE> getPcTechniques() {
+    public List<TECHNIQUE> getPcTechs() {
         return mPcTechs;
     }
 

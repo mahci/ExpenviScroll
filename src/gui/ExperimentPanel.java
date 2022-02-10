@@ -96,7 +96,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         @Override
         public void actionPerformed(ActionEvent e) {
             Logs.d(ExperimentPanel.NAME, "START_EXP_ACTION");
-            mTechs = mExperiment.getPcTechniques();
+            mTechs = mExperiment.getPcTechs();
 
             mTechTaskInd = 0;
             mBlockInd = 0;

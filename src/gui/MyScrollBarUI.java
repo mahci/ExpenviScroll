@@ -69,6 +69,30 @@ public class MyScrollBarUI extends BasicScrollBarUI {
     }
 
     @Override
+    protected void installComponents() {
+        switch (scrollbar.getOrientation()) {
+            case JScrollBar.VERTICAL:
+                incrButton = createIncreaseButton(SOUTH);
+                decrButton = createDecreaseButton(NORTH);
+                break;
+
+            case JScrollBar.HORIZONTAL:
+                if (scrollbar.getComponentOrientation().isLeftToRight()) {
+                    incrButton = createIncreaseButton(EAST);
+                    decrButton = createDecreaseButton(WEST);
+                } else {
+                    incrButton = createIncreaseButton(WEST);
+                    decrButton = createDecreaseButton(EAST);
+                }
+                break;
+        }
+        scrollbar.add(incrButton);
+        scrollbar.add(decrButton);
+        // Force the children's enabled state to be updated.
+        scrollbar.setEnabled(scrollbar.isEnabled());
+    }
+
+    @Override
     protected void paintTrack(Graphics g, JComponent c, Rectangle trackBounds) {
         String TAG = NAME + "paintTrack";
 

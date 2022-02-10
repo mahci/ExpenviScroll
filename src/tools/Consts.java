@@ -91,6 +91,8 @@ public class Consts {
         public final static String TSK = "TSK";
         public final static String P_INIT = "P";
         public final static String END = "END";
+        public final static String KEEP_ALIVE = "KEEP_ALIVE";
+        public final static String CONNECTION = "CONNECTION";
 
         public final static String DEMO_TITLE =
                 "Welcome to the scrolling experiment!";

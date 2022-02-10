@@ -77,29 +77,34 @@ public class Server {
     //-- Runnable for receiving messages from Moose
     private class InRunnable implements Runnable {
         String TAG = NAME + "InRunnable";
+        String mssg;
 
         @Override
         public void run() {
             while (!Thread.currentThread().isInterrupted() && inBR != null) {
                 try {
                     Logs.d(TAG, "Reading messages...");
-                    String message = inBR.readLine();
-                    Logs.d(TAG, "Message: " + message);
-                    if (message != null) {
-                        Memo memo = Memo.valueOf(message);
+                    if ((mssg = inBR.readLine()) != null) {
+                        Memo memo = Memo.valueOf(mssg);
 
-                        // If it was scrolling, send to Controller to perform
-                        if (memo.getAction().equals(SCROLL)) Controller.get().scroll(memo);
+                        switch (memo.getAction()) {
+                            case SCROLL -> {
+                                Controller.get().scroll(memo);
+                            }
+                            case KEEP_ALIVE -> {
+                                send(memo); // Send back the message (as confimation)
+                            }
+                        }
 
                     } else {
                         Logs.d(TAG, "Moose disconnected.");
-                        start();
+                        openConnection();
                         return;
                     }
                 } catch (IOException e) {
                     System.out.println("Error in reading from Moose");
                     // Reconnect
-                    start();
+                    openConnection();
 //                    e.printStackTrace();
                 }
             }
@@ -128,11 +133,9 @@ public class Server {
     }
 
     /**
-     * Start the server
+     * Start receving connections
      */
-    public void start() {
-        String TAG = NAME + "start";
-
+    public void openConnection() {
         executor.execute(new ConnWaitRunnable());
     }
 

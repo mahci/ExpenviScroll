@@ -70,6 +70,7 @@ public class Server {
                 outPW.println(message);
                 outPW.flush();
                 Logs.d(TAG, message.toString());
+                return;
             }
         }
     }

@@ -63,6 +63,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
     private boolean mInShortBreak;
     private boolean mInLongBreak;
     private boolean mInBetweenTechs;
+    private boolean mNoTrial; // When NOT to show trials!
     private Point mPanePos = new Point();
     private Point mLasPanePos = new Point();
     private Dimension mPaneDim = new Dimension();
@@ -92,7 +93,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
 
     // -------------------------------------------------------------------------------------------
     // Shart the experiment
-    private final Action START_EXP_ACTION = new AbstractAction() {
+    private final Action START_EXP = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
             Logs.d(ExperimentPanel.NAME, "START_EXP_ACTION");
@@ -133,6 +134,8 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
 
             // Change the SPACE action
             getActionMap().put("SPACE", END_TRIAL);
+            getActionMap().put("RA", ADVANCE_BLOCK);
+            getActionMap().put("DA", ADVANCE_TRIAL);
 
             // Show trial
             remove(0);
@@ -216,7 +219,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
                 // Back from break, go to the next TechTask
                 nextTechTask();
 
-            } else if (mTechInd < 2) { // Technique is finished
+            } else if (mTechInd < mTechs.size() - 1) { // Technique is finished
                 // Add block, techTask, technique time and log TimeInfo
                 mTimeInfo.blockTime = Utils.nowInMillis() - mBlockStTime;
                 mTimeInfo.techTaskTime = (int) ((Utils.nowInMillis() - mTechTaskStTime) / 1000);
@@ -265,11 +268,8 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
                 // ...
                 nextTechTask();
 
-            } else if (mTechInd < 2) { // Technique is finished
-                mInBetweenTechs = true;
-                repaint();
-                showTechEndDialog();
-
+            } else if (mTechInd < mTechs.size() - 1) { // Technique is finished
+                endTech();
             } else { // Experiment is finished
                 endExp();
             }
@@ -288,11 +288,8 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
             } else if (mTechTaskInd < 1) { // More techTasks in the technique
                 showLongBreak();
                 nextTechTask();
-            } else if (mTechInd < 2) { // Technique is finished
-                mInBetweenTechs = true;
-                repaint();
-
-                showTechEndDialog();
+            } else if (mTechInd < mTechs.size() - 1) { // Technique is finished
+                endTech();
             } else { // Experiment is finished
                 endExp();
             }
@@ -323,6 +320,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
             Logs.d(ExperimentPanel.NAME, mInShortBreak);
             if (mInShortBreak) {
                 mInShortBreak = false;
+                mNoTrial = false;
                 removeAll();
                 nextBlock();
             }
@@ -350,17 +348,16 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         // Set mouse listener and key bindings
         addMouseMotionListener(this);
         mapKeys();
-        getActionMap().put("SPACE", START_EXP_ACTION);
-        getActionMap().put("SLASH", SWITCH_TECH_ACTION);
+        getActionMap().put("SPACE", START_EXP);
+//        getActionMap().put("SLASH", SWITCH_TECH_ACTION);
         getActionMap().put("ENTER", END_SHORT_BREAK);
-        getActionMap().put("Q", mIncSensitivity);
-        getActionMap().put("A", mDecSensitivity);
-        getActionMap().put("W", mIncGain);
-        getActionMap().put("S", mDecGain);
-        getActionMap().put("E", mIncDenom);
-        getActionMap().put("D", mDecDenom);
-        getActionMap().put("RA", ADVANCE_BLOCK);
-        getActionMap().put("DA", ADVANCE_TRIAL);
+//        getActionMap().put("Q", mIncSensitivity);
+//        getActionMap().put("A", mDecSensitivity);
+//        getActionMap().put("W", mIncGain);
+//        getActionMap().put("S", mDecGain);
+//        getActionMap().put("E", mIncDenom);
+//        getActionMap().put("D", mDecDenom);
+
 
         // Set the experiment and log
         mExperiment = exp;
@@ -763,6 +760,8 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
      */
     private void endTech() {
         mInBetweenTechs = true;
+        mNoTrial = true;
+        removeAll();
         repaint();
 
         mTechEndSound.play();
@@ -812,11 +811,14 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
      * The current technique is ended
      */
     private void endExp() {
+        mNoTrial = true;
         removeAll();
-        showExpEndDialog();
+        repaint();
 
         // Send the end message to the Moose
         Server.get().send(new Memo(STRINGS.LOG, STRINGS.END, 0, 0));
+
+        showExpEndDialog();
     }
 
     /**
@@ -825,6 +827,11 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
     private void showShortBreak() {
         removeAll();
         mInShortBreak = true;
+        mNoTrial = true;
+
+        getActionMap().remove("SPACE");
+        getActionMap().put("ENTER", END_SHORT_BREAK);
+
         add(mShortBreakLabel, 0);
 
         repaint();
@@ -834,14 +841,18 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
      * Show the long break between TechTasks
      */
     private void showLongBreak() {
-        mInLongBreak = true;
-
         removeAll();
+
+        mInLongBreak = true;
+        mNoTrial = true;
+        getActionMap().remove("SPACE");
+
         repaint();
         MainFrame.get().showDialog(new BreakDialog());
 
         // ... back from the break
         mInLongBreak = false;
+        mNoTrial = false;
     }
 
     /**
@@ -872,6 +883,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
             public void actionPerformed(ActionEvent e) {
                 dialog.dispose();
                 mInBetweenTechs = false;
+                mNoTrial = false;
                 nextTech();
             }
         });
@@ -889,13 +901,13 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
      */
     public void showExpEndDialog() {
         JDialog dialog = new JDialog((JFrame)null, "Child", true);
-        dialog.setSize(1000, 500);
+        dialog.setSize(1200, 500);
         dialog.setLocationRelativeTo(this);
 
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setSize(800, 500);
-        panel.setBackground(Color.decode("#7986CB"));
+        panel.setSize(1000, 500);
+        panel.setBackground(Color.decode("#90caf9"));
         panel.add(Box.createRigidArea(new Dimension(800, 100)));
 
         JLabel label = new JLabel(END_EXPERIMENT_MESSAGE);
@@ -938,7 +950,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
 
         Graphics2D g2d = (Graphics2D) g;
 
-        if (!mInBetweenTechs && !mInShortBreak && !mInLongBreak) { // If there is technique to show
+        if (!mNoTrial) { // Show trials?
             g2d.setColor(Consts.COLORS.CELL_HIGHLIGHT);
             if (mVtFrameRect.width != 0) {
                 g2d.fillRect(
@@ -1025,6 +1037,9 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         if (homingStTime != 0) { // Mocing the mouse after the break
             mTimeInfo.homingTime = Utils.nowInMillis() - homingStTime;
             Logger.get().logTimeInfo(mGenInfo, mTimeInfo); // Log TimeInfo
+
+            // Rr-assign the keys
+            getActionMap().put("SPACE", END_TRIAL);
         }
 
         // Log all mouse movements

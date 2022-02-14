@@ -76,6 +76,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
     private JLabel mLevelLabel;
     private JLabel mTechLabel;
     private JLabel mShortBreakLabel;
+    private JDialog mlongBreakDialog;
     private TechConfigPanel mConfigPanel;
     private Rectangle mVtFrameRect = new Rectangle();
     private Rectangle mHzFrameRect = new Rectangle();
@@ -318,15 +319,27 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         @Override
         public void actionPerformed(ActionEvent e) {
             Logs.d(ExperimentPanel.NAME, mInShortBreak);
-            if (mInShortBreak) {
-                mInShortBreak = false;
-                mNoTrial = false;
-                removeAll();
-                nextBlock();
-            }
+            mInShortBreak = false;
+            mNoTrial = false;
+
+            getActionMap().put("SPACE", END_TRIAL); // Assign back the SPACE
+
+            removeAll();
+            nextBlock();
         }
     };
 
+
+    // End long break
+    private final ActionListener START_NEXT_TECH = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (mlongBreakDialog != null) mlongBreakDialog.dispose();
+            mInBetweenTechs = false;
+            mNoTrial = false;
+            nextTech();
+        }
+    };
 
     private ConfigAction mNextTechnique = new ConfigAction(STRINGS.TECH, true);
     private ConfigAction mIncSensitivity = new ConfigAction(STRINGS.SENSITIVITY, true);
@@ -853,15 +866,16 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         // ... back from the break
         mInLongBreak = false;
         mNoTrial = false;
+        getActionMap().put("SPACE", END_TRIAL);
     }
 
     /**
      * Show the technique end dialog
      */
     public void showTechEndDialog() {
-        JDialog dialog = new JDialog((JFrame)null, "Child", true);
-        dialog.setSize(1000, 500);
-        dialog.setLocationRelativeTo(this);
+        mlongBreakDialog = new JDialog((JFrame)null, "Child", true);
+        mlongBreakDialog.setSize(1000, 500);
+        mlongBreakDialog.setLocationRelativeTo(this);
 
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
@@ -878,22 +892,14 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
 
         JButton button = new JButton("Continue");
         button.setMaximumSize(new Dimension(300, 50));
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dialog.dispose();
-                mInBetweenTechs = false;
-                mNoTrial = false;
-                nextTech();
-            }
-        });
+        button.addActionListener(START_NEXT_TECH);
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
         button.setFocusable(false);
         panel.add(button);
 
-        dialog.add(panel);
-        dialog.setUndecorated(true);
-        dialog.setVisible(true);
+        mlongBreakDialog.add(panel);
+        mlongBreakDialog.setUndecorated(true);
+        mlongBreakDialog.setVisible(true);
     }
 
     /**

@@ -70,7 +70,6 @@ public class Server {
                 outPW.println(message);
                 outPW.flush();
                 Logs.d(TAG, message.toString());
-                return;
             }
         }
     }
@@ -87,24 +86,29 @@ public class Server {
                     Logs.d(TAG, "Reading messages...");
                     if ((mssg = inBR.readLine()) != null) {
                         Memo memo = Memo.valueOf(mssg);
-
+                        Logs.d(TAG, "Action: " + memo.getAction());
                         switch (memo.getAction()) {
                             case SCROLL -> {
                                 Controller.get().scroll(memo);
                             }
-                            case KEEP_ALIVE -> {
-                                send(memo); // Send back the message (as confimation)
+                            case CONNECTION -> {
+                                if (memo.getMode().equals(KEEP_ALIVE)) {
+                                    Logs.d(TAG, "KA Received: " + memo);
+                                    send(memo); // Send back the message (as confimation)
+                                }
                             }
                         }
 
                     } else {
                         Logs.d(TAG, "Moose disconnected.");
+                        Thread.currentThread().interrupt();
                         openConnection();
                         return;
                     }
                 } catch (IOException e) {
                     System.out.println("Error in reading from Moose");
                     // Reconnect
+                    Thread.currentThread().interrupt();
                     openConnection();
 //                    e.printStackTrace();
                 }

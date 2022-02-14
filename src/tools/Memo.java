@@ -2,6 +2,8 @@ package tools;
 
 import lombok.extern.java.Log;
 
+import java.util.Arrays;
+
 import static tools.Consts.STRINGS.*;
 
 public class Memo {
@@ -171,6 +173,7 @@ public class Memo {
         Memo result = new Memo();
         if (mssg != null) {
             String[] parts = mssg.split(SP);
+            Logs.d(TAG, Arrays.toString(parts));
             if (parts.length == 4) {
                 result.action = parts[0];
                 result.mode = parts[1];

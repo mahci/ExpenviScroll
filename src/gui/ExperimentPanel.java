@@ -35,7 +35,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
     private double LR_MARGIN_mm = 20; // (mm) Left-right margin
     private double TB_MARGIN_mm = 20; // (mm) Left-right margin
 
-    // Keystrokes
+    // Keys
     private KeyStroke KS_SPACE;
     private KeyStroke KS_SLASH;
     private KeyStroke KS_ENTER;
@@ -72,10 +72,10 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
     private VTScrollPane mVTScrollPane;
     private HorizontalScrollPane hzScrollPane;
     private TDScrollPane mTDScrollPane;
-    private JLabel mLabel;
+//    private JLabel mStartLabel;
     private JLabel mLevelLabel;
     private JLabel mTechLabel;
-    private JLabel mShortBreakLabel;
+//    private JLabel mShortBreakLabel;
     private JDialog mlongBreakDialog;
     private TechConfigPanel mConfigPanel;
     private Rectangle mVtFrameRect = new Rectangle();
@@ -98,12 +98,60 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         @Override
         public void actionPerformed(ActionEvent e) {
             Logs.d(ExperimentPanel.NAME, "START_EXP_ACTION");
-            mTechs = mExperiment.getPcTechs();
+//            mTechs = mExperiment.getPcTechs();
 
+//            mTechTaskInd = 0;
+//            mBlockInd = 0;
+//            mTrialInd = 0;
+//            mTechInd = 0;
+//            mNSuccessTrials = 0;
+
+//            mBlocks = mExperiment.getTechTaskBlocks(mTechTaskInd);
+//            mBlock = mBlocks.get(mBlockInd);
+//            mTrial = mBlock.getTrial(mTrialInd);
+
+            // Set the active technique
+//            Experiment.setActiveTechnique(mTechs.get(mTechInd));
+//            mTechLabel.setText("Technique: " + mTechs.get(mTechInd));
+
+            // Sync the info to the Moose
+//            Server.get().send(new Memo(STRINGS.LOG, STRINGS.TECH + "_" + STRINGS.TSK,
+//                    mTechs.get(mTechInd).ordinal(), mTrial.getTask().ordinal()));
+//            Server.get().send(new Memo(STRINGS.LOG, STRINGS.BLOCK + "_" + STRINGS.TRIAL,
+//                    mBlockInd + 1, mTrialInd + 1)); // Block/trial *num*
+
+            // Set GenInfo
+//            mGenInfo = new GeneralInfo(
+//                    mTechs.get(mTechInd),
+//                    mBlockInd + 1,
+//                    mTrialInd + 1,
+//                    mTrial);
+
+            // Set start times
+//            mExpStTime = Utils.nowInMillis();
+//            mBlockStTime = Utils.nowInMillis();
+
+            // Change the SPACE action
+//            getActionMap().put("SPACE", END_TRIAL);
+//            getActionMap().put("RA", ADVANCE_BLOCK);
+//            getActionMap().put("DA", ADVANCE_TRIAL);
+
+            // Show trial
+//            remove(0);
+//            showTrial();
+        }
+    };
+
+    // Start a technique
+    private final Action START_TECH = new AbstractAction() {
+        final String TAG = ExperimentPanel.NAME + "START_TECH";
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Logs.d(TAG, "Starting next tech...");
+            // Inits
             mTechTaskInd = 0;
             mBlockInd = 0;
             mTrialInd = 0;
-            mTechInd = 0;
             mNSuccessTrials = 0;
 
             mBlocks = mExperiment.getTechTaskBlocks(mTechTaskInd);
@@ -113,10 +161,10 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
             // Set the active technique
             Experiment.setActiveTechnique(mTechs.get(mTechInd));
             mTechLabel.setText("Technique: " + mTechs.get(mTechInd));
+            if (mVTScrollPane != null) mVTScrollPane.changeTechnique(mTechs.get(mTechInd));
+            if (mTDScrollPane != null) mTDScrollPane.changeTechnique(mTechs.get(mTechInd));
 
             // Sync the info to the Moose
-            final String expId = mExperiment.getPId() + "_" + Utils.nowDateTime();
-            Server.get().send(new Memo(STRINGS.LOG, STRINGS.EXP_ID, expId, 0));
             Server.get().send(new Memo(STRINGS.LOG, STRINGS.TECH + "_" + STRINGS.TSK,
                     mTechs.get(mTechInd).ordinal(), mTrial.getTask().ordinal()));
             Server.get().send(new Memo(STRINGS.LOG, STRINGS.BLOCK + "_" + STRINGS.TRIAL,
@@ -130,17 +178,20 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
                     mTrial);
 
             // Set start times
-            mExpStTime = Utils.nowInMillis();
+            mTechStTime = Utils.nowInMillis();
             mBlockStTime = Utils.nowInMillis();
 
-            // Change the SPACE action
-            getActionMap().put("SPACE", END_TRIAL);
-            getActionMap().put("RA", ADVANCE_BLOCK);
-            getActionMap().put("DA", ADVANCE_TRIAL);
 
-            // Show trial
-            remove(0);
+            // Moving on...
+            mInBetweenTechs = false;
+            mNoTrial = false;
+            removeAll();
             showTrial();
+
+            // Change the SPACE action
+            getActionMap().put(KS_SPACE.toString(), END_TRIAL);
+            getActionMap().put(KS_RA.toString(), ADVANCE_BLOCK);
+            getActionMap().put(KS_DA.toString(), ADVANCE_TRIAL);
         }
     };
 
@@ -149,7 +200,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         @Override
         public void actionPerformed(ActionEvent e) {
             final String TAG = ExperimentPanel.NAME + "mEndTrialAction";
-
+            Logs.d(TAG, "Ending trial...");
             final Pair trialResult = checkHit();
 
             // Get log info from panes
@@ -227,6 +278,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
                 mTimeInfo.techTime = (int) ((Utils.nowInMillis() - mTechStTime) / 1000);
                 Logger.get().logTimeInfo(mGenInfo, mTimeInfo);
 
+                removeKeyMaps();
                 endTech();
 
             } else { // Experiment is finished
@@ -322,22 +374,10 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
             mInShortBreak = false;
             mNoTrial = false;
 
-            getActionMap().put("SPACE", END_TRIAL); // Assign back the SPACE
+            getActionMap().put(KS_SPACE.toString(), END_TRIAL); // Assign back the SPACE
 
             removeAll();
             nextBlock();
-        }
-    };
-
-
-    // End long break
-    private final ActionListener START_NEXT_TECH = new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            if (mlongBreakDialog != null) mlongBreakDialog.dispose();
-            mInBetweenTechs = false;
-            mNoTrial = false;
-            nextTech();
         }
     };
 
@@ -361,9 +401,9 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         // Set mouse listener and key bindings
         addMouseMotionListener(this);
         mapKeys();
-        getActionMap().put("SPACE", START_EXP);
+//        getActionMap().put(KS_SPACE.toString(), START_EXP);
 //        getActionMap().put("SLASH", SWITCH_TECH_ACTION);
-        getActionMap().put("ENTER", END_SHORT_BREAK);
+//        getActionMap().put(KS_ENTER.toString(), END_SHORT_BREAK);
 //        getActionMap().put("Q", mIncSensitivity);
 //        getActionMap().put("A", mDecSensitivity);
 //        getActionMap().put("W", mIncGain);
@@ -371,21 +411,15 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
 //        getActionMap().put("E", mIncDenom);
 //        getActionMap().put("D", mDecDenom);
 
-
         // Set the experiment and log
         mExperiment = exp;
         Logger.get().logParticipant(exp.getPId());
 
         // Create and add the start label
-        mLabel = new JLabel(STRINGS.EXP_START_MESSAGE, JLabel.CENTER);
-        mLabel.setFont(new Font("Sans", Font.BOLD, 35));
-        mLabel.setBounds(800, 500, 1000, 400);
-        add(mLabel, 0);
-
-        // Create the short break label (don't add it yet)
-        mShortBreakLabel = new JLabel(STRINGS.SHORT_BREAK_TEXT, JLabel.CENTER);
-        mShortBreakLabel.setFont(new Font("Sans", Font.BOLD, 25));
-        mShortBreakLabel.setBounds(800, 500, 1000, 400);
+//        mLabel = new JLabel(STRINGS.EXP_START_MESSAGE, JLabel.CENTER);
+//        mLabel.setFont(new Font("Sans", Font.BOLD, 35));
+//        mLabel.setBounds(800, 500, 1000, 400);
+//        add(mLabel, 0);
 
         // Add paramter controls
 //        mConfigPanel = new TechConfigPanel();
@@ -406,6 +440,24 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
 
         // Set up the sounds
         loadSounds();
+
+        //----------------------
+        // Initialize and show the tech start page
+        initExperiment();
+        showTechStartPage();
+    }
+
+    private void initExperiment() {
+        mTechs = mExperiment.getPcTechs(); // Set the techniques
+
+        mTechInd = 0; // First tech
+
+        // Sync with the Moose
+        final String expId = mExperiment.getPId() + "_" + Utils.nowDateTime();
+        Server.get().send(new Memo(STRINGS.LOG, STRINGS.EXP_ID, expId, 0));
+
+        // Timing
+        mExpStTime = Utils.nowInMillis();
     }
 
     /**
@@ -465,7 +517,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
                 // Highlight
                 int targetLineInd = randVtLineInd();
                 mVTScrollPane.highlight(targetLineInd, mTrial.getFrame());
-                Logs.d(TAG, "HLIndex= ", targetLineInd);
+//                Logs.d(TAG, "HLIndex= ", targetLineInd);
                 add(mVTScrollPane, 0);
 
                 // Set frame to be drawn (by paintComponent())
@@ -525,7 +577,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
                 final int targetCol = targetInd.getSecond();
                 final int vtDist = mTrial.getTdDist();
                 final int hzDist = mTrial.getTdDist();
-                Logs.d(TAG, "Target", targetInd.toString());
+//                Logs.d(TAG, "Target", targetInd.toString());
                 switch (mTrial.getDirection()) {
                     case NE -> centerInd.set(targetRow + vtDist, targetCol - hzDist);
                     case NW -> centerInd.set(targetRow + vtDist, targetCol + hzDist);
@@ -534,8 +586,8 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
                 }
 
                 mTDScrollPane.centerCell(centerInd);
-                Logs.d(TAG, "dir|target|center",
-                        mTrial.getDirection().toString(), targetInd.toString(), centerInd.toString());
+//                Logs.d(TAG, "dir|target|center",
+//                        mTrial.getDirection().toString(), targetInd.toString(), centerInd.toString());
             }
         }
 
@@ -656,7 +708,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
                 hzInd.move(0, -mTrial.getTdDist());
             }
         }
-        Logs.d(TAG, "vt|hz", vtInd.toString(), hzInd.toString());
+//        Logs.d(TAG, "vt|hz", vtInd.toString(), hzInd.toString());
         Pair result = new Pair(Utils.randIntBetween(vtInd), Utils.randIntBetween(hzInd));
 
         return result;
@@ -681,14 +733,24 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         }
     }
 
-    /**
-     * Send the trial num, block num, etc. to the Moose (for logging)
-     */
-    public void syncStatus() {
-        Memo techMemo = new Memo(
-                STRINGS.LOG, STRINGS.TECH,
-                mTechs.get(mTechInd), mTechTaskInd);
-        Server.get().send(techMemo);
+    private void showTechStartPage() {
+        final String TAG = NAME + "showTechStartPage";
+
+        // Show the label
+        final int xPos = 720;
+        final int yPos = 400;
+        JLabel titleLabel = new JLabel(STRINGS.TECH_START_MESSAGE, JLabel.CENTER);
+        titleLabel.setFont(new Font("Sans", Font.BOLD, 35));
+        titleLabel.setBounds(xPos, yPos, 1000, 400);
+        add(titleLabel, 1);
+        JLabel techLabel = new JLabel(mTechs.get(mTechInd).toString());
+        techLabel.setFont(new Font("Sans", Font.BOLD, 35));
+        techLabel.setForeground(Color.BLUE);
+        techLabel.setBounds(xPos + 850, yPos, 300, 400);
+        add(techLabel, 1);
+
+        Logs.d(TAG, mInBetweenTechs, mNoTrial);
+        getActionMap().put(KS_SPACE.toString(), START_TECH);
     }
 
     /**
@@ -772,12 +834,21 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
      * The current technique is ended
      */
     private void endTech() {
+        final String TAG = NAME + "endTech";
+
+        removeKeyMaps();
+
         mInBetweenTechs = true;
         mNoTrial = true;
         removeAll();
         repaint();
 
+        Logs.d(TAG, mInBetweenTechs, mNoTrial);
         mTechEndSound.play();
+
+//        mTechInd++;
+//        showTechStartPage();
+
         showTechEndDialog();
     }
 
@@ -785,39 +856,41 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
      * Go to the next block
      */
     private void nextTech() {
-        mTechInd++;
-        mTechTaskInd = 0;
-        mBlockInd = 0;
-        mTrialInd = 0;
-        mNSuccessTrials = 0;
-        mBlocks = mExperiment.getTechTaskBlocks(mTechTaskInd);
-        mBlock = mBlocks.get(mBlockInd);
-        mTrial = mBlock.getTrial(mTrialInd);
+//        mTechInd++;
+//
+//        showTechStartPage();
+//        mTechTaskInd = 0;
+//        mBlockInd = 0;
+//        mTrialInd = 0;
+//        mNSuccessTrials = 0;
+//        mBlocks = mExperiment.getTechTaskBlocks(mTechTaskInd);
+//        mBlock = mBlocks.get(mBlockInd);
+//        mTrial = mBlock.getTrial(mTrialInd);
 
         // Set general info
-        mGenInfo.tech = mTechs.get(mTechInd);
-        mGenInfo.blockNum = mBlockInd + 1;
-        mGenInfo.trialNum = mTrialInd + 1;
-        mGenInfo.trial = mTrial;
+//        mGenInfo.tech = mTechs.get(mTechInd);
+//        mGenInfo.blockNum = mBlockInd + 1;
+//        mGenInfo.trialNum = mTrialInd + 1;
+//        mGenInfo.trial = mTrial;
 
         // Sync the info to the Moose
-        Server.get().send(new Memo(STRINGS.LOG, STRINGS.TECH + "_" + STRINGS.TSK,
-                mTechs.get(mTechInd), mTrial.getTask()));
-        Server.get().send(new Memo(STRINGS.LOG, STRINGS.BLOCK + "_" + STRINGS.TRIAL,
-                mBlockInd + 1, mTrialInd + 1)); // Block/trial *num*
+//        Server.get().send(new Memo(STRINGS.LOG, STRINGS.TECH + "_" + STRINGS.TSK,
+//                mTechs.get(mTechInd), mTrial.getTask()));
+//        Server.get().send(new Memo(STRINGS.LOG, STRINGS.BLOCK + "_" + STRINGS.TRIAL,
+//                mBlockInd + 1, mTrialInd + 1)); // Block/trial *num*
 
         // Set the active technique
-        Experiment.setActiveTechnique(mTechs.get(mTechInd));
-        mTechLabel.setText("Technique: " + mTechs.get(mTechInd));
-        if (mVTScrollPane != null) mVTScrollPane.changeTechnique(mTechs.get(mTechInd));
-        if (mTDScrollPane != null) mTDScrollPane.changeTechnique(mTechs.get(mTechInd));
+//        Experiment.setActiveTechnique(mTechs.get(mTechInd));
+//        mTechLabel.setText("Technique: " + mTechs.get(mTechInd));
+//        if (mVTScrollPane != null) mVTScrollPane.changeTechnique(mTechs.get(mTechInd));
+//        if (mTDScrollPane != null) mTDScrollPane.changeTechnique(mTechs.get(mTechInd));
 
         // Log start times
-        mBlockStTime = Utils.nowInMillis();
-        mTechTaskStTime = Utils.nowInMillis();
-        mTechStTime = Utils.nowInMillis();
+//        mBlockStTime = Utils.nowInMillis();
+//        mTechTaskStTime = Utils.nowInMillis();
+//        mTechStTime = Utils.nowInMillis();
 
-        showTrial();
+//        showTrial();
     }
 
     /**
@@ -831,6 +904,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         // Send the end message to the Moose
         Server.get().send(new Memo(STRINGS.LOG, STRINGS.END, 0, 0));
 
+        mTechEndSound.play();
         showExpEndDialog();
     }
 
@@ -842,10 +916,16 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         mInShortBreak = true;
         mNoTrial = true;
 
-        getActionMap().remove("SPACE");
-        getActionMap().put("ENTER", END_SHORT_BREAK);
+        getActionMap().remove(KS_SPACE.toString());
+        getActionMap().put(KS_ENTER.toString(), END_SHORT_BREAK);
 
-        add(mShortBreakLabel, 0);
+        // Show the label
+        final int xPos = 750;
+        final int yPos = 400;
+        JLabel shortBreakLabel = new JLabel(STRINGS.SHORT_BREAK_TEXT, JLabel.CENTER);
+        shortBreakLabel.setFont(new Font("Sans", Font.BOLD, 25));
+        shortBreakLabel.setBounds(xPos, yPos, 1000, 400);
+        add(shortBreakLabel, 1);
 
         repaint();
     }
@@ -858,7 +938,9 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
 
         mInLongBreak = true;
         mNoTrial = true;
-        getActionMap().remove("SPACE");
+        getActionMap().remove(KS_SPACE.toString());
+        getActionMap().remove(KS_RA.toString());
+        getActionMap().remove(KS_DA.toString());
 
         repaint();
         MainFrame.get().showDialog(new BreakDialog());
@@ -866,7 +948,9 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         // ... back from the break
         mInLongBreak = false;
         mNoTrial = false;
-        getActionMap().put("SPACE", END_TRIAL);
+        getActionMap().put(KS_SPACE.toString(), END_TRIAL);
+        getActionMap().put(KS_RA.toString(), ADVANCE_BLOCK);
+        getActionMap().put(KS_DA.toString(), ADVANCE_TRIAL);
     }
 
     /**
@@ -892,9 +976,17 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
 
         JButton button = new JButton("Continue");
         button.setMaximumSize(new Dimension(300, 50));
-        button.addActionListener(START_NEXT_TECH);
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
         button.setFocusable(false);
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mlongBreakDialog.dispose();
+                mTechInd++;
+                removeKeyMaps();
+                showTechStartPage();
+            }
+        });
         panel.add(button);
 
         mlongBreakDialog.add(panel);
@@ -952,10 +1044,10 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        String TAG = NAME + "paintComponent";
+        final String TAG = NAME + "paintComponent";
 
         Graphics2D g2d = (Graphics2D) g;
-
+        Logs.d(TAG, mNoTrial, mVtFrameRect.width);
         if (!mNoTrial) { // Show trials?
             g2d.setColor(Consts.COLORS.CELL_HIGHLIGHT);
             if (mVtFrameRect.width != 0) {
@@ -999,6 +1091,14 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         }
     }
 
+    private void removeKeyMaps() {
+        getActionMap().remove(KS_SPACE.toString());
+        getActionMap().remove(KS_ENTER.toString());
+        getActionMap().remove(KS_SLASH.toString());
+        getActionMap().remove(KS_RA.toString());
+        getActionMap().remove(KS_DA.toString());
+    }
+
     /**
      * Map the keys
      */
@@ -1016,18 +1116,18 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         KS_RA = KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0, true);
         KS_DA = KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0, true);
 
-        getInputMap().put(KS_SPACE, "SPACE");
-        getInputMap().put(KS_SLASH, "SLASH");
-        getInputMap().put(KS_ENTER, "ENTER");
-        getInputMap().put(KS_SHIFT, "SHIFT");
-        getInputMap().put(KS_Q, "Q");
-        getInputMap().put(KS_A, "A");
-        getInputMap().put(KS_W, "W");
-        getInputMap().put(KS_S, "S");
-        getInputMap().put(KS_E, "E");
-        getInputMap().put(KS_D, "D");
-        getInputMap().put(KS_RA, "RA");
-        getInputMap().put(KS_DA, "DA");
+        getInputMap().put(KS_SPACE, KS_SPACE.toString());
+        getInputMap().put(KS_SLASH, KS_SLASH.toString());
+        getInputMap().put(KS_ENTER, KS_ENTER.toString());
+
+        getInputMap().put(KS_Q, KS_Q.toString());
+        getInputMap().put(KS_A, KS_A.toString());
+        getInputMap().put(KS_W, KS_W.toString());
+        getInputMap().put(KS_S, KS_S.toString());
+        getInputMap().put(KS_E, KS_E.toString());
+        getInputMap().put(KS_D, KS_D.toString());
+        getInputMap().put(KS_RA, KS_RA.toString());
+        getInputMap().put(KS_DA, KS_DA.toString());
     }
 
     // MouseMotionListenr ---------------------------------------------------------------------------------
@@ -1045,7 +1145,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
             Logger.get().logTimeInfo(mGenInfo, mTimeInfo); // Log TimeInfo
 
             // Rr-assign the keys
-            getActionMap().put("SPACE", END_TRIAL);
+            getActionMap().put(KS_SPACE.toString(), END_TRIAL);
         }
 
         // Log all mouse movements

@@ -100,14 +100,17 @@ public class Consts {
                 "First, let's have a demo >";
 
         public final static String SHORT_BREAK_TEXT =
-                "<html>Time for a quick break! To continue, press <B>ENTER</B>.</html>";
+                "<html>Take a quick break! To continue, press <B>ENTER</B>.</html>";
 
-        public static final String DLG_BREAK_TITLE  = "Time for a break!";
+        public static final String DLG_BREAK_TITLE  = "Time for a break between tasks!";
         public static final String DLG_BREAK_TEXT   =
-                "<html>When ready, press <B>BLUE + RED</B> keys to start the next block</html>";
+                "<html>When ready, press <B>BLUE + RED</B> keys on the keyboard to continue.</html>";
 
         public final static String EXP_START_MESSAGE =
                 "To begin the experiment, press SPACE.";
+        public final static String TECH_START_MESSAGE =
+                "When ready, press SPACE to start with ";
+
         public final static String[] END_TECH_MESSAGES = new String[2];
         public final static String END_EXPERIMENT_MESSAGE =
                 "All finished! Thank you for participating in this experiment!";

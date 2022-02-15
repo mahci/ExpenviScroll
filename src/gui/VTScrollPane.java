@@ -542,7 +542,7 @@ public class VTScrollPane extends JScrollPane implements MouseListener, MouseWhe
                 mScrollInfo.vtAmt = getVerticalScrollBar().getValue() - mLastScrollVal;
                 mScrollInfo.hzAmt = 0;
                 mScrollInfo.moment = Utils.nowInMillis();
-
+                Logs.d(NAME, e.getPreciseWheelRotation());
                 Logger.get().logScrollInfo(mGenInfo, mScrollInfo);
 
                 mLastScrollVal = getVerticalScrollBar().getValue();

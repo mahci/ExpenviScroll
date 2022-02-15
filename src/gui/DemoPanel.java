@@ -160,6 +160,8 @@ public class DemoPanel extends JPanel {
         });
         mNextButton.setFocusable(false);
         add(mNextButton, 0);
+
+        loadSounds();
     }
 
     /**

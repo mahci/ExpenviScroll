@@ -563,6 +563,7 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
 
         if (isWheelScrollingEnabled() && mCursorIn) {
             mScrollInfo.wheelRot = e.getPreciseWheelRotation(); // Info needed from wheel
+            Logs.d(TAG, e.getPreciseWheelRotation());
             logScroll();
 
             if (e.getModifiersEx() == InputEvent.SHIFT_DOWN_MASK) {

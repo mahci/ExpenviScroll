@@ -14,30 +14,9 @@ import static tools.Consts.STRINGS.*;
 
 public class Experiment {
     private final static String NAME = "Experiment/";
-    // ------------------------------------------------------------------------------------------------------
-    //-- Config
-    // Vertical
-    public static final DimensionD VT_PANE_DIM_mm = new DimensionD(130.0, 145.0);
-    public static final double VT_LINENUMS_W_mm = 10;
-    public static final double VT_SCROLL_BAR_W_mm = 5;
-    public static final double VT_SCROLL_THUMB_H_mm = 6;
 
-    // Horizontal
-    public final DimensionD DIM_HZ_PANE_mm = new DimensionD(140.0, 110.0);
-    public final double HZ_SCROLL_BAR_H_mm = 5.0;
-    public final double HZ_SCROLL_THUMB_W_mm = 6.0;
-    public final int HZ_N_ROWS = 25;
-    public final int HZ_N_COLS = 200;
-    public final int HZ_N_VISIBLE_COLS = 15;
-
-    // 2D
-    public static final int TD_N_ROWS = 300; // = num of columns
-    public static final int TD_N_VIS_ROWS = 25; // = num of visible cols
-    public static final double TD_CELL_SIZE_mm = 7.0; // Side of cells in mm
-    public static final double TD_SCROLL_BAR_W_mm = 5.0; // Length = side of the pane
-    public static final double TD_SCROLL_THUMB_L_mm = 6.0; // Width = width of the scrollbar
-    public static final double TD_FRAME_H_mm = 7.0; // Height of frame
-
+    //-- Consts
+    // Directions
     public enum DIRECTION {
         N(0), S(1), E(2), W(3), NE(4), NW(5), SE(6), SW(7);
         private final int n;
@@ -79,6 +58,7 @@ public class Experiment {
         }
     }
 
+    // Tasks
     public enum TASK {
         VERTICAL, TWO_DIM;
         private static final TASK[] values = values();
@@ -88,6 +68,7 @@ public class Experiment {
         }
     }
 
+    // Techniques
     public enum TECHNIQUE {
         DRAG, RATE_BASED, FLICK, MOUSE;
         private static final TECHNIQUE[] values = values();
@@ -97,7 +78,21 @@ public class Experiment {
         }
     }
 
-    //-- Variables
+    // ------------------------------------------------------------------------------------------------------
+    //-- Config
+    // Vertical
+    public static final double VT_SCROLL_BAR_W_mm = 5.0;
+    public static final double VT_SCROLL_THUMB_H_mm = 6.0;
+
+    // 2D
+    public static final int TD_N_ROWS = 300; // = num of columns
+    public static final int TD_N_VIS_ROWS = 25; // = num of visible cols
+    public static final double TD_CELL_SIZE_mm = 7.0; // Side of cells in mm
+    public static final double TD_SCROLL_BAR_W_mm = 5.0; // Length = side of the pane
+    public static final double TD_SCROLL_THUMB_L_mm = 6.0; // Width = width of the scrollbar
+    public static final double TD_FRAME_H_mm = 7.0; // Height of frame
+
+    // Variables
     private int[] VT_DISTANCES = new int[]{50, 200, 600}; // in lines/cells
     private int[] TD_DISTANCES = new int[]{50, 200};
     private int[] FRAMES = new int[]{3, 5}; // in lines/cells
@@ -111,13 +106,10 @@ public class Experiment {
     private Map<TASK, Integer> N_BLOCKS = Map.of(
             VERTICAL, 8,
         TWO_DIM, 4);
+    public final static double MOUSE_SCROLL_MULTIP = 50.0;
 
-    //--- Participant's things!
-    private int mPId;
-    private List<TASK> mPcTasks;
-    private List<TECHNIQUE> mPcTechs;
-
-    //---------- Status
+    // ------------------------------------------------------------------------------------------------------
+    // Status
     private static TECHNIQUE mActiveTechnique = DRAG;
     private static int mDragSensitivity = 2;
     private static double mDragGain = 100;
@@ -126,8 +118,12 @@ public class Experiment {
     private static int mRBDenom = 50;
     private static double mCoef = 0.1;
 
-    // -------------------------------------------------------------------------------------------------------
+    //--- Participant's things!
+    private int mPId;
+    private List<TASK> mPcTasks;
+    private List<TECHNIQUE> mPcTechs;
 
+    // -------------------------------------------------------------------------------------------------------
     /**
      * Constructor
      * @param pid Participant's Id (from 1)

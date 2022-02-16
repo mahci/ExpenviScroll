@@ -10,10 +10,7 @@ import javax.swing.text.DefaultHighlighter.DefaultHighlightPainter;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
+import java.awt.event.*;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -73,6 +70,8 @@ public class VTScrollPane extends JScrollPane implements MouseListener, MouseWhe
         setPreferredSize(mDim);
 
         setBorder(BorderFactory.createLineBorder(COLORS.VIEW_BORDER));
+
+        setWheelScrollingEnabled(false);
     }
 
     /**
@@ -357,7 +356,7 @@ public class VTScrollPane extends JScrollPane implements MouseListener, MouseWhe
 //        Logs.d(TAG, "", getPreferredSize().height, getNVisibleLines());
 //        return getPreferredSize().height / getNVisibleLines();
         int bodyPaneH = getViewport().getView().getPreferredSize().height;
-        Logs.d(TAG, "", bodyPaneH, mNumLines);
+//        Logs.d(TAG, "", bodyPaneH, mNumLines);
         return bodyPaneH / mNumLines;
     }
 
@@ -548,6 +547,9 @@ public class VTScrollPane extends JScrollPane implements MouseListener, MouseWhe
                 mLastScrollVal = getVerticalScrollBar().getValue();
             }
         }
+
+        // Manual scroll
+        scroll((int) (e.getPreciseWheelRotation() * 100.0));
     }
 
 }

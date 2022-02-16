@@ -13,7 +13,7 @@ import java.awt.event.*;
 import static tools.Consts.*;
 import static control.Logger.*;
 
-public class TDScrollPane extends JScrollPane implements MouseListener, MouseWheelListener, AdjustmentListener {
+public class TDScrollPane extends JScrollPane implements MouseListener, MouseWheelListener, AdjustmentListener, KeyListener {
     private final static String NAME = "TDScrollPane/";
 
     private JTable bodyTable;                   // Inside table
@@ -56,7 +56,8 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
 
     // Keystrokes
     private KeyStroke KS_SHIFT;
-    private KeyStroke KS_L;
+
+    private boolean isHorizontal;
 
     private final Action SHIFT_RELEASE = new AbstractAction() {
         @Override
@@ -96,6 +97,9 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
         setPreferredSize(paneDim);
 
         setBorder(BorderFactory.createLineBorder(COLORS.VIEW_BORDER));
+
+        // Disable scrolling directly with wheel (doing it manually)
+        setWheelScrollingEnabled(false);
     }
 
     /**
@@ -160,6 +164,7 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
         for (int i = 0; i < nRows; i++) {
             for (int j = 0; j < nRows; j++) {
                 tableData[i][j] = Utils.randInt(1, 100);
+//                tableData[i][j] = j;
             }
         }
         DefaultTableModel model = new DefaultTableModel(tableData, colNames);
@@ -346,7 +351,7 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
                 // Scroll only if amount != 0 and inside the limits
                 if (newY >= 0 && newY <= (vpDim.height - vtExtent)) {
                     getViewport().setViewPosition(new Point(vpPos.x, newY));
-                    Logs.d(TAG, "vt scrolled to ", newY);
+//                    Logs.d(TAG, "vt scrolled to ", newY);
                 }
             }
 
@@ -355,7 +360,7 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
                 final int newX = vpPos.x + hzScrollAmt;
                 if (newX >= 0 && newX <= (vpDim.width - hzExtent)) {
                     getViewport().setViewPosition(new Point(newX, vpPos.y));
-                    Logs.d(TAG, "hz scrolled to ", newX);
+//                    Logs.d(TAG, "hz scrolled to ", newX);
                 }
             }
 
@@ -561,14 +566,35 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
     public void mouseWheelMoved(MouseWheelEvent e) {
         final String TAG = NAME + "mouseWheelMoved";
 
-        if (isWheelScrollingEnabled() && mCursorIn) {
-            mScrollInfo.wheelRot = e.getPreciseWheelRotation(); // Info needed from wheel
-            Logs.d(TAG, e.getPreciseWheelRotation());
+//        if (isWheelScrollingEnabled() && mCursorIn) {
+//            mScrollInfo.wheelRot = e.getPreciseWheelRotation(); // Info needed from wheel
+//            Logs.d(TAG, e.getPreciseWheelRotation());
+//            logScroll();
+//
+//            if (e.getModifiersEx() == InputEvent.SHIFT_DOWN_MASK) {
+//                mShiftDown = true;
+//            }
+//        }
+
+        // Scroll manually
+        if (mCursorIn) {
+            final double preciseRotation = e.getPreciseWheelRotation();
+            final int scrollAmt = (int) (e.getPreciseWheelRotation() * Experiment.MOUSE_SCROLL_MULTIP);
+
+            // Scroll manually
+            if (e.getModifiersEx() == InputEvent.CTRL_DOWN_MASK) { // Horizontal with CTRL
+                Logs.d(TAG, "CTRL Down: " + e.getPreciseWheelRotation());
+                scroll(0, scrollAmt);
+            } else {
+                Logs.d(TAG, "Without CTRL: " + e.getPreciseWheelRotation());
+                scroll(scrollAmt, 0);
+            }
+
+            // Log
+            mScrollInfo.wheelRot = preciseRotation;
             logScroll();
 
-            if (e.getModifiersEx() == InputEvent.SHIFT_DOWN_MASK) {
-                mShiftDown = true;
-            }
+
         }
     }
 
@@ -581,6 +607,24 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
 
 
 //        Logs.d(NAME, e.getValue());
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        Logs.d(NAME, e.getKeyCode());
+        if (e.getKeyCode() == KeyEvent.VK_A) {
+            isHorizontal = true;
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        isHorizontal = false;
     }
 
     // Custom ScrollBar ========================================================================================

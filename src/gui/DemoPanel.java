@@ -87,7 +87,7 @@ public class DemoPanel extends JPanel {
     private final Action SWITCH_TECH_ACTION = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (mTechInd < 2) mTechInd++;
+            if (mTechInd == 0) mTechInd = 1;
             else mTechInd = 0;
 
             // Update label

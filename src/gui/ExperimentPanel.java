@@ -9,22 +9,15 @@ import experiment.Trial;
 import tools.*;
 
 import javax.swing.*;
-import java.applet.Applet;
 import java.applet.AudioClip;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
 import java.util.List;
-import java.util.Objects;
 
 import static experiment.Experiment.*;
 import static tools.Consts.*;
-import static tools.Consts.SOUNDS.*;
-import static tools.Consts.STRINGS.END_EXPERIMENT_MESSAGE;
-import static tools.Consts.STRINGS.END_TECH_MESSAGES;
 import static control.Logger.*;
+import static tools.Consts.STRINGS.*;
 
 public class ExperimentPanel extends JLayeredPane implements MouseMotionListener {
 
@@ -159,10 +152,10 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
             mTrial = mBlock.getTrial(mTrialInd);
 
             // Set the active technique
-            Experiment.setActiveTechnique(mTechs.get(mTechInd));
-            mTechLabel.setText("Technique: " + mTechs.get(mTechInd));
-            if (mVTScrollPane != null) mVTScrollPane.changeTechnique(mTechs.get(mTechInd));
-            if (mTDScrollPane != null) mTDScrollPane.changeTechnique(mTechs.get(mTechInd));
+//            Experiment.setActiveTechnique(mTechs.get(mTechInd));
+//            mTechLabel.setText("Technique: " + mTechs.get(mTechInd));
+//            if (mVTScrollPane != null) mVTScrollPane.changeTechnique(mTechs.get(mTechInd));
+//            if (mTDScrollPane != null) mTDScrollPane.changeTechnique(mTechs.get(mTechInd));
 
             // Sync the info to the Moose
             Server.get().send(new Memo(STRINGS.LOG, STRINGS.TECH + "_" + STRINGS.TSK,
@@ -237,11 +230,13 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
 
             // Was the trial a success or a fail?
             if (trialResult.fXs() == 1) {
-                mHitSound.play();
+//                mHitSound.play();
+                SOUNDS.play(HIT);
                 mNSuccessTrials++;
             }
             else { // Miss
-                mMissSound.play();
+//                mMissSound.play();
+                SOUNDS.play(MISS);
                 mBlock.dupeShuffleTrial(mTrialInd); // Shuffle the trial into the rest of trials
             }
 
@@ -360,9 +355,9 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
             mTechLabel.setText("Technique: " + mTechs.get(mTechInd));
 
             // Sync Moose
-            Experiment.setActiveTechnique(mTechs.get(mTechInd));
-            if (mVTScrollPane != null) mVTScrollPane.changeTechnique(mTechs.get(mTechInd));
-            if (mTDScrollPane != null) mTDScrollPane.changeTechnique(mTechs.get(mTechInd));
+//            Experiment.setActiveTechnique(mTechs.get(mTechInd));
+//            if (mVTScrollPane != null) mVTScrollPane.changeTechnique(mTechs.get(mTechInd));
+//            if (mTDScrollPane != null) mTDScrollPane.changeTechnique(mTechs.get(mTechInd));
         }
     };
 
@@ -439,7 +434,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
 //        add(mTechLabel, 2);
 
         // Set up the sounds
-        loadSounds();
+//        loadSounds();
 
         //----------------------
         // Initialize and show the tech start page
@@ -478,8 +473,8 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
                 .create();
 
         // Set the current technique in panes
-        if (mVTScrollPane != null) mVTScrollPane.changeTechnique(mTechs.get(mTechInd));
-        if (mTDScrollPane != null) mTDScrollPane.changeTechnique(mTechs.get(mTechInd));
+//        if (mVTScrollPane != null) mVTScrollPane.changeTechnique(mTechs.get(mTechInd));
+//        if (mTDScrollPane != null) mTDScrollPane.changeTechnique(mTechs.get(mTechInd));
 
     }
 
@@ -943,7 +938,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         getActionMap().remove(KS_DA.toString());
 
         repaint();
-        MainFrame.get().showDialog(new BreakDialog());
+        ExperimentFrame.get().showDialog(new BreakDialog());
 
         // ... back from the break
         mInLongBreak = false;
@@ -1070,26 +1065,26 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
     /**
      * Load all the sounds to play later
      */
-    private void loadSounds() {
-        try {
-            final ClassLoader classLoader = getClass().getClassLoader();
-
-            final URL hitURL = new File(Objects.requireNonNull(classLoader.getResource(HIT_SOUND))
-                    .getFile()).toURI().toURL();
-            final URL missURL = new File(Objects.requireNonNull(classLoader.getResource(MISS_SOUND))
-                    .getFile()).toURI().toURL();
-            final URL techEndURL = new File(Objects.requireNonNull(classLoader.getResource(TECH_END_SOUND))
-                    .getFile()).toURI().toURL();
-
-            mHitSound = Applet.newAudioClip(hitURL);
-            mMissSound = Applet.newAudioClip(missURL);
-            mTechEndSound = Applet.newAudioClip(techEndURL);
-
-        } catch ( NullPointerException
-                | IOException e) {
-            e.printStackTrace();
-        }
-    }
+//    private void loadSounds() {
+//        try {
+//            final ClassLoader classLoader = getClass().getClassLoader();
+//
+//            final URL hitURL = new File(Objects.requireNonNull(classLoader.getResource(HIT_SOUND_NAME))
+//                    .getFile()).toURI().toURL();
+//            final URL missURL = new File(Objects.requireNonNull(classLoader.getResource(MISS_SOUND_NAME))
+//                    .getFile()).toURI().toURL();
+//            final URL techEndURL = new File(Objects.requireNonNull(classLoader.getResource(TECH_END_SOUND_NAME))
+//                    .getFile()).toURI().toURL();
+//
+//            mHitSound = Applet.newAudioClip(hitURL);
+//            mMissSound = Applet.newAudioClip(missURL);
+//            mTechEndSound = Applet.newAudioClip(techEndURL);
+//
+//        } catch ( NullPointerException
+//                | IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     private void removeKeyMaps() {
         getActionMap().remove(KS_SPACE.toString());
@@ -1170,15 +1165,15 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            switch (mAction) {
-                case STRINGS.TECH -> {
-                    mConfigPanel.nextTechnique();
-                    Controller.get().stopScroll();
-                }
-                case STRINGS.SENSITIVITY -> mConfigPanel.adjustSensitivity(mInc);
-                case STRINGS.GAIN -> mConfigPanel.adjustGain(mInc);
-                case STRINGS.DENOM -> mConfigPanel.adjustDenom(mInc);
-            }
+//            switch (mAction) {
+//                case STRINGS.TECH -> {
+//                    mConfigPanel.nextTechnique();
+//                    Controller.get().stopScroll();
+//                }
+//                case STRINGS.SENSITIVITY -> mConfigPanel.adjustSensitivity(mInc);
+//                case STRINGS.GAIN -> mConfigPanel.adjustGain(mInc);
+//                case STRINGS.DENOM -> mConfigPanel.adjustDenom(mInc);
+//            }
 //
         }
     }

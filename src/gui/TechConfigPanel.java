@@ -90,7 +90,7 @@ public class TechConfigPanel extends JPanel implements ItemListener {
                 TECHNIQUE tech = (TECHNIQUE) mTechniquesCoBx.getSelectedItem();
                 CardLayout cl = (CardLayout)(mCardsPanel.getLayout());
                 cl.show(mCardsPanel, tech.toString());
-                Experiment.setActiveTechnique(tech);
+//                Experiment.setActiveTechnique(tech);
             }
         });
 
@@ -148,57 +148,57 @@ public class TechConfigPanel extends JPanel implements ItemListener {
         CardLayout cl = (CardLayout)(mCardsPanel.getLayout());
         Logs.d(NAME, e.getItem().toString(), 0);
         cl.show(mCardsPanel, e.getItem().toString());
-        Experiment.setActiveTechnique(TECHNIQUE.valueOf(e.getItem().toString()));
+//        Experiment.setActiveTechnique(TECHNIQUE.valueOf(e.getItem().toString()));
     }
 
     public void nextTechnique() {
         final CardLayout cl = (CardLayout)(mCardsPanel.getLayout());
         TECHNIQUE nextTechnique = TECHNIQUE.DRAG;
-        switch (Experiment.getActiveTechnique()) {
-            case DRAG -> nextTechnique = TECHNIQUE.RATE_BASED;
-            case RATE_BASED -> nextTechnique = TECHNIQUE.FLICK;
-            case FLICK -> nextTechnique = TECHNIQUE.MOUSE;
-            case MOUSE -> nextTechnique = TECHNIQUE.DRAG;
-        }
+//        switch (Experiment.getActiveTechnique()) {
+//            case DRAG -> nextTechnique = TECHNIQUE.RATE_BASED;
+//            case RATE_BASED -> nextTechnique = TECHNIQUE.FLICK;
+//            case FLICK -> nextTechnique = TECHNIQUE.MOUSE;
+//            case MOUSE -> nextTechnique = TECHNIQUE.DRAG;
+//        }
 
         mTechniquesCoBx.setSelectedItem(nextTechnique);
         cl.show(mCardsPanel, nextTechnique.toString());
 //        Experiment.setActiveTechnique(nextTechnique);
     }
 
-    public void adjustSensitivity(boolean inc) {
-        int newValue = 1;
-        switch (Experiment.getActiveTechnique()) {
-            case DRAG -> newValue = (int) mDragSensitivitySp.change(inc);
-            case RATE_BASED -> newValue = (int) mRBSensitivitySp.change(inc);
-        }
-        Experiment.setSensitivity(newValue);
-    }
-
-    public void adjustGain(boolean inc) {
-        double newValue = 1;
-        switch (Experiment.getActiveTechnique()) {
-            case DRAG -> newValue = (double) mDragGainSp.change(inc);
-            case RATE_BASED -> newValue = (double) mRBGainSp.change(inc);
-        }
-        Experiment.setGain(newValue);
-    }
-
-    public void adjustDenom(boolean inc) {
-        int newValue = 1;
-        switch (Experiment.getActiveTechnique()) {
-            case RATE_BASED -> newValue = (int) mRBDenomSp.change(inc);
-        }
-        Experiment.setDenom(newValue);
-    }
-
-    public void adjustCoef(boolean inc) {
-        double newValue = 1;
-        switch (Experiment.getActiveTechnique()) {
-            case FLICK -> newValue = (double) mRBDenomSp.change(inc);
-        }
-        Experiment.setCoef(newValue);
-    }
+//    public void adjustSensitivity(boolean inc) {
+//        int newValue = 1;
+//        switch (Experiment.getActiveTechnique()) {
+//            case DRAG -> newValue = (int) mDragSensitivitySp.change(inc);
+//            case RATE_BASED -> newValue = (int) mRBSensitivitySp.change(inc);
+//        }
+//        Experiment.setSensitivity(newValue);
+//    }
+//
+//    public void adjustGain(boolean inc) {
+//        double newValue = 1;
+//        switch (Experiment.getActiveTechnique()) {
+//            case DRAG -> newValue = (double) mDragGainSp.change(inc);
+//            case RATE_BASED -> newValue = (double) mRBGainSp.change(inc);
+//        }
+//        Experiment.setGain(newValue);
+//    }
+//
+//    public void adjustDenom(boolean inc) {
+//        int newValue = 1;
+//        switch (Experiment.getActiveTechnique()) {
+//            case RATE_BASED -> newValue = (int) mRBDenomSp.change(inc);
+//        }
+//        Experiment.setDenom(newValue);
+//    }
+//
+//    public void adjustCoef(boolean inc) {
+//        double newValue = 1;
+//        switch (Experiment.getActiveTechnique()) {
+//            case FLICK -> newValue = (double) mRBDenomSp.change(inc);
+//        }
+//        Experiment.setCoef(newValue);
+//    }
 
 //    public void adjustGain(boolean inc) {
 //        int newValue = 1;

@@ -1,16 +1,9 @@
 package experiment;
 
-import control.Server;
-import tools.DimensionD;
-import tools.Logs;
-import tools.Memo;
 import tools.Utils;
 
+import javax.swing.tree.TreeModel;
 import java.util.*;
-
-import static experiment.Experiment.TECHNIQUE.*;
-import static experiment.Experiment.TASK.*;
-import static tools.Consts.STRINGS.*;
 
 public class Experiment {
     private final static String NAME = "Experiment/";
@@ -62,9 +55,16 @@ public class Experiment {
     public enum TASK {
         VERTICAL, TWO_DIM;
         private static final TASK[] values = values();
+
         public static TASK get(int ord) {
             if (ord < values.length) return values[ord];
             else return values[0];
+        }
+
+        @Override
+        public String toString() {
+            if (this.equals(VERTICAL)) return "VERTICAL";
+            else return "2D";
         }
     }
 
@@ -72,6 +72,7 @@ public class Experiment {
     public enum TECHNIQUE {
         DRAG, RATE_BASED, FLICK, MOUSE;
         private static final TECHNIQUE[] values = values();
+
         public static TECHNIQUE get(int ord) {
             if (ord < values.length) return values[ord];
             else return values[0];
@@ -104,13 +105,15 @@ public class Experiment {
 //            MOUSE, FLICK, DRAG,
 //            MOUSE, DRAG, FLICK);
     private Map<TASK, Integer> N_BLOCKS = Map.of(
-            VERTICAL, 8,
-        TWO_DIM, 4);
+            TASK.VERTICAL, 8,
+        TASK.TWO_DIM, 4);
+    private TreeModel mConstellTree;
+
     public final static double MOUSE_SCROLL_MULTIP = 50.0;
 
     // ------------------------------------------------------------------------------------------------------
     // Status
-    private static TECHNIQUE mActiveTechnique = DRAG;
+//    private static TECHNIQUE mActiveTechnique = DRAG;
     private static int mDragSensitivity = 2;
     private static double mDragGain = 100;
     private static int mRBSensitivity = 1;
@@ -122,6 +125,8 @@ public class Experiment {
     private int mPId;
     private List<TASK> mPcTasks;
     private List<TECHNIQUE> mPcTechs;
+    private ExpNode mPcTree;
+//    private List<Chunk> mPcChunks;
 
     // -------------------------------------------------------------------------------------------------------
     /**
@@ -133,27 +138,65 @@ public class Experiment {
 
         mPId = pid;
 
-        // Set up the constellation of techs and tasks
-        switch (mPId % 4) {
-            case 0 -> {
-                mPcTechs = Arrays.asList(FLICK, MOUSE);
-                mPcTasks = Arrays.asList(VERTICAL, TWO_DIM);
+        if (mPId % 2 == 0) mPcTasks = Arrays.asList(TASK.TWO_DIM, TASK.VERTICAL);
+        else mPcTasks = Arrays.asList(TASK.VERTICAL, TASK.TWO_DIM);
+
+//        switch (mPId % 4) {
+//            case 0 -> {
+//                mPcTechs = Arrays.asList(FLICK, MOUSE);
+//                mPcTasks = Arrays.asList(VERTICAL, TWO_DIM);
+//            }
+//            case 1 -> {
+//                mPcTechs = Arrays.asList(FLICK, MOUSE);
+//                mPcTasks = Arrays.asList(TWO_DIM, VERTICAL);
+//            }
+//            case 2 -> {
+//                mPcTechs = Arrays.asList(MOUSE, FLICK);
+//                mPcTasks = Arrays.asList(VERTICAL, TWO_DIM);
+//            }
+//            case 3 -> {
+//                mPcTechs = Arrays.asList(MOUSE, FLICK);
+//                mPcTasks = Arrays.asList(TWO_DIM, VERTICAL);
+//            }
+//        }
+
+        mPcTree = new ExpNode<>(pid);
+
+        for (TASK task : mPcTasks) {
+            ExpNode taskNode = new ExpNode<>(task);
+
+            for (int i = 0; i < N_BLOCKS.get(task); i++) {
+                final ExpNode blockNode = new ExpNode<>(
+                        new Block(task, VT_DISTANCES, TD_DISTANCES, FRAMES));
+                taskNode.addChild(blockNode);
             }
-            case 1 -> {
-                Logs.d(TAG, "case 1");
-                mPcTechs = Arrays.asList(FLICK, MOUSE);
-                mPcTasks = Arrays.asList(TWO_DIM, VERTICAL);
-            }
-            case 2 -> {
-                mPcTechs = Arrays.asList(MOUSE, FLICK);
-                mPcTasks = Arrays.asList(VERTICAL, TWO_DIM);
-            }
-            case 3 -> {
-                mPcTechs = Arrays.asList(MOUSE, FLICK);
-                mPcTasks = Arrays.asList(TWO_DIM, VERTICAL);
-            }
+
+            mPcTree.addChild(taskNode);
         }
 
+//        for (TECHNIQUE tech : mPcTechs) {
+//            ExpNode techNode = new ExpNode<>(tech);
+//
+//            for (TASK task : mPcTasks) {
+//                ExpNode taskNode = new ExpNode<>(task);
+//
+//                for (int i = 0; i < N_BLOCKS.get(task); i++) {
+//                    final ExpNode blockNode = new ExpNode<>(
+//                            new Block(task, VT_DISTANCES, TD_DISTANCES, FRAMES));
+//                    taskNode.addChild(blockNode);
+//                }
+//
+//                techNode.addChild(taskNode);
+//            }
+//
+//            mPcTree.addChild(techNode);
+//        }
+
+
+    }
+
+    public ExpNode getPcTree() {
+        return mPcTree;
     }
 
     /**
@@ -191,66 +234,66 @@ public class Experiment {
      * Get a random vertical trial
      * @return Random vertical trial
      */
-    public Trial randVtTrial() {
-        int dist = Utils.randElement(VT_DISTANCES);
-        int fr = Utils.randElement(FRAMES);
-        return new Trial(TASK.VERTICAL, DIRECTION.randOne(DIRECTION.N, DIRECTION.S), dist, 0, fr);
-    }
+//    public Trial randVtTrial() {
+//        int dist = Utils.randElement(VT_DISTANCES);
+//        int fr = Utils.randElement(FRAMES);
+//        return new Trial(TASK.VERTICAL, DIRECTION.randOne(DIRECTION.N, DIRECTION.S), dist, 0, fr);
+//    }
+//
+//    /**
+//     * Get a random 2D trial
+//     * @return Random 2D trial
+//     */
+//    public Trial randTdTrial() {
+//        int dist = Utils.randElement(TD_DISTANCES);
+//        int fr = Utils.randElement(FRAMES);
+//        return new Trial(TASK.TWO_DIM, DIRECTION.randTd(), 0, dist, fr);
+//    }
+//
+//    /**
+//     * Set the active technique
+//     * @param tech TECHNIQUE
+//     */
+//    public static void setActiveTechnique(TECHNIQUE tech) {
+//        mActiveTechnique = tech;
+//
+//        final Memo memo = new Memo(CONFIG, TECH, mActiveTechnique.ordinal(), 0);
+//        Server.get().send(memo);
+//    }
 
-    /**
-     * Get a random 2D trial
-     * @return Random 2D trial
-     */
-    public Trial randTdTrial() {
-        int dist = Utils.randElement(TD_DISTANCES);
-        int fr = Utils.randElement(FRAMES);
-        return new Trial(TASK.TWO_DIM, DIRECTION.randTd(), 0, dist, fr);
-    }
 
-    /**
-     * Set the active technique
-     * @param tech TECHNIQUE
-     */
-    public static void setActiveTechnique(TECHNIQUE tech) {
-        mActiveTechnique = tech;
-
-        final Memo memo = new Memo(CONFIG, TECH, mActiveTechnique.ordinal(), 0);
-        Server.get().send(memo);
-    }
-
-
-    public static void setSensitivity(int sens) {
-        if (mActiveTechnique.equals(DRAG)) mDragSensitivity = sens;
-        else if (mActiveTechnique.equals(RATE_BASED)) mRBSensitivity = sens;
-
-        final Memo memo = new Memo(CONFIG, SENSITIVITY, sens, sens);
-        Server.get().send(memo);
-    }
-
-    public static void setGain(double gain) {
-        if (mActiveTechnique.equals(DRAG)) mDragGain = gain;
-        else if (mActiveTechnique.equals(RATE_BASED)) mRBGain = gain;
-
-        final Memo memo = new Memo(CONFIG, GAIN, gain, gain);
-        Server.get().send(memo);
-    }
-
-    public static void setDenom(int denom) {
-        mRBDenom = denom;
-
-        final Memo memo = new Memo(CONFIG, DENOM, denom, denom);
-        Server.get().send(memo);
-    }
-
-    public static void setCoef(double coef) {
-        mCoef = coef;
-
-        final Memo memo = new Memo(CONFIG, COEF, coef, coef);
-        Server.get().send(memo);
-    }
-
-    public static TECHNIQUE getActiveTechnique() {
-        return mActiveTechnique;
-    }
+//    public static void setSensitivity(int sens) {
+//        if (mActiveTechnique.equals(DRAG)) mDragSensitivity = sens;
+//        else if (mActiveTechnique.equals(RATE_BASED)) mRBSensitivity = sens;
+//
+//        final Memo memo = new Memo(CONFIG, SENSITIVITY, sens, sens);
+//        Server.get().send(memo);
+//    }
+//
+//    public static void setGain(double gain) {
+//        if (mActiveTechnique.equals(DRAG)) mDragGain = gain;
+//        else if (mActiveTechnique.equals(RATE_BASED)) mRBGain = gain;
+//
+//        final Memo memo = new Memo(CONFIG, GAIN, gain, gain);
+//        Server.get().send(memo);
+//    }
+//
+//    public static void setDenom(int denom) {
+//        mRBDenom = denom;
+//
+//        final Memo memo = new Memo(CONFIG, DENOM, denom, denom);
+//        Server.get().send(memo);
+//    }
+//
+//    public static void setCoef(double coef) {
+//        mCoef = coef;
+//
+//        final Memo memo = new Memo(CONFIG, COEF, coef, coef);
+//        Server.get().send(memo);
+//    }
+//
+//    public static TECHNIQUE getActiveTechnique() {
+//        return mActiveTechnique;
+//    }
 
 }

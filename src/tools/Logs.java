@@ -15,24 +15,29 @@ public class Logs {
 //        toLogList.add("Controller");
 //        toLogList.add("MyScrollBarUI");
         toLogList.add("VTScrollPane");
-        toLogList.add("TDScrollPane");
-//        toLogList.add("Experiment");
+//        toLogList.add("TDScrollPane");
+        toLogList.add("Experiment");
 //        toLogList.add("Round");
 //        toLogList.add("TechConfigPanel");
-//        toLogList.add("MainFrame");
+        toLogList.add("ExperimentFrame");
+//        toLogList.add("BlockPanel");
+        toLogList.add("Logger");
     }
 
     public static void d(String tag, Object... params) {
-        if(params.length > 0 && showTag(tag)) {
+        final int pLen = params.length;
+        if (pLen > 0 && toShowTag(tag)) {
             StringBuilder sb = new StringBuilder();
-            for(Object p : params) {
-                sb.append(p).append(" | ");
+            for(int oi = 0; oi < pLen - 1; oi++) {
+                sb.append(params[oi]).append(" | ");
             }
+            sb.append(params[pLen - 1]);
+
             System.out.println(tag + " >> " + sb);
         }
     }
 
-    private static boolean showTag(String tag) {
+    private static boolean toShowTag(String tag) {
         return toLogList.contains(tag.split("/")[0]);
     }
 

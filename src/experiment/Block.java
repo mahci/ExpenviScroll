@@ -97,11 +97,11 @@ public class Block {
         final Trial trial = mTrials.get(trialInd);
         final int lastInd = mTrials.size() - 1;
         final int insertInd;
+
         if (trialInd == lastInd) insertInd = lastInd;
-        else {
-            insertInd = Utils.randInt(trialInd, lastInd);
-            mTrials.add(insertInd, trial);
-        }
+        else insertInd = Utils.randInt(trialInd, lastInd);
+
+        mTrials.add(insertInd, trial);
     }
 
 }

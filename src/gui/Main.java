@@ -1,20 +1,20 @@
 package gui;
 
 import control.Server;
-import gui.MainFrame;
-
 import javax.swing.*;
+
+import static experiment.Experiment.*;
 
 public class Main {
 
-    private static MainFrame mFrame;
+    private static final int PID = 129;
+    private static final TECHNIQUE TECH = TECHNIQUE.MOUSE;
 
     public static void main(String[] args) {
-        MainFrame.get().start();
-        Server.get().openConnection();
+        ExperimentFrame.get().start(PID, TECH);
     }
 
     public static void showDialog(String mssg) {
-        JOptionPane.showMessageDialog(mFrame, mssg);
+        JOptionPane.showMessageDialog(ExperimentFrame.get(), mssg);
     }
 }

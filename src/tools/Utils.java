@@ -109,8 +109,8 @@ public class Utils {
         String TAG = "wrapFile";
 
         // Read and get the paragraphs
-        String filePath = System.getProperty("user.dir") + "/res/" + resTxtFileName;
-        String content = Files.readString(Path.of(filePath));
+//        String filePath = System.getProperty("user.dir") + "/res/" + resTxtFileName;
+        String content = Files.readString(Path.of(resTxtFileName));
         String[] paragraphs = content.split("\n");
 
         // Wrap each paragraph and write to file
@@ -203,6 +203,11 @@ public class Utils {
      */
     public static String nowDateTime() {
         SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy_hh-mm");
+        return format.format(Calendar.getInstance().getTime());
+    }
+
+    public static String nowDate() {
+        SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy");
         return format.format(Calendar.getInstance().getTime());
     }
 

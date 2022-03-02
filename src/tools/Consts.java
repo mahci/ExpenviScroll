@@ -1,11 +1,13 @@
 package tools;
 
+import javax.sound.sampled.*;
 import java.awt.*;
 import java.awt.font.TextAttribute;
 import java.io.File;
 import java.io.IOException;
 import java.text.AttributedCharacterIterator;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 public class Consts {
@@ -15,6 +17,7 @@ public class Consts {
         public final static int PPI = 109;
 //        public final static int PPI = 89;
         public final static double INCH_MM = 25.4;
+        public final static double LR_MARGIN_mm = 20; // (mm) Left-right margin
     }
 
     // Colors
@@ -23,10 +26,12 @@ public class Consts {
         public final static Color VIEW_BORDER = Color.decode("#E7E7E7");
         public final static Color SCROLLBAR_TRACK = Color.decode("#FAFAFA");
         public final static Color SCROLLBAR_THUMB = Color.decode("#C2C2C2");
-        public final static Color SCROLLBAR_INDIC = Color.decode("#1B5E20");
-        public final static Color LINE_NUM_BG = new Color(221, 221, 221);
-        public final static Color CELL_HIGHLIGHT = new Color(100, 192, 245);
-        public final static Color SCROLLBAR_HIGHLIGHT = new Color(199, 225, 240);
+        public final static Color DARK_GREEN = Color.decode("#1B5E20");
+        public final static Color GREEN = Color.decode("#08B40B");
+        public final static Color DARK_BLUE = Color.decode("#4333DB");
+        public final static Color LINE_NUM_BG = Color.decode("#DDDDDD");
+        public final static Color CELL_HIGHLIGHT = Color.decode("#64C0FF");
+        public final static Color SCROLLBAR_HIGHLIGHT = Color.decode("#C7E1F0");
         public final static Color TABLE_GRID = Color.GRAY;
         public final static Color TABLE_TEXT = Color.DARK_GRAY;
     }
@@ -69,9 +74,44 @@ public class Consts {
     }
 
     public static class SOUNDS {
-        public final static String HIT_SOUND = "hit.wav";
-        public final static String MISS_SOUND = "miss.wav";
-        public final static String TECH_END_SOUND = "end.wav";
+        private static Map<String, Clip> sSounds = new HashMap<>();
+
+        static {
+            try {
+                final File hitFile = new File("./res/hit.wav");
+                final File missFile = new File("./res/miss.wav");
+                final File techEndFile = new File("./res/end.wav");
+
+                final Clip hitClip = AudioSystem.getClip();
+                hitClip.open(AudioSystem.getAudioInputStream(hitFile));
+
+                final Clip missClip = AudioSystem.getClip();
+                missClip.open(AudioSystem.getAudioInputStream(missFile));
+
+                final Clip techClip = AudioSystem.getClip();
+                techClip.open(AudioSystem.getAudioInputStream(techEndFile));
+
+                sSounds.put(STRINGS.HIT, hitClip);
+                sSounds.put(STRINGS.MISS, missClip);
+                sSounds.put(STRINGS.TASK_END, techClip);
+
+            } catch (NullPointerException | IOException | UnsupportedAudioFileException | LineUnavailableException e) {
+                e.printStackTrace();
+            }
+        }
+
+        /**
+         * Play a sound
+         * @param soundKey Name of the sound
+         */
+        public static void play(String soundKey) {
+            if (sSounds.containsKey(soundKey)) {
+                sSounds.get(soundKey).setMicrosecondPosition(0); // Reset to the start of the file
+                sSounds.get(soundKey).start();
+            }
+        }
+
+
     }
 
     public static class STRINGS {
@@ -93,6 +133,9 @@ public class Consts {
         public final static String END = "END";
         public final static String KEEP_ALIVE = "KEEP_ALIVE";
         public final static String CONNECTION = "CONNECTION";
+        public final static String HIT = "HIT";
+        public final static String MISS = "MISS";
+        public final static String TASK_END = "TECH_END";
 
         public final static String DEMO_TITLE =
                 "Welcome to the scrolling experiment!";
@@ -119,6 +162,8 @@ public class Consts {
             END_TECH_MESSAGES[0] = "Thank you! The first technique is done.";
             END_TECH_MESSAGES[1] = "Thank you! The second technique is done.";
         }
+
+
 
     }
 

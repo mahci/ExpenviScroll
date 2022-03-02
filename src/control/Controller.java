@@ -1,15 +1,12 @@
 package control;
 
 import experiment.Experiment;
-import gui.MainFrame;
+import gui.ExperimentFrame;
 import tools.*;
 
 import java.awt.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import static tools.Consts.STRINGS.*;
-import static experiment.Experiment.TECHNIQUE.*;
 
 /**
  * Class responsible for getting the data from the Server and perform the actions
@@ -47,7 +44,7 @@ public class Controller {
                 Logs.d(TAG, toScroll);
                 while (toScroll) {
                     Logs.d(TAG, "Scrolling with", vtScrollAmt, hzScrollAmt);
-                    MainFrame.scroll(vtScrollAmt, hzScrollAmt);
+                    ExperimentFrame.scroll(vtScrollAmt, hzScrollAmt);
                     Thread.currentThread().sleep(1); // 1 min = 60*1000, 1 sec = 1000
                 }
             } catch (InterruptedException e) {
@@ -79,7 +76,7 @@ public class Controller {
         public void run() {
             String TAG = NAME + "ConstantScrollRunnable";
             Logs.d(TAG, toScroll);
-            MainFrame.scroll(vtScrollAmt, hzScrollAmt);
+            ExperimentFrame.scroll(vtScrollAmt, hzScrollAmt);
             Thread.currentThread().interrupt();
         }
     }
@@ -133,7 +130,7 @@ public class Controller {
             }
 
             case FLICK -> {
-                MainFrame.scroll(vtScrollAmt, hzScrollAmt);
+                ExperimentFrame.scroll(vtScrollAmt, hzScrollAmt);
             }
 
             case RATE_BASED -> {

@@ -57,7 +57,7 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
     // Keystrokes
     private KeyStroke KS_SHIFT;
 
-    private boolean isHorizontal;
+    private boolean mWheelEnabled;
 
     private final Action SHIFT_RELEASE = new AbstractAction() {
         @Override
@@ -253,24 +253,19 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
     public TDScrollPane create() {
         getViewport().getView().addMouseListener(this);
         addMouseWheelListener(this);
-        setWheelScrollingEnabled(true);
         getVerticalScrollBar().addAdjustmentListener(this);
         getHorizontalScrollBar().addAdjustmentListener(this);
+
+        mWheelEnabled = false;
+        setWheelScrollingEnabled(false); // Moose is the default
+
         mapKeys();
 
         return this;
     }
 
-    /**
-     * Set some flags according to the technique
-     * @param tech New technique
-     */
-    public void changeTechnique(Experiment.TECHNIQUE tech) {
-        if (tech == Experiment.TECHNIQUE.MOUSE) {
-            setWheelScrollingEnabled(true);
-        } else {
-            setWheelScrollingEnabled(false);
-        }
+    public void setWheelEnabled(boolean state) {
+        mWheelEnabled = state;
     }
 
     /**
@@ -299,7 +294,7 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
 //        vtScrollBarUI.setHighlightFrame(COLORS.SCROLLBAR_HIGHLIGHT, mTargetVtMinMax);
 
         final int targetVtPos = (rInd - nVisibleRows + 1) * cellSize;
-        vtScrollBarUI.setVtIndicator(COLORS.SCROLLBAR_INDIC, targetVtPos);
+        vtScrollBarUI.setVtIndicator(COLORS.DARK_GREEN, targetVtPos);
         getVerticalScrollBar().setUI(vtScrollBarUI);
 
         // Horizontal
@@ -308,7 +303,7 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
 //        hzScrollBarUI.setHighlightFrame(COLORS.SCROLLBAR_HIGHLIGHT, mTargetHzMinMax);
 
         final int targetHzPos = (cInd - nVisibleRows + 1) * cellSize;
-        hzScrollBarUI.setHzIndicator(COLORS.SCROLLBAR_INDIC, targetHzPos);
+        hzScrollBarUI.setHzIndicator(COLORS.DARK_GREEN, targetHzPos);
         getHorizontalScrollBar().setUI(hzScrollBarUI);
 
 //        isHighlighted = true;
@@ -577,16 +572,16 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
 //        }
 
         // Scroll manually
-        if (mCursorIn) {
+        if (mWheelEnabled) {
             final double preciseRotation = e.getPreciseWheelRotation();
-            final int scrollAmt = (int) (e.getPreciseWheelRotation() * Experiment.MOUSE_SCROLL_MULTIP);
+            final int scrollAmt = (int) (preciseRotation * Experiment.MOUSE_SCROLL_MULTIP);
 
             // Scroll manually
             if (e.getModifiersEx() == InputEvent.CTRL_DOWN_MASK) { // Horizontal with CTRL
-                Logs.d(TAG, "CTRL Down: " + e.getPreciseWheelRotation());
+                Logs.d(TAG, "CTRL Down: " + preciseRotation);
                 scroll(0, scrollAmt);
             } else {
-                Logs.d(TAG, "Without CTRL: " + e.getPreciseWheelRotation());
+                Logs.d(TAG, "Without CTRL: " + preciseRotation);
                 scroll(scrollAmt, 0);
             }
 
@@ -617,14 +612,11 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
     @Override
     public void keyPressed(KeyEvent e) {
         Logs.d(NAME, e.getKeyCode());
-        if (e.getKeyCode() == KeyEvent.VK_A) {
-            isHorizontal = true;
-        }
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-        isHorizontal = false;
+
     }
 
     // Custom ScrollBar ========================================================================================

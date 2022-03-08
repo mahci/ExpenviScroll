@@ -10,10 +10,7 @@ import tools.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
+import java.awt.event.*;
 
 import static experiment.Experiment.*;
 import static experiment.Experiment.VT_SCROLL_THUMB_H_mm;
@@ -163,6 +160,8 @@ public class BlockPanel extends JLayeredPane implements MouseMotionListener {
         // Key maps
         mapKeys();
 
+        // Add listeners
+
     }
 
     /**
@@ -180,10 +179,10 @@ public class BlockPanel extends JLayeredPane implements MouseMotionListener {
         return this;
     }
 
-    @Override
-    public void addNotify() {
-        super.addNotify();
-
+    /**
+     * Start the block
+     */
+    public void start() {
         // Set the key mappings
         getActionMap().put(KeyEvent.VK_SPACE, END_TRIAL);
         getActionMap().put(KeyEvent.VK_RIGHT, ADVANCE_TRIAL);

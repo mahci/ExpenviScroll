@@ -111,6 +111,11 @@ public class ExperimentFrame extends JFrame {
         return mTechnique;
     }
 
+    /**
+     * Start the frame!
+     * @param pid Participant's id
+     * @param tech TECHNIQUE
+     */
     public void start(int pid, TECHNIQUE tech) {
         final String TAG = NAME + "start";
 
@@ -214,6 +219,7 @@ public class ExperimentFrame extends JFrame {
         getContentPane().removeAll();
         add(mBlockPanel);
         mBlockPanel.requestFocusInWindow();
+        mBlockPanel.start();
         repaint();
     }
 

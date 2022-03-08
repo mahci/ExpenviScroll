@@ -258,7 +258,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
             } else if (mTechTaskInd < 1) { // More techTasks in the technique
                 // Add block, techTask time to TimeInfo
                 mTimeInfo.blockTime = Utils.nowInMillis() - mBlockStTime;
-                mTimeInfo.techTaskTime = (int) ((Utils.nowInMillis() - mTechTaskStTime) / 1000);
+//                mTimeInfo.techTaskTime = (int) ((Utils.nowInMillis() - mTechTaskStTime) / 1000);
 
                 // Time for the break
                 showLongBreak();
@@ -269,8 +269,8 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
             } else if (mTechInd < mTechs.size() - 1) { // Technique is finished
                 // Add block, techTask, technique time and log TimeInfo
                 mTimeInfo.blockTime = Utils.nowInMillis() - mBlockStTime;
-                mTimeInfo.techTaskTime = (int) ((Utils.nowInMillis() - mTechTaskStTime) / 1000);
-                mTimeInfo.techTime = (int) ((Utils.nowInMillis() - mTechStTime) / 1000);
+//                mTimeInfo.techTaskTime = (int) ((Utils.nowInMillis() - mTechTaskStTime) / 1000);
+//                mTimeInfo.techTime = (int) ((Utils.nowInMillis() - mTechStTime) / 1000);
                 Logger.get().logTimeInfo(mGenInfo, mTimeInfo);
 
                 removeKeyMaps();
@@ -279,9 +279,9 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
             } else { // Experiment is finished
                 // Add block, techTask, technique time and log TimeInfo
                 mTimeInfo.blockTime = Utils.nowInMillis() - mBlockStTime;
-                mTimeInfo.techTaskTime = (int) ((Utils.nowInMillis() - mTechTaskStTime) / 1000);
-                mTimeInfo.techTime = (int) ((Utils.nowInMillis() - mTechStTime) / 1000);
-                mTimeInfo.experimentTime = (int) ((Utils.nowInMillis() - mExpStTime) / 1000);
+//                mTimeInfo.techTaskTime = (int) ((Utils.nowInMillis() - mTechTaskStTime) / 1000);
+//                mTimeInfo.techTime = (int) ((Utils.nowInMillis() - mTechStTime) / 1000);
+//                mTimeInfo.experimentTime = (int) ((Utils.nowInMillis() - mExpStTime) / 1000);
                 Logger.get().logTimeInfo(mGenInfo, mTimeInfo);
 
                 // Close all logs
@@ -1136,7 +1136,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         // Homing time
         final long homingStTime = Logger.get().getHomingStTime();
         if (homingStTime != 0) { // Mocing the mouse after the break
-            mTimeInfo.homingTime = Utils.nowInMillis() - homingStTime;
+//            mTimeInfo.homingTime = Utils.nowInMillis() - homingStTime;
             Logger.get().logTimeInfo(mGenInfo, mTimeInfo); // Log TimeInfo
 
             // Rr-assign the keys

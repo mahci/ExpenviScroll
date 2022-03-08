@@ -46,6 +46,7 @@ public class BlockPanel extends JLayeredPane implements MouseMotionListener {
     private Logger.TimeInfo mTimeInfo;
     private Logger.InstantInfo mInstantInfo; // Started from here, passed to the scrollPanes, then back to be finished
     private long mTrialStTime;
+    private long mBlockStTime;
 
     // Actions ------------------------------------------------------------------------------------
 
@@ -108,6 +109,9 @@ public class BlockPanel extends JLayeredPane implements MouseMotionListener {
                 nextTrial();
 
             } else { // Block is finished
+                // Log block time
+                mTimeInfo.blockTime = (Utils.nowInMillis() - mBlockStTime) / 1000;
+                // Back to the ExperimentFrame
                 ExperimentFrame.get().blockFinished(mTimeInfo);
             }
         }
@@ -179,9 +183,15 @@ public class BlockPanel extends JLayeredPane implements MouseMotionListener {
     @Override
     public void addNotify() {
         super.addNotify();
+
+        // Set the key mappings
         getActionMap().put(KeyEvent.VK_SPACE, END_TRIAL);
         getActionMap().put(KeyEvent.VK_RIGHT, ADVANCE_TRIAL);
 
+        // Start the block timer
+        mBlockStTime = Utils.nowInMillis();
+
+        // Start with the first trial
         mGenInfo.trialNum = 1;
         mGenInfo.trial = mBlock.getTrial(mGenInfo.trialNum - 1);
         showTrial();
@@ -205,21 +215,19 @@ public class BlockPanel extends JLayeredPane implements MouseMotionListener {
                 .create();
 
         // Set to the wheel if technique is wheel
-            mTDScrollPane.setWheelEnabled(mGenInfo.tech.equals(TECHNIQUE.MOUSE));
-            mVTScrollPane.setWheelEnabled(mGenInfo.tech.equals(TECHNIQUE.MOUSE));
-//            mVTScrollPane.setWheelScrollingEnabled(true);
-//            mTDScrollPane.setWheelScrollingEnabled(true);
+        mTDScrollPane.setWheelEnabled(mGenInfo.tech.equals(TECHNIQUE.MOUSE));
+        mVTScrollPane.setWheelEnabled(mGenInfo.tech.equals(TECHNIQUE.MOUSE));
 
     }
 
     /**
      * Check if each axes of a trial was a hit (1) or a miss (0)
-     * Vertical -> hzResult = 1
+     * Vertical -> hzResult = -1
      * @return Pair of int for each dimension
      */
     private Pair checkHit() {
         if (mGenInfo.trial.getTask() == Experiment.TASK.VERTICAL) {
-            return new Pair(mVTScrollPane.isTargetInFrame(), 1);
+            return new Pair(mVTScrollPane.isTargetInFrame(), -1);
         } else {
             return mTDScrollPane.isTargetInFrames();
         }
@@ -445,6 +453,22 @@ public class BlockPanel extends JLayeredPane implements MouseMotionListener {
         Pair result = new Pair(Utils.randIntBetween(vtInd), Utils.randIntBetween(hzInd));
         return result;
     }
+
+    /**
+     * Scroll the scrollPanes
+     * @param vtScrollAmt Vertical scroll amount
+     * @param hzScrollAmt Horizontal scroll amount
+     */
+    public void scroll(int vtScrollAmt, int hzScrollAmt) {
+        String TAG = NAME + "scroll";
+
+        switch (mGenInfo.trial.getTask()) {
+            case VERTICAL -> mVTScrollPane.scroll(vtScrollAmt);
+            case TWO_DIM -> mTDScrollPane.scroll(vtScrollAmt, hzScrollAmt);
+        }
+    }
+
+    // -------------------------------------------------------------------------------------------
 
     @Override
     protected void paintComponent(Graphics g) {

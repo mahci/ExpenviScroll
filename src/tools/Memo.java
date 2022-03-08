@@ -155,7 +155,6 @@ public class Memo {
         } catch (NumberFormatException e) {
             return 0;
         }
-
     }
 
     public boolean isStopMemo() {

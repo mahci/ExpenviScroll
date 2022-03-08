@@ -3,6 +3,7 @@ package control;
 
 import static tools.Consts.STRINGS.*;
 
+import experiment.Experiment;
 import tools.Logs;
 import tools.Memo;
 
@@ -142,6 +143,11 @@ public class Server {
      */
     public void openConnection() {
         executor.execute(new ConnWaitRunnable());
+    }
+
+    public void syncTechnique(Experiment.TECHNIQUE tech) {
+        Memo outMemo = new Memo(CONFIG, TECH, Experiment.TECHNIQUE.FLICK.toString(), 0);
+        send(outMemo);
     }
 
     public void send(Memo mssg) {

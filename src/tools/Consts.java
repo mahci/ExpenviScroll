@@ -72,7 +72,42 @@ public class Consts {
             }
         }
     }
+    private static Map<String, Clip> sSounds = new HashMap<>();
 
+    static {
+        try {
+            final File hitFile = new File("./res/hit.wav");
+            final File missFile = new File("./res/miss.wav");
+            final File techEndFile = new File("./res/end.wav");
+
+            final Clip hitClip = AudioSystem.getClip();
+            hitClip.open(AudioSystem.getAudioInputStream(hitFile));
+
+            final Clip missClip = AudioSystem.getClip();
+            missClip.open(AudioSystem.getAudioInputStream(missFile));
+
+            final Clip techClip = AudioSystem.getClip();
+            techClip.open(AudioSystem.getAudioInputStream(techEndFile));
+
+            sSounds.put(STRINGS.HIT, hitClip);
+            sSounds.put(STRINGS.MISS, missClip);
+            sSounds.put(STRINGS.TASK_END, techClip);
+
+        } catch (NullPointerException | IOException | UnsupportedAudioFileException | LineUnavailableException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Play a sound
+     * @param soundKey Name of the sound
+     */
+    public static void play(String soundKey) {
+        if (sSounds.containsKey(soundKey)) {
+            sSounds.get(soundKey).setMicrosecondPosition(0); // Reset to the start of the file
+            sSounds.get(soundKey).start();
+        }
+    }
     public static class SOUNDS {
         private static Map<String, Clip> sSounds = new HashMap<>();
 

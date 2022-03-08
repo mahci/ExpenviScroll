@@ -382,30 +382,21 @@ public class Logger {
 
     // Times info
     public static class TimeInfo {
-        public long trialTime; // In millisec
-        public long blockTime; // In millisec
-        public int techTaskTime; // Each tech|task (In sec)
-        public long homingTime; // In millisec
-        public int techTime; // In sec
-        public int experimentTime; // In sec
+        public long trialTime; // ms
+        public long blockTime; // ms
+        public long taskTime; // sec
 
         public static String getLogHeader() {
             return "trial_time" + SP +
                     "block_time" + SP +
-                    "tech_task_time" + SP +
-                    "homing_time" + SP +
-                    "tech_time" + SP +
-                    "experiment_time";
+                    "task_time";
         }
 
         @Override
         public String toString() {
             return trialTime + SP +
                     blockTime+ SP +
-                    techTaskTime + SP +
-                    homingTime + SP +
-                    techTime + SP +
-                    experimentTime;
+                    taskTime;
         }
     }
 
@@ -440,8 +431,8 @@ public class Logger {
 
     // Mouse movement info
     public static class MoveInfo {
-        public int x; // Relative cursor position
-        public int y; // Relative cursor position
+        public int x; // Relative (to the window) cursor position
+        public int y; // Relative (to the window) cursor position
         public int abX; // Absolute cursor position
         public int abY; // Absolute cursor position
         public long moment; // in ms

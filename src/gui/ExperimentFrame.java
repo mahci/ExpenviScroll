@@ -129,7 +129,9 @@ public class ExperimentFrame extends JFrame {
         add(stPanel);
         setVisible(true);
 
-        if (tech.equals(TECHNIQUE.FLICK)) Server.get().openConnection();
+        if (tech.equals(TECHNIQUE.FLICK)) {
+            Server.get().openConnection();
+        }
     }
 
     /**
@@ -431,8 +433,13 @@ public class ExperimentFrame extends JFrame {
 //        Logs.info("TAG", Toolkit.getDefaultToolkit().getScreenResolution());
     }
 
-    public static void scroll(int vtScrollAmt, int hzScrollAmt) {
-
+    /**
+     * Send the scroll action to the BlockPanel
+     * @param vtScrollAmt Vertical scroll amount
+     * @param hzScrollAmt Horizontal scroll amount
+     */
+    public void scroll(int vtScrollAmt, int hzScrollAmt) {
+        if (mBlockPanel != null) mBlockPanel.scroll(vtScrollAmt, hzScrollAmt);
     }
 
     /**

@@ -44,7 +44,7 @@ public class Controller {
                 Logs.d(TAG, toScroll);
                 while (toScroll) {
                     Logs.d(TAG, "Scrolling with", vtScrollAmt, hzScrollAmt);
-                    ExperimentFrame.scroll(vtScrollAmt, hzScrollAmt);
+                    ExperimentFrame.get().scroll(vtScrollAmt, hzScrollAmt);
                     Thread.currentThread().sleep(1); // 1 min = 60*1000, 1 sec = 1000
                 }
             } catch (InterruptedException e) {
@@ -76,7 +76,7 @@ public class Controller {
         public void run() {
             String TAG = NAME + "ConstantScrollRunnable";
             Logs.d(TAG, toScroll);
-            ExperimentFrame.scroll(vtScrollAmt, hzScrollAmt);
+            ExperimentFrame.get().scroll(vtScrollAmt, hzScrollAmt);
             Thread.currentThread().interrupt();
         }
     }
@@ -130,7 +130,7 @@ public class Controller {
             }
 
             case FLICK -> {
-                ExperimentFrame.scroll(vtScrollAmt, hzScrollAmt);
+                ExperimentFrame.get().scroll(vtScrollAmt, hzScrollAmt);
             }
 
             case RATE_BASED -> {

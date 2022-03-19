@@ -1,5 +1,6 @@
 package control;
 
+import data.Memo;
 import experiment.Experiment;
 import gui.ExperimentFrame;
 import tools.*;

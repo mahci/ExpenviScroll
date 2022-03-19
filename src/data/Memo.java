@@ -1,10 +1,10 @@
-package tools;
+package data;
 
-import lombok.extern.java.Log;
+import tools.Logs;
 
 import java.util.Arrays;
 
-import static tools.Consts.STRINGS.*;
+import static data.Consts.STRINGS.*;
 
 public class Memo {
     private static final String NAME = "Memo/";
@@ -25,7 +25,7 @@ public class Memo {
         action = act;
         mode = md;
         value1 = v1;
-        value1 = v2;
+        value2 = v2;
     }
 
     /**
@@ -171,7 +171,7 @@ public class Memo {
 
         Memo result = new Memo();
         if (mssg != null) {
-            String[] parts = mssg.split(SP);
+            String[] parts = mssg.split(MEMOSP);
             Logs.d(TAG, Arrays.toString(parts));
             if (parts.length == 4) {
                 result.action = parts[0];
@@ -192,6 +192,6 @@ public class Memo {
      */
     @Override
     public String toString() {
-        return action + SP + mode + SP + value1 + SP + value2;
+        return action + MEMOSP + mode + MEMOSP + value1 + MEMOSP + value2;
     }
 }

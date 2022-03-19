@@ -1,7 +1,7 @@
 package gui;
 
-import tools.Consts;
-import tools.DimensionD;
+import data.Consts;
+import data.DimensionD;
 import tools.Logs;
 import tools.Utils;
 

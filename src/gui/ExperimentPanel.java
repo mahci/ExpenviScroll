@@ -1,8 +1,11 @@
 package gui;
 
-import control.Controller;
 import control.Logger;
 import control.Server;
+import data.Consts;
+import data.Memo;
+import data.MinMax;
+import data.Pair;
 import experiment.Block;
 import experiment.Experiment;
 import experiment.Trial;
@@ -15,9 +18,9 @@ import java.awt.event.*;
 import java.util.List;
 
 import static experiment.Experiment.*;
-import static tools.Consts.*;
+import static data.Consts.*;
 import static control.Logger.*;
-import static tools.Consts.STRINGS.*;
+import static data.Consts.STRINGS.*;
 
 public class ExperimentPanel extends JLayeredPane implements MouseMotionListener {
 
@@ -147,9 +150,9 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
             mTrialInd = 0;
             mNSuccessTrials = 0;
 
-            mBlocks = mExperiment.getTechTaskBlocks(mTechTaskInd);
-            mBlock = mBlocks.get(mBlockInd);
-            mTrial = mBlock.getTrial(mTrialInd);
+//            mBlocks = mExperiment.getTechTaskBlocks(mTechTaskInd);
+//            mBlock = mBlocks.get(mBlockInd);
+//            mTrial = mBlock.getTrial(mTrialInd);
 
             // Set the active technique
 //            Experiment.setActiveTechnique(mTechs.get(mTechInd));
@@ -164,11 +167,11 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
                     mBlockInd + 1, mTrialInd + 1)); // Block/trial *num*
 
             // Set GenInfo
-            mGenInfo = new GeneralInfo(
-                    mTechs.get(mTechInd),
-                    mBlockInd + 1,
-                    mTrialInd + 1,
-                    mTrial);
+//            mGenInfo = new GeneralInfo(
+//                    mTechs.get(mTechInd),
+//                    mBlockInd + 1,
+//                    mTrialInd + 1,
+//                    mTrial);
 
             // Set start times
             mTechStTime = Utils.nowInMillis();
@@ -226,7 +229,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
 
             // Record Trial time
             mTimeInfo = new Logger.TimeInfo();
-            mTimeInfo.trialTime = Utils.nowInMillis() - mTrialStTime;
+            mTimeInfo.trialDispTime = Utils.nowInMillis() - mTrialStTime;
 
             // Was the trial a success or a fail?
             if (trialResult.fXs() == 1) {
@@ -249,7 +252,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
 
             } else if (mBlockInd < mBlocks.size() - 1) { // More blocks in the techTask
                 // Add block time and log TimeInfo
-                mTimeInfo.blockTime = Utils.nowInMillis() - mBlockStTime;
+                mTimeInfo.blockDispTime = Utils.nowInMillis() - mBlockStTime;
                 Logger.get().logTimeInfo(mGenInfo, mTimeInfo);
 
                 if (mBlockInd == (mBlocks.size() / 2) - 1) showShortBreak(); // Short break after half of blocks
@@ -257,7 +260,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
 
             } else if (mTechTaskInd < 1) { // More techTasks in the technique
                 // Add block, techTask time to TimeInfo
-                mTimeInfo.blockTime = Utils.nowInMillis() - mBlockStTime;
+                mTimeInfo.blockDispTime = Utils.nowInMillis() - mBlockStTime;
 //                mTimeInfo.techTaskTime = (int) ((Utils.nowInMillis() - mTechTaskStTime) / 1000);
 
                 // Time for the break
@@ -268,7 +271,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
 
             } else if (mTechInd < mTechs.size() - 1) { // Technique is finished
                 // Add block, techTask, technique time and log TimeInfo
-                mTimeInfo.blockTime = Utils.nowInMillis() - mBlockStTime;
+                mTimeInfo.blockDispTime = Utils.nowInMillis() - mBlockStTime;
 //                mTimeInfo.techTaskTime = (int) ((Utils.nowInMillis() - mTechTaskStTime) / 1000);
 //                mTimeInfo.techTime = (int) ((Utils.nowInMillis() - mTechStTime) / 1000);
                 Logger.get().logTimeInfo(mGenInfo, mTimeInfo);
@@ -278,7 +281,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
 
             } else { // Experiment is finished
                 // Add block, techTask, technique time and log TimeInfo
-                mTimeInfo.blockTime = Utils.nowInMillis() - mBlockStTime;
+                mTimeInfo.blockDispTime = Utils.nowInMillis() - mBlockStTime;
 //                mTimeInfo.techTaskTime = (int) ((Utils.nowInMillis() - mTechTaskStTime) / 1000);
 //                mTimeInfo.techTime = (int) ((Utils.nowInMillis() - mTechStTime) / 1000);
 //                mTimeInfo.experimentTime = (int) ((Utils.nowInMillis() - mExpStTime) / 1000);
@@ -443,13 +446,13 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
     }
 
     private void initExperiment() {
-        mTechs = mExperiment.getPcTechs(); // Set the techniques
+//        mTechs = mExperiment.getPcTechs(); // Set the techniques
 
         mTechInd = 0; // First tech
 
         // Sync with the Moose
         final String expId = mExperiment.getPId() + "_" + Utils.nowDateTime();
-        Server.get().send(new Memo(STRINGS.LOG, STRINGS.EXP_ID, expId, 0));
+        Server.get().send(new Memo(STRINGS.LOG, STRINGS.EXPID, expId, 0));
 
         // Timing
         mExpStTime = Utils.nowInMillis();
@@ -803,7 +806,7 @@ public class ExperimentPanel extends JLayeredPane implements MouseMotionListener
         mBlockInd = 0;
         mTrialInd = 0;
         mNSuccessTrials = 0;
-        mBlocks = mExperiment.getTechTaskBlocks(mTechTaskInd);
+//        mBlocks = mExperiment.getTechTaskBlocks(mTechTaskInd);
         mBlock = mBlocks.get(mBlockInd);
         mTrial = mBlock.getTrial(mTrialInd);
 

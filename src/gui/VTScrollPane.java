@@ -1,6 +1,9 @@
 package gui;
 
 import control.Logger;
+import data.Consts;
+import data.DimensionD;
+import data.MinMax;
 import experiment.Experiment;
 import tools.*;
 
@@ -18,7 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 
-import static tools.Consts.*;
+import static data.Consts.*;
 import static control.Logger.*;
 
 public class VTScrollPane extends JScrollPane implements MouseListener, MouseWheelListener {
@@ -465,11 +468,14 @@ public class VTScrollPane extends JScrollPane implements MouseListener, MouseWhe
         else mInstantInfo.lastScroll = nowMillis;
 
         if (isTargetVisible(true)) { // Target becomes visible
+            Logs.d(TAG, mTargetVisible);
             if (!mTargetVisible) { // Target wasn't already visible
                 mNTargetAppear++;
 
-                if (mInstantInfo.targetFirstAppear == 0) mInstantInfo.targetFirstAppear = nowMillis;
-                else mInstantInfo.targetLastAppear = nowMillis;
+                if (mInstantInfo.targetFirstAppear == 0) {
+                    mInstantInfo.targetFirstAppear = nowMillis;
+                    mInstantInfo.targetLastAppear = mInstantInfo.targetFirstAppear;
+                } else mInstantInfo.targetLastAppear = nowMillis; // Target went out and in again
 
                 mTargetVisible = true;
             }
@@ -517,9 +523,11 @@ public class VTScrollPane extends JScrollPane implements MouseListener, MouseWhe
     @Override
     public void mouseEntered(MouseEvent e) {
         mCursorIn = true;
-        if (mInstantInfo.firstEntry == 0) mInstantInfo.firstEntry = Utils.nowInMillis();
+        if (mInstantInfo.firstEntry == 0) {
+            mInstantInfo.firstEntry = Utils.nowInMillis();
+            mInstantInfo.lastEntry = mInstantInfo.firstEntry;
+        }
         else mInstantInfo.lastEntry = Utils.nowInMillis();
-
     }
 
     @Override
@@ -548,7 +556,12 @@ public class VTScrollPane extends JScrollPane implements MouseListener, MouseWhe
         }
 
         // Manual scroll
-        scroll((int) (e.getPreciseWheelRotation() * 100.0));
+        final double unitsToScroll = e.getPreciseWheelRotation();
+//        final double gain = Math.pow(Math.abs(e.getWheelRotation()), 1.5);
+        final double gain = 30.0;
+        Logs.d(NAME, "uts", unitsToScroll, e.getUnitsToScroll());
+        final int dY = (int) (unitsToScroll * gain);
+        scroll(dY);
     }
 
 }

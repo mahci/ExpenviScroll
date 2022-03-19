@@ -2,10 +2,13 @@ package gui;
 
 import control.Logger;
 import control.Server;
+import data.Consts;
+import data.Memo;
+import data.MinMax;
+import data.Pair;
 import experiment.Block;
 import experiment.Experiment;
 import experiment.Trial;
-import lombok.extern.java.Log;
 import tools.*;
 
 import javax.swing.*;
@@ -14,7 +17,7 @@ import java.awt.event.*;
 
 import static experiment.Experiment.*;
 import static experiment.Experiment.VT_SCROLL_THUMB_H_mm;
-import static tools.Consts.*;
+import static data.Consts.*;
 
 public class BlockPanel extends JLayeredPane implements MouseMotionListener {
     private final String NAME = "BlockPanel/";
@@ -35,8 +38,8 @@ public class BlockPanel extends JLayeredPane implements MouseMotionListener {
     private TDScrollPane mTDScrollPane;
     private Rectangle mVtFrameRect = new Rectangle();
     private Rectangle mHzFrameRect = new Rectangle();
-    private JLabel mLevelLabel;
-    private JLabel mTechLabel;
+    private JLabel mStatusLbl;
+    private JLabel mDeviceLbl;
 
     // Logging
     private Logger.GeneralInfo mGenInfo;
@@ -74,7 +77,7 @@ public class BlockPanel extends JLayeredPane implements MouseMotionListener {
                     (int) (instInfo.lastScroll - instInfo.targetLastAppear),
                     (int) (instInfo.lastScroll - instInfo.firstScroll),
                     (int) (Utils.nowInMillis() - instInfo.firstScroll),
-                    (int) (Utils.nowInMillis() - instInfo.lastScroll),
+                    (int) (Utils.nowInMillis() - instInfo.firstScroll),
                     nTargetAppear,
                     trialResult.getFirst(),
                     trialResult.getSecond(),
@@ -83,7 +86,7 @@ public class BlockPanel extends JLayeredPane implements MouseMotionListener {
 
             // Record Trial time
             mTimeInfo = new Logger.TimeInfo();
-            mTimeInfo.trialTime = Utils.nowInMillis() - mTrialStTime;
+            mTimeInfo.trialDispTime = Utils.nowInMillis() - mTrialStTime;
 
             // Was the trial a success or a fail?
             if (trialResult.fXs() == 1) {
@@ -107,7 +110,7 @@ public class BlockPanel extends JLayeredPane implements MouseMotionListener {
 
             } else { // Block is finished
                 // Log block time
-                mTimeInfo.blockTime = (Utils.nowInMillis() - mBlockStTime) / 1000;
+                mTimeInfo.blockDispTime = (Utils.nowInMillis() - mBlockStTime) / 1000;
                 // Back to the ExperimentFrame
                 ExperimentFrame.get().blockFinished(mTimeInfo);
             }
@@ -148,20 +151,19 @@ public class BlockPanel extends JLayeredPane implements MouseMotionListener {
         mNBlocks = nBlocks;
 
         // Create levellabel (don't show yet)
-        mLevelLabel = new JLabel("", JLabel.CENTER);
-        mLevelLabel.setFont(new Font("Sans", Font.PLAIN, 18));
-        mLevelLabel.setBounds(2100, 30, 400, 100);
+        mStatusLbl = new JLabel("", JLabel.CENTER);
+        mStatusLbl.setFont(new Font("Sans", Font.PLAIN, 18));
+        mStatusLbl.setForeground(COLORS.GRAY_900);
+        mStatusLbl.setBounds(2100, 30, 400, 100);
 
         // Create tehcnique label
-        mTechLabel = new JLabel("", JLabel.CENTER);
-        mTechLabel.setFont(new Font("Sans", Font.PLAIN, 18));
-        mTechLabel.setBounds(50, 30, 200, 100);
+        mDeviceLbl = new JLabel("", JLabel.CENTER);
+        mDeviceLbl.setFont(new Font("Sans", Font.PLAIN, 18));
+        mDeviceLbl.setForeground(COLORS.GRAY_900);
+        mDeviceLbl.setBounds(50, 30, 200, 100);
 
         // Key maps
         mapKeys();
-
-        // Add listeners
-
     }
 
     /**
@@ -193,6 +195,8 @@ public class BlockPanel extends JLayeredPane implements MouseMotionListener {
         // Start with the first trial
         mGenInfo.trialNum = 1;
         mGenInfo.trial = mBlock.getTrial(mGenInfo.trialNum - 1);
+        Server.get().send(new Memo(STRINGS.LOG, STRINGS.GENINFO, mGenInfo.toString()));
+
         showTrial();
     }
 
@@ -221,12 +225,12 @@ public class BlockPanel extends JLayeredPane implements MouseMotionListener {
 
     /**
      * Check if each axes of a trial was a hit (1) or a miss (0)
-     * Vertical -> hzResult = -1
+     * Vertical -> hzResult = 1 (bc we need first x second = 1 for hit)
      * @return Pair of int for each dimension
      */
     private Pair checkHit() {
         if (mGenInfo.trial.getTask() == Experiment.TASK.VERTICAL) {
-            return new Pair(mVTScrollPane.isTargetInFrame(), -1);
+            return new Pair(mVTScrollPane.isTargetInFrame(), 1);
         } else {
             return mTDScrollPane.isTargetInFrames();
         }
@@ -242,8 +246,7 @@ public class BlockPanel extends JLayeredPane implements MouseMotionListener {
         mGenInfo.trial = mBlock.getTrial(mGenInfo.trialNum - 1);
 
         // Sync the info to the Moose
-        Server.get().send(new Memo(STRINGS.LOG, STRINGS.BLOCK + "_" + STRINGS.TRIAL,
-                mGenInfo.blockNum, mGenInfo.trialNum)); // Block/trial *num*
+        Server.get().send(new Memo(STRINGS.LOG, STRINGS.GENINFO, mGenInfo));
 
         showTrial();
     }
@@ -357,12 +360,12 @@ public class BlockPanel extends JLayeredPane implements MouseMotionListener {
         }
 
         // Show level label
-        mLevelLabel.setText("Block: " + mGenInfo.blockNum + " / " + mNBlocks +
+        mStatusLbl.setText("Block: " + mGenInfo.blockNum + " / " + mNBlocks +
                 " --- " +
                 "Successful Trials: " + mNSuccessTrials + "  / " +  mBlock.getTargetNTrials());
-        mTechLabel.setText("Technique: " + mGenInfo.tech);
-        add(mLevelLabel, 1);
-        add(mTechLabel, 1);
+        mDeviceLbl.setText("Device: " + mGenInfo.tech.toShowString());
+        add(mStatusLbl, 1);
+        add(mDeviceLbl, 1);
 
         revalidate();
         repaint();
@@ -508,6 +511,6 @@ public class BlockPanel extends JLayeredPane implements MouseMotionListener {
 
     @Override
     public void mouseMoved(MouseEvent e) {
-
+        Logs.d(NAME, e);
     }
 }

@@ -1,4 +1,6 @@
-package tools;
+package data;
+
+import tools.Logs;
 
 import javax.sound.sampled.*;
 import java.awt.*;
@@ -28,7 +30,13 @@ public class Consts {
         public final static Color SCROLLBAR_THUMB = Color.decode("#C2C2C2");
         public final static Color DARK_GREEN = Color.decode("#1B5E20");
         public final static Color GREEN = Color.decode("#08B40B");
+        public final static Color GREEN_A400 = Color.decode("#00E676");
+        public final static Color GREEN_A200 = Color.decode("#A5D6A7");
         public final static Color DARK_BLUE = Color.decode("#4333DB");
+        public final static Color BLUE_800 = Color.decode("#0277BD");
+        public final static Color DARK_RED = Color.decode("#B71C1C");
+        public final static Color GRAY_900 = Color.decode("#212121");
+        public final static Color GRAY_700 = Color.decode("#616161");
         public final static Color LINE_NUM_BG = Color.decode("#DDDDDD");
         public final static Color CELL_HIGHLIGHT = Color.decode("#64C0FF");
         public final static Color SCROLLBAR_HIGHLIGHT = Color.decode("#C7E1F0");
@@ -151,6 +159,7 @@ public class Consts {
 
     public static class STRINGS {
         public final static String SP = ";";
+        public static final String MEMOSP = ",";
         public final static String TECH = "TECH";
         public final static String SCROLL = "SCROLL";
         public final static String STOP = "STOP";
@@ -160,17 +169,18 @@ public class Consts {
         public final static String DENOM = "DENOM";
         public final static String COEF = "COEF";
         public final static String LOG = "LOG";
-        public final static String EXP_ID = "EXPID"; // Id for an experiment
+        public final static String EXPID = "EXPID"; // Id for an experiment
         public final static String BLOCK = "BLOCK";
         public final static String TRIAL = "TRIAL";
         public final static String TSK = "TSK";
-        public final static String P_INIT = "P";
+        public final static String P = "P";
         public final static String END = "END";
         public final static String KEEP_ALIVE = "KEEP_ALIVE";
         public final static String CONNECTION = "CONNECTION";
         public final static String HIT = "HIT";
         public final static String MISS = "MISS";
         public final static String TASK_END = "TECH_END";
+        public final static String GENINFO = "GENINFO";
 
         public final static String DEMO_TITLE =
                 "Welcome to the scrolling experiment!";

@@ -20,7 +20,7 @@ public class Logs {
 //        toLogList.add("Round");
 //        toLogList.add("TechConfigPanel");
         toLogList.add("ExperimentFrame");
-//        toLogList.add("BlockPanel");
+        toLogList.add("BlockPanel");
         toLogList.add("Logger");
     }
 

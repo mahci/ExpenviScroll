@@ -1,8 +1,10 @@
 package experiment;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import tools.Logs;
 import tools.Utils;
 
-import javax.swing.tree.TreeModel;
 import java.util.*;
 
 public class Experiment {
@@ -61,8 +63,7 @@ public class Experiment {
             else return values[0];
         }
 
-        @Override
-        public String toString() {
+        public String toShowString() {
             if (this.equals(VERTICAL)) return "VERTICAL";
             else return "2D";
         }
@@ -76,6 +77,11 @@ public class Experiment {
         public static TECHNIQUE get(int ord) {
             if (ord < values.length) return values[ord];
             else return values[0];
+        }
+
+        public String toShowString() {
+            if (this.equals(FLICK)) return "MOOSE";
+            else return this.toString();
         }
     }
 
@@ -93,10 +99,13 @@ public class Experiment {
     public static final double TD_SCROLL_THUMB_L_mm = 6.0; // Width = width of the scrollbar
     public static final double TD_FRAME_H_mm = 7.0; // Height of frame
 
+    // Coefs
+    public static final double MOUSE_SCROLL_MULTIP = 50.0;
+
     // Variables
-    private int[] VT_DISTANCES = new int[]{50, 200, 600}; // in lines/cells
-    private int[] TD_DISTANCES = new int[]{50, 200};
-    private int[] FRAMES = new int[]{3, 5}; // in lines/cells
+    private static final int[] VT_DISTANCES = new int[]{50, 200, 600}; // in lines/cells
+    private static final int[] TD_DISTANCES = new int[]{50, 200};
+    private static final int[] FRAMES = new int[]{3, 5}; // in lines/cells
 //    private List<TECHNIQUE> TECH_ORDERS = Arrays.asList(
 //            FLICK, DRAG, MOUSE,
 //            FLICK, MOUSE, DRAG,
@@ -104,12 +113,10 @@ public class Experiment {
 //            DRAG, MOUSE, FLICK,
 //            MOUSE, FLICK, DRAG,
 //            MOUSE, DRAG, FLICK);
-    private Map<TASK, Integer> N_BLOCKS = Map.of(
-            TASK.VERTICAL, 8,
-        TASK.TWO_DIM, 4);
-    private TreeModel mConstellTree;
+    private static final Map<TASK, Integer> N_BLOCKS = Map.of(
+            TASK.VERTICAL, 8, TASK.TWO_DIM, 4);
 
-    public final static double MOUSE_SCROLL_MULTIP = 50.0;
+    private final List<Constellation> constellations = new ArrayList<>();
 
     // ------------------------------------------------------------------------------------------------------
     // Status
@@ -123,9 +130,9 @@ public class Experiment {
 
     //--- Participant's things!
     private int mPId;
-    private List<TASK> mPcTasks;
-    private List<TECHNIQUE> mPcTechs;
-    private ExpNode mPcTree;
+//    private List<TASK> mPcTasks;
+//    private List<TECHNIQUE> mPcTechs;
+//    private ExpNode mPcTree;
 //    private List<Chunk> mPcChunks;
 
     // -------------------------------------------------------------------------------------------------------
@@ -138,8 +145,47 @@ public class Experiment {
 
         mPId = pid;
 
-        if (mPId % 2 == 0) mPcTasks = Arrays.asList(TASK.TWO_DIM, TASK.VERTICAL);
-        else mPcTasks = Arrays.asList(TASK.VERTICAL, TASK.TWO_DIM);
+//        if (mPId % 2 == 0) mPcTasks = Arrays.asList(TASK.TWO_DIM, TASK.VERTICAL);
+//        else mPcTasks = Arrays.asList(TASK.VERTICAL, TASK.TWO_DIM);
+
+        // Set constellations
+        final Part MOUSE_VT = new Part(TECHNIQUE.MOUSE, TASK.VERTICAL);
+        final Part MOUSE_2D = new Part(TECHNIQUE.MOUSE, TASK.TWO_DIM);
+        final Part MOOSE_VT = new Part(TECHNIQUE.FLICK, TASK.VERTICAL);
+        final Part MOOSE_2D = new Part(TECHNIQUE.FLICK, TASK.TWO_DIM);
+
+        constellations.add(new Constellation(1,
+                new Session(MOUSE_VT, MOUSE_2D, MOOSE_VT, MOOSE_2D),
+                new Session(MOOSE_2D, MOOSE_VT, MOUSE_2D, MOUSE_VT)));
+
+        constellations.add(new Constellation(2,
+                new Session(MOUSE_VT, MOUSE_2D, MOOSE_VT, MOOSE_2D),
+                new Session(MOOSE_2D, MOOSE_VT, MOUSE_2D, MOUSE_VT)));
+
+        constellations.add(new Constellation(3,
+                new Session(MOUSE_2D, MOUSE_VT, MOOSE_2D, MOOSE_VT),
+                new Session(MOOSE_VT, MOOSE_2D, MOUSE_VT, MOUSE_2D)));
+
+        constellations.add(new Constellation(4,
+                new Session(MOUSE_2D, MOUSE_VT, MOOSE_2D, MOOSE_VT),
+                new Session(MOOSE_VT, MOOSE_2D, MOUSE_VT, MOUSE_2D)));
+
+        constellations.add(new Constellation(5,
+                new Session(MOOSE_VT, MOOSE_2D, MOUSE_VT, MOUSE_2D),
+                new Session(MOUSE_2D, MOUSE_VT, MOOSE_2D, MOOSE_VT)));
+
+        constellations.add(new Constellation(6,
+                new Session(MOOSE_VT, MOOSE_2D, MOUSE_VT, MOUSE_2D),
+                new Session(MOUSE_2D, MOUSE_VT, MOOSE_2D, MOOSE_VT)));
+
+        constellations.add(new Constellation(7,
+                new Session(MOOSE_2D, MOOSE_VT, MOUSE_2D, MOUSE_VT),
+                new Session(MOUSE_VT, MOUSE_2D, MOOSE_VT, MOOSE_2D)));
+
+        constellations.add(new Constellation(8,
+                new Session(MOOSE_2D, MOOSE_VT, MOUSE_2D, MOUSE_VT),
+                new Session(MOUSE_VT, MOUSE_2D, MOOSE_VT, MOOSE_2D)));
+
 
 //        switch (mPId % 4) {
 //            case 0 -> {
@@ -160,19 +206,19 @@ public class Experiment {
 //            }
 //        }
 
-        mPcTree = new ExpNode<>(pid);
-
-        for (TASK task : mPcTasks) {
-            ExpNode taskNode = new ExpNode<>(task);
-
-            for (int i = 0; i < N_BLOCKS.get(task); i++) {
-                final ExpNode blockNode = new ExpNode<>(
-                        new Block(task, VT_DISTANCES, TD_DISTANCES, FRAMES));
-                taskNode.addChild(blockNode);
-            }
-
-            mPcTree.addChild(taskNode);
-        }
+//        mPcTree = new ExpNode<>(pid);
+//
+//        for (TASK task : mPcTasks) {
+//            ExpNode taskNode = new ExpNode<>(task);
+//
+//            for (int i = 0; i < N_BLOCKS.get(task); i++) {
+//                final ExpNode blockNode = new ExpNode<>(
+//                        new Block(task, VT_DISTANCES, TD_DISTANCES, FRAMES));
+//                taskNode.addChild(blockNode);
+//            }
+//
+//            mPcTree.addChild(taskNode);
+//        }
 
 //        for (TECHNIQUE tech : mPcTechs) {
 //            ExpNode techNode = new ExpNode<>(tech);
@@ -195,16 +241,26 @@ public class Experiment {
 
     }
 
-    public ExpNode getPcTree() {
-        return mPcTree;
-    }
+//    public ExpNode getPcTree() {
+//        return mPcTree;
+//    }
+//
+//    /**
+//     * Get the order of the techniques to experiment
+//     * @return List of techniques (n = 3)
+//     */
+//    public List<TECHNIQUE> getPcTechs() {
+//        return mPcTechs;
+//    }
 
     /**
-     * Get the order of the techniques to experiment
-     * @return List of techniques (n = 3)
+     * Get a Part
+     * @param sessionInd Index of the session (starting from 0)
+     * @param partInd Index of the Part (starting from 0)
+     * @return Part
      */
-    public List<TECHNIQUE> getPcTechs() {
-        return mPcTechs;
+    public Part getPart(int sessionInd, int partInd) {
+        return constellations.get(mPId).sessions[sessionInd].parts[partInd];
     }
 
     /**
@@ -212,15 +268,15 @@ public class Experiment {
      * @param techTaskInd Index of the techTask (0 or 1)
      * @return Arraylist of Blocks
      */
-    public List<Block> getTechTaskBlocks(int techTaskInd) {
-        final List<Block> result = new ArrayList<>();
-        final TASK task = mPcTasks.get(techTaskInd);
-        for (int i = 0; i < N_BLOCKS.get(task); i++) {
-            result.add(new Block(task, VT_DISTANCES, TD_DISTANCES, FRAMES));
-        }
-
-        return result;
-    }
+//    public List<Block> getTechTaskBlocks(int techTaskInd) {
+//        final List<Block> result = new ArrayList<>();
+//        final TASK task = mPcTasks.get(techTaskInd);
+//        for (int i = 0; i < N_BLOCKS.get(task); i++) {
+//            result.add(new Block(task, VT_DISTANCES, TD_DISTANCES, FRAMES));
+//        }
+//
+//        return result;
+//    }
 
     /**
      * Get the participant's id
@@ -296,4 +352,64 @@ public class Experiment {
 //        return mActiveTechnique;
 //    }
 
+    // -------------------------------------------------------------------------------------------------------
+    @Data
+    public static class Part {
+        private TECHNIQUE tech;
+        private TASK task;
+        private List<Block> blocks = new ArrayList<>();
+
+        public Part(TECHNIQUE tch, TASK tsk) {
+            tech = tch;
+            task = tsk;
+
+            // Create blocks
+            for (int i = 0; i < N_BLOCKS.get(task); i++) {
+                blocks.add(new Block(task, VT_DISTANCES, TD_DISTANCES, FRAMES));
+            }
+        }
+
+        public int nBlocks() {
+            return blocks.size();
+        }
+
+        public Block getBlock(int blInd) {
+            if (blInd < blocks.size()) return blocks.get(blInd);
+            else return null;
+        }
+    }
+
+    public static class Session {
+        private Part[] parts = new Part[4];
+
+        public Session(Part... ps) {
+            if (ps.length == 4) {
+                parts = ps;
+            } else {
+                Logs.e(Experiment.NAME, "Parts not 4");
+            }
+        }
+
+        public Part getPart(int ptInd) {
+            if (ptInd < 4) return parts[ptInd];
+            else return null;
+        }
+    }
+
+    @AllArgsConstructor
+    public static class Constellation {
+        private int pId;
+        private Session[] sessions = new Session[2];
+
+        public Constellation(int pid, Session s1, Session s2) {
+            pId = pid;
+            sessions[0] = s1;
+            sessions[1] = s2;
+        }
+
+        public Session getSession(int sInd) {
+            if (sInd < 2) return sessions[sInd];
+            else return null;
+        }
+    }
 }

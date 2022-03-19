@@ -1,11 +1,11 @@
 package control;
 
 
-import static tools.Consts.STRINGS.*;
+import static data.Consts.STRINGS.*;
 
 import experiment.Experiment;
 import tools.Logs;
-import tools.Memo;
+import data.Memo;
 
 import java.io.*;
 import java.net.*;
@@ -32,6 +32,12 @@ public class Server {
     private class ConnWaitRunnable implements Runnable {
         String TAG = NAME + "ConnWaitRunnable";
 
+        private boolean mInitExpFlag;
+
+        public ConnWaitRunnable(boolean initExpFlag) {
+            this.mInitExpFlag = initExpFlag;
+        }
+
         @Override
         public void run() {
             try {
@@ -49,6 +55,9 @@ public class Server {
 
                 // Start receiving
                 executor.execute(new InRunnable());
+
+                // If initExp flag is true, sent init exp. info
+                if (mInitExpFlag) Logger.get().initLogOnMoose();
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -84,17 +93,16 @@ public class Server {
         public void run() {
             while (!Thread.currentThread().isInterrupted() && inBR != null) {
                 try {
-                    Logs.d(TAG, "Reading messages...");
+//                    Logs.d(TAG, "Reading messages...");
                     if ((mssg = inBR.readLine()) != null) {
                         Memo memo = Memo.valueOf(mssg);
-                        Logs.d(TAG, "Action: " + memo.getAction());
+                        Logs.d(TAG, memo);
                         switch (memo.getAction()) {
                             case SCROLL -> {
                                 Controller.get().scroll(memo);
                             }
                             case CONNECTION -> {
                                 if (memo.getMode().equals(KEEP_ALIVE)) {
-                                    Logs.d(TAG, "KA Received: " + memo);
                                     send(memo); // Send back the message (as confimation)
                                 }
                             }
@@ -142,7 +150,11 @@ public class Server {
      * Start receving connections
      */
     public void openConnection() {
-        executor.execute(new ConnWaitRunnable());
+        executor.execute(new ConnWaitRunnable(false));
+    }
+
+    public void connectAndSyncExp() {
+        executor.execute(new ConnWaitRunnable(true));
     }
 
     public void syncTechnique(Experiment.TECHNIQUE tech) {

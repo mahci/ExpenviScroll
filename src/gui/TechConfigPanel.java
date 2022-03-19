@@ -1,18 +1,12 @@
 package gui;
 
-import control.Server;
-import experiment.Experiment;
 import tools.Logs;
-import tools.Memo;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
 
 import static experiment.Experiment.*;
-import static tools.Consts.*;
 
 public class TechConfigPanel extends JPanel implements ItemListener {
     private final String NAME = "TechConfigPanel/";

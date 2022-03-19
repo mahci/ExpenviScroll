@@ -1,5 +1,6 @@
 package control;
 
+import data.Memo;
 import experiment.Trial;
 import gui.Main;
 import gui.ExperimentFrame;
@@ -15,7 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static tools.Consts.STRINGS.*;
+import static data.Consts.STRINGS.*;
 import static experiment.Experiment.*;
 
 public class Logger {
@@ -25,6 +26,10 @@ public class Logger {
 
     private static Path mLogDirectory; // Main folder for logs
     private static Path mPcLogDirectory; // Folder log path of the participant
+
+    private String mPcLogId = "";
+    private String mPcExpLogId = "";
+
 
     // Different log files
     private Path mTrialsFilePath;
@@ -59,7 +64,7 @@ public class Logger {
      */
     private Logger() {
         // Create log directory
-        final Path parentPatn = Paths.get("").toAbsolutePath().getParent();
+        final Path parentPatn = Paths.get("").toAbsolutePath().getParent().getParent(); // Up two levels
         mLogDirectory = parentPatn.resolve("Expenvi-Scroll-Logs");
 
         if (!Files.isDirectory(mLogDirectory)) {
@@ -79,16 +84,17 @@ public class Logger {
     public void logParticipant(int pId) {
         final String TAG = NAME + "logParticipant";
 
-        final String pcLogId = P_INIT + pId;
-        final String pcExpLogId = pcLogId + "_" + Utils.nowDate(); // Experiment Id
+        mPcLogId = P + pId;
+        mPcExpLogId = mPcLogId + "_" + Utils.nowDate(); // Experiment Id
 
         // Pc logging directory and files' paths
-        mPcLogDirectory = mLogDirectory.resolve(pcLogId);
-        mTrialsFilePath = mPcLogDirectory.resolve(pcExpLogId + "_" + "TRIALS.txt");
-        mInstantsFilePath = mPcLogDirectory.resolve(pcExpLogId + "_" + "INSTANTS.txt");
-        mTimesFilePath = mPcLogDirectory.resolve(pcExpLogId + "_" + "TIMES.txt");
-        mScrollFilePath = mPcLogDirectory.resolve(pcExpLogId + "_" + "SCROLL.txt");
-        mMoveFilePath = mPcLogDirectory.resolve(pcExpLogId + "_" + "MOVE.txt");
+        mPcLogDirectory = mLogDirectory.resolve(mPcLogId);
+
+        mTrialsFilePath =   mPcLogDirectory.resolve(mPcExpLogId + "_" + "TRIALS.txt");
+        mInstantsFilePath = mPcLogDirectory.resolve(mPcExpLogId + "_" + "INSTANTS.txt");
+        mTimesFilePath =    mPcLogDirectory.resolve(mPcExpLogId + "_" + "TIMES.txt");
+        mScrollFilePath =   mPcLogDirectory.resolve(mPcExpLogId + "_" + "SCROLL.txt");
+        mMoveFilePath =     mPcLogDirectory.resolve(mPcExpLogId + "_" + "MOVE.txt");
 
         if (!Files.isDirectory(mPcLogDirectory)) { // New logging
             createLogFiles();
@@ -97,6 +103,14 @@ public class Logger {
             openLogFiles();
         }
 
+    }
+
+    /**
+     * Send the initial log info to the Moose
+     */
+    public void initLogOnMoose() {
+        // Send the logging info to the Moose as well
+        Server.get().send(new Memo(LOG, EXPID, mPcLogId, mPcExpLogId));
     }
 
     /**
@@ -285,13 +299,17 @@ public class Logger {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class GeneralInfo {
+        public int session;
+        public int part;
         public TECHNIQUE tech;
         public int blockNum;
         public int trialNum;
         public Trial trial;
 
         public static String getLogHeader() {
-            return "technique" + SP +
+            return "session" + SP +
+                    "part" + SP +
+                    "technique" + SP +
                     "block_num" + SP +
                     "trial_num" + SP +
                     Trial.getLogHeader();
@@ -299,7 +317,9 @@ public class Logger {
 
         @Override
         public String toString() {
-            return tech + SP +
+            return session + SP +
+                    part + SP +
+                    tech + SP +
                     blockNum + SP +
                     trialNum + SP +
                     trial.toLogString();
@@ -312,8 +332,8 @@ public class Logger {
         public int searchTime;      // From the first scroll until the last appearance of the target
         public int fineTuneTime;    // From the last appearance of target to the last scroll
         public int scrollTime;      // SearchTime + fineTuneTime (first scroll -> last scroll)
-        public int trialTime;       // First scroll -> SPACE
         public int finishTime;      // Last scroll -> SPACE
+        public int trialTime;       // First scroll -> SPACE
         public int nTargetAppear;   // Number of target appearances
         public int vtResult;        // Vertical: 1 (Hit) or 0 (Miss)
         public int hzResult;        // Horizontal: 1 (Hit) or 0 (Miss)
@@ -323,8 +343,8 @@ public class Logger {
             return "search_time" + SP +
                     "fine_tune_time" + SP +
                     "scroll_time" + SP +
-                    "trial_time" + SP +
                     "finish_time" + SP +
+                    "trial_time" + SP +
                     "n_target_appear" + SP +
                     "vt_result" + SP +
                     "hz_result" + SP +
@@ -336,8 +356,8 @@ public class Logger {
             return searchTime + SP +
                     fineTuneTime + SP +
                     scrollTime + SP +
-                    trialTime + SP +
                     finishTime + SP +
+                    trialTime + SP +
                     nTargetAppear + SP +
                     vtResult + SP +
                     hzResult + SP +
@@ -382,21 +402,21 @@ public class Logger {
 
     // Times info
     public static class TimeInfo {
-        public long trialTime; // ms
-        public long blockTime; // ms
-        public long taskTime; // sec
+        public long trialDispTime; // ms
+        public long blockDispTime; // ms
+        public long partDispTime; // sec
 
         public static String getLogHeader() {
-            return "trial_time" + SP +
-                    "block_time" + SP +
-                    "task_time";
+            return "trial_disp_time" + SP +
+                    "block_disp_ime" + SP +
+                    "part_disp_time";
         }
 
         @Override
         public String toString() {
-            return trialTime + SP +
-                    blockTime+ SP +
-                    taskTime;
+            return trialDispTime + SP +
+                    blockDispTime + SP +
+                    partDispTime;
         }
     }
 

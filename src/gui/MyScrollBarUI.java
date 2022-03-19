@@ -1,7 +1,6 @@
 package gui;
 
-import tools.MinMax;
-import tools.Pair;
+import data.MinMax;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicScrollBarUI;

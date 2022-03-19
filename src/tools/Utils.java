@@ -1,5 +1,6 @@
 package tools;
 
+import data.MinMax;
 import experiment.Experiment;
 
 import java.io.FileWriter;
@@ -13,8 +14,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static tools.Consts.DISP.PPI;
-import static tools.Consts.DISP.INCH_MM;
+import static data.Consts.DISP.PPI;
+import static data.Consts.DISP.INCH_MM;
 
 public class Utils {
 

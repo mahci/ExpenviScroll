@@ -7,7 +7,7 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
-import static tools.Consts.STRINGS.*;
+import static data.Consts.STRINGS.*;
 
 public class BreakDialog extends JDialog implements KeyListener {
     private final static String NAME = "BreakDialog/";

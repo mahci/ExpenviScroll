@@ -1,4 +1,4 @@
-package tools;
+package data;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Pair {
-    private int first;
-    private int second;
+    public int first;
+    public int second;
 
     public void set(int f, int s) {
         first = f;

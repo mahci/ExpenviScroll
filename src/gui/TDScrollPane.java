@@ -1,6 +1,9 @@
 package gui;
 
 import control.Logger;
+import data.DimensionD;
+import data.MinMax;
+import data.Pair;
 import experiment.Experiment;
 import tools.*;
 
@@ -10,7 +13,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
 
-import static tools.Consts.*;
+import static data.Consts.*;
 import static control.Logger.*;
 
 public class TDScrollPane extends JScrollPane implements MouseListener, MouseWheelListener, AdjustmentListener, KeyListener {
@@ -574,7 +577,9 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
         // Scroll manually
         if (mWheelEnabled) {
             final double preciseRotation = e.getPreciseWheelRotation();
-            final int scrollAmt = (int) (preciseRotation * Experiment.MOUSE_SCROLL_MULTIP);
+//            final int scrollAmt = (int) (preciseRotation * Experiment.MOUSE_SCROLL_MULTIP);
+            final double gain = 30.0;
+            final int scrollAmt = (int) (preciseRotation * gain);
 
             // Scroll manually
             if (e.getModifiersEx() == InputEvent.CTRL_DOWN_MASK) { // Horizontal with CTRL
@@ -588,7 +593,6 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
             // Log
             mScrollInfo.wheelRot = preciseRotation;
             logScroll();
-
 
         }
     }

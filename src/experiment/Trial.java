@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import static tools.Consts.STRINGS.*;
+import static data.Consts.STRINGS.*;
 
 import static experiment.Experiment.*;
 

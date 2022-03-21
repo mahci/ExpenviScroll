@@ -45,6 +45,7 @@ public class BlockPanel extends JLayeredPane implements MouseMotionListener {
     private Logger.GeneralInfo mGenInfo;
     private Logger.TimeInfo mTimeInfo;
     private Logger.InstantInfo mInstantInfo; // Started from here, passed to the scrollPanes, then back to be finished
+    private Logger.MoveInfo mMoveInfo; // Keeps inside the BlockPanel
     private long mTrialStTime;
     private long mBlockStTime;
 
@@ -164,6 +165,10 @@ public class BlockPanel extends JLayeredPane implements MouseMotionListener {
 
         // Key maps
         mapKeys();
+
+        // Add listeners
+        addMouseMotionListener(this);
+        mMoveInfo = new Logger.MoveInfo();
     }
 
     /**
@@ -511,6 +516,13 @@ public class BlockPanel extends JLayeredPane implements MouseMotionListener {
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        Logs.d(NAME, e);
+        // Log the movement
+        mMoveInfo.x = e.getX();
+        mMoveInfo.y = e.getY();
+        mMoveInfo.abX = e.getXOnScreen();
+        mMoveInfo.abY = e.getYOnScreen();
+        mMoveInfo.moment = Utils.nowInMillis();
+
+        Logger.get().logMoveInfo(mGenInfo, mMoveInfo);
     }
 }

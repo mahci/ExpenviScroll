@@ -55,7 +55,9 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
     private GeneralInfo mGenInfo = new GeneralInfo();
     private InstantInfo mInstantInfo = new InstantInfo();
     private ScrollInfo mScrollInfo = new ScrollInfo();
+    private int mLastScrollVal;  // Keep the last scroll value {to calculate the diff}
     private int mNTargetAppear;
+
 
     // Keystrokes
     private KeyStroke KS_SHIFT;
@@ -98,11 +100,7 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
         paneDim = new Dimension(paneSize, paneSize);
 
         setPreferredSize(paneDim);
-
         setBorder(BorderFactory.createLineBorder(COLORS.VIEW_BORDER));
-
-        // Disable scrolling directly with wheel (doing it manually)
-        setWheelScrollingEnabled(false);
     }
 
     /**
@@ -259,8 +257,8 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
         getVerticalScrollBar().addAdjustmentListener(this);
         getHorizontalScrollBar().addAdjustmentListener(this);
 
+        setWheelScrollingEnabled(false); // Don't scroll by default
         mWheelEnabled = false;
-        setWheelScrollingEnabled(false); // Moose is the default
 
         mapKeys();
 
@@ -486,14 +484,15 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
         final long nowMillis = Utils.nowInMillis();
 
         if (mInstantInfo.firstScroll == 0) mInstantInfo.firstScroll = nowMillis;
-        else mInstantInfo.lastScroll = nowMillis;
+
+        mInstantInfo.lastScroll = nowMillis;
 
         if (isTargetVisible(true)) { // Target becomes visible
             if (!mTargetVisible) { // Target wasn't already visible
                 mNTargetAppear++;
 
                 if (mInstantInfo.targetFirstAppear == 0) mInstantInfo.targetFirstAppear = nowMillis;
-                else mInstantInfo.targetLastAppear = nowMillis;
+                mInstantInfo.targetLastAppear = nowMillis;
 
                 mTargetVisible = true;
             }
@@ -564,35 +563,34 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
     public void mouseWheelMoved(MouseWheelEvent e) {
         final String TAG = NAME + "mouseWheelMoved";
 
-//        if (isWheelScrollingEnabled() && mCursorIn) {
-//            mScrollInfo.wheelRot = e.getPreciseWheelRotation(); // Info needed from wheel
-//            Logs.d(TAG, e.getPreciseWheelRotation());
-//            logScroll();
-//
-//            if (e.getModifiersEx() == InputEvent.SHIFT_DOWN_MASK) {
-//                mShiftDown = true;
-//            }
-//        }
-
         // Scroll manually
         if (mWheelEnabled) {
-            final double preciseRotation = e.getPreciseWheelRotation();
-//            final int scrollAmt = (int) (preciseRotation * Experiment.MOUSE_SCROLL_MULTIP);
-            final double gain = 30.0;
-            final int scrollAmt = (int) (preciseRotation * gain);
+
+            // Log
+            if (mGenInfo.trial != null) { // If during experiment
+                mScrollInfo.abX = e.getXOnScreen();
+                mScrollInfo.abY = e.getYOnScreen();
+                mScrollInfo.wheelRot = e.getPreciseWheelRotation();
+                mScrollInfo.vtAmt = getVerticalScrollBar().getValue() - mLastScrollVal;
+                mScrollInfo.hzAmt = 0;
+                mScrollInfo.moment = Utils.nowInMillis();
+                Logger.get().logScrollInfo(mGenInfo, mScrollInfo);
+
+                mLastScrollVal = getVerticalScrollBar().getValue();
+            }
 
             // Scroll manually
+            final double preciseRotation = e.getPreciseWheelRotation();
+//            final int scrollAmt = (int) (preciseRotation * Experiment.MOUSE_SCROLL_MULTIP);
+            final int scrollAmt = (int) (preciseRotation * Experiment.MOUSE_GAIN);
+
             if (e.getModifiersEx() == InputEvent.CTRL_DOWN_MASK) { // Horizontal with CTRL
-                Logs.d(TAG, "CTRL Down: " + preciseRotation);
                 scroll(0, scrollAmt);
             } else {
-                Logs.d(TAG, "Without CTRL: " + preciseRotation);
                 scroll(scrollAmt, 0);
             }
 
-            // Log
-            mScrollInfo.wheelRot = preciseRotation;
-            logScroll();
+            Logs.d(TAG, mInstantInfo.firstScroll, mInstantInfo.lastScroll);
 
         }
     }
@@ -625,30 +623,8 @@ public class TDScrollPane extends JScrollPane implements MouseListener, MouseWhe
 
     // Custom ScrollBar ========================================================================================
     /**
-     * Renderer class for highlighting a single cell
+     * Renderer class to use for highlighting a cell
      */
-    private static class HighlightRenderer extends DefaultTableCellRenderer {
-
-        int rowInd, colInd;
-
-        public HighlightRenderer(int rInd, int cInd) {
-            rowInd = rInd;
-            colInd = cInd;
-        }
-
-        @Override
-        public Component getTableCellRendererComponent(
-                JTable table, Object obj, boolean isSelected, boolean hasFocus, int row, int column) {
-            super.getTableCellRendererComponent(table, obj, isSelected, hasFocus, row, column);
-
-            if (row == rowInd && column == colInd) setBackground(COLORS.CELL_HIGHLIGHT);
-            else setBackground(UIManager.getColor("Table.background"));
-
-            return this;
-
-        }
-    }
-
     private static class HighlightTableRenderer extends DefaultTableCellRenderer {
 
         private final int r, c;

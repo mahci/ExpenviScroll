@@ -71,10 +71,7 @@ public class VTScrollPane extends JScrollPane implements MouseListener, MouseWhe
     public VTScrollPane(Dimension d) {
         mDim = d;
         setPreferredSize(mDim);
-
         setBorder(BorderFactory.createLineBorder(COLORS.VIEW_BORDER));
-
-        setWheelScrollingEnabled(false);
     }
 
     /**
@@ -200,8 +197,8 @@ public class VTScrollPane extends JScrollPane implements MouseListener, MouseWhe
         getViewport().getView().addMouseListener(this);
         addMouseWheelListener(this);
 
+        setWheelScrollingEnabled(false); // Don't scroll by default
         mWheelEnabled = false;
-        setWheelScrollingEnabled(false); // Moose is the default
 
         return this;
     }
@@ -465,17 +462,14 @@ public class VTScrollPane extends JScrollPane implements MouseListener, MouseWhe
         final long nowMillis = Utils.nowInMillis();
 
         if (mInstantInfo.firstScroll == 0) mInstantInfo.firstScroll = nowMillis;
-        else mInstantInfo.lastScroll = nowMillis;
+        mInstantInfo.lastScroll = nowMillis;
 
         if (isTargetVisible(true)) { // Target becomes visible
-            Logs.d(TAG, mTargetVisible);
             if (!mTargetVisible) { // Target wasn't already visible
                 mNTargetAppear++;
 
-                if (mInstantInfo.targetFirstAppear == 0) {
-                    mInstantInfo.targetFirstAppear = nowMillis;
-                    mInstantInfo.targetLastAppear = mInstantInfo.targetFirstAppear;
-                } else mInstantInfo.targetLastAppear = nowMillis; // Target went out and in again
+                if (mInstantInfo.targetFirstAppear == 0) mInstantInfo.targetFirstAppear = nowMillis;
+                mInstantInfo.targetLastAppear = nowMillis; // Target went out and in again
 
                 mTargetVisible = true;
             }
@@ -539,7 +533,6 @@ public class VTScrollPane extends JScrollPane implements MouseListener, MouseWhe
     public void mouseWheelMoved(MouseWheelEvent e) {
 
         if (mWheelEnabled) {
-            logScroll();
 
             // If during experiment
             if (mGenInfo.trial != null) {
@@ -553,15 +546,16 @@ public class VTScrollPane extends JScrollPane implements MouseListener, MouseWhe
 
                 mLastScrollVal = getVerticalScrollBar().getValue();
             }
+
+            // Manual scroll
+            final double unitsToScroll = e.getPreciseWheelRotation();
+//        final double gain = Math.pow(Math.abs(e.getWheelRotation()), 1.5);
+            Logs.d(NAME, "uts", unitsToScroll, e.getUnitsToScroll());
+            final int dY = (int) (unitsToScroll * Experiment.MOUSE_GAIN);
+            scroll(dY); // Logging is done inside scroll()
         }
 
-        // Manual scroll
-        final double unitsToScroll = e.getPreciseWheelRotation();
-//        final double gain = Math.pow(Math.abs(e.getWheelRotation()), 1.5);
-        final double gain = 30.0;
-        Logs.d(NAME, "uts", unitsToScroll, e.getUnitsToScroll());
-        final int dY = (int) (unitsToScroll * gain);
-        scroll(dY);
+
     }
 
 }
